@@ -1,0 +1,307 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Library">
+      <UniqueIdentifier>{a1d50b91-4749-4347-965a-acf2f20b0487}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src">
+      <UniqueIdentifier>{f2f1552f-8cb7-4c05-af3d-7c65e7786c1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application">
+      <UniqueIdentifier>{dcd27653-3e79-4496-bbfa-58e43ed54135}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Framework">
+      <UniqueIdentifier>{d02a5ae3-f25d-4575-b8d6-6906253aabb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\System">
+      <UniqueIdentifier>{4b42deec-3f09-49f4-8fa0-6403515c39c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\imgui">
+      <UniqueIdentifier>{02c2fd46-f85c-43fe-9ea1-943a391bbe48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\imgui\misc">
+      <UniqueIdentifier>{4b7fe1aa-05f3-4677-b91a-ab295019232a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\imgui\misc\cpp">
+      <UniqueIdentifier>{ce360213-70e6-4cc4-ad11-0c57f67abfc8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\imgui\backends">
+      <UniqueIdentifier>{30a9785c-4650-461a-a586-efa9db4e907c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\System\Window">
+      <UniqueIdentifier>{744f95a7-50f5-4e52-90a3-86b004ea8b9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Game">
+      <UniqueIdentifier>{e74ee38e-21e3-496f-ba37-31f75a591aa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Game\GameObject">
+      <UniqueIdentifier>{610d651c-866e-4b1f-97c4-ad95f797a4e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Game\GameObject\CameraObject">
+      <UniqueIdentifier>{dba94517-991e-4771-8efd-50110a50b634}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Game\GameObject\ModelObject">
+      <UniqueIdentifier>{0d6b603e-cec7-4210-a83d-53958bbee70d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\System\Asset">
+      <UniqueIdentifier>{087001bf-6cea-41a2-b45c-972347b407ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\System\GameObject">
+      <UniqueIdentifier>{de070368-8911-48b7-8a4f-20eabd622692}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\System\Asset\AssetManager">
+      <UniqueIdentifier>{4b2cc37e-3301-433b-bf19-68b1629eed0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\System\Asset\Model">
+      <UniqueIdentifier>{0d78d255-9cdf-48dc-9905-5320f98aebab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\System\Asset\Texture">
+      <UniqueIdentifier>{8341bf4f-d575-49da-bf57-06e49cc437fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Game\GameObject\ModelObject\CharacterObject">
+      <UniqueIdentifier>{1c66ca13-8c21-473f-aacc-d5dd41a73903}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\System\Math">
+      <UniqueIdentifier>{76e94221-5b02-4b31-9a64-51063db6d994}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Framework\Direct3D">
+      <UniqueIdentifier>{5c0abed9-7765-4f37-a878-f5a1e119c6a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Framework\Math">
+      <UniqueIdentifier>{0b1eb42c-74a8-45be-ab53-1200ef00db27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Player">
+      <UniqueIdentifier>{ecf2c544-bf66-4918-b9ef-32741355ac27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy">
+      <UniqueIdentifier>{9edc9f37-946f-43c0-ad3e-81c31001332d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy\WeakRobot">
+      <UniqueIdentifier>{367d668d-09d0-4611-ac69-d42e9ef4693c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Game\GameObject\ModelObject\DynamicObject">
+      <UniqueIdentifier>{7ee0e5e7-c766-4924-9049-dcf6fe0b6c91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\System\Shader">
+      <UniqueIdentifier>{945a537f-2e53-4341-a0bb-dd19efa69968}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\System\Shader\StandardShader">
+      <UniqueIdentifier>{caf5750c-02e1-4d98-8793-a4ae4277ff6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\System\DirectX11">
+      <UniqueIdentifier>{6d2cf5d1-e98c-4a5c-bfd9-50c806a6bf38}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Src\Pch.h">
+      <Filter>Src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\imgui\imgui-1.87\include\imgui.h">
+      <Filter>Library\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\imgui\imgui-1.87\include\imgui_internal.h">
+      <Filter>Library\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\imgui\imgui-1.87\include\imstb_rectpack.h">
+      <Filter>Library\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\imgui\imgui-1.87\include\imstb_textedit.h">
+      <Filter>Library\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\imgui\imgui-1.87\include\imstb_truetype.h">
+      <Filter>Library\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\imgui\imgui-1.87\include\imconfig.h">
+      <Filter>Library\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\imgui\imgui-1.87\include\misc\cpp\imgui_stdlib.h">
+      <Filter>Library\imgui\misc\cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\imgui\imgui-1.87\include\backends\imgui_impl_dx11.h">
+      <Filter>Library\imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\imgui\imgui-1.87\include\backends\imgui_impl_win32.h">
+      <Filter>Library\imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Application.h">
+      <Filter>Src\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\Window\Window.h">
+      <Filter>Src\System\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\GameSystem.h">
+      <Filter>Src\Application\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\GameObject\Camera\CameraObject.h">
+      <Filter>Src\Application\Game\GameObject\CameraObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\GameObject\ModelObject\ModelObject.h">
+      <Filter>Src\Application\Game\GameObject\ModelObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\GameObject\GameObject.h">
+      <Filter>Src\System\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\Asset\AssetManager\AssetManager.h">
+      <Filter>Src\System\Asset\AssetManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\Asset\Model\ModelManager.h">
+      <Filter>Src\System\Asset\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\Asset\Model\ModelData.h">
+      <Filter>Src\System\Asset\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\Asset\Texture\TextureManager.h">
+      <Filter>Src\System\Asset\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\Asset\Texture\TextureData.h">
+      <Filter>Src\System\Asset\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\Math\Collision.h">
+      <Filter>Src\System\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\Math\CameraSystem.h">
+      <Filter>Src\System\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Framework\Math\KdAnimation.h">
+      <Filter>Src\Framework\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Framework\Direct3D\KdMesh.h">
+      <Filter>Src\Framework\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Framework\Direct3D\KdModel.h">
+      <Filter>Src\Framework\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Framework\Direct3D\KdPolygon.h">
+      <Filter>Src\Framework\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Framework\Direct3D\KdGLTFLoader.h">
+      <Filter>Src\Framework\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Framework\Direct3D\KdMaterial.h">
+      <Filter>Src\Framework\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Player\Player.h">
+      <Filter>Src\Application\Game\GameObject\ModelObject\CharacterObject\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy\Enemy.h">
+      <Filter>Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy\WeakRobot\WeakRobot.h">
+      <Filter>Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy\WeakRobot</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\GameObject\ModelObject\DynamicObject\DynamicObject.h">
+      <Filter>Src\Application\Game\GameObject\ModelObject\DynamicObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\Shader\ShaderManager.h">
+      <Filter>Src\System\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\Shader\StandardShader\StandardShader.h">
+      <Filter>Src\System\Shader\StandardShader</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\DirectX11\DirectX11System.h">
+      <Filter>Src\System\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\DirectX11\DirectX11BufferSystem.h">
+      <Filter>Src\System\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\DirectX11\DirectX11TextureSystem.h">
+      <Filter>Src\System\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Framework\Direct3D\KdSquarePolygon.h">
+      <Filter>Src\Framework\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\CharacterObject.h">
+      <Filter>Src\Application\Game\GameObject\ModelObject\CharacterObject</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Library\imgui\imgui-1.87\include\imgui.cpp">
+      <Filter>Library\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\imgui\imgui-1.87\include\imgui_demo.cpp">
+      <Filter>Library\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\imgui\imgui-1.87\include\imgui_draw.cpp">
+      <Filter>Library\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\imgui\imgui-1.87\include\imgui_tables.cpp">
+      <Filter>Library\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\imgui\imgui-1.87\include\imgui_widgets.cpp">
+      <Filter>Library\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\imgui\imgui-1.87\include\misc\cpp\imgui_stdlib.cpp">
+      <Filter>Library\imgui\misc\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\imgui\imgui-1.87\include\backends\imgui_impl_dx11.cpp">
+      <Filter>Library\imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\imgui\imgui-1.87\include\backends\imgui_impl_win32.cpp">
+      <Filter>Library\imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Application.cpp">
+      <Filter>Src\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\main.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\System\Window\Window.cpp">
+      <Filter>Src\System\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Game\GameSystem.cpp">
+      <Filter>Src\Application\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Framework\Math\KdAnimation.cpp">
+      <Filter>Src\Framework\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Framework\Direct3D\KdMesh.cpp">
+      <Filter>Src\Framework\Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Framework\Direct3D\KdModel.cpp">
+      <Filter>Src\Framework\Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Framework\Direct3D\KdPolygon.cpp">
+      <Filter>Src\Framework\Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Framework\Direct3D\KdGLTFLoader.cpp">
+      <Filter>Src\Framework\Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Framework\Direct3D\KdMaterial.cpp">
+      <Filter>Src\Framework\Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Player\Player.cpp">
+      <Filter>Src\Application\Game\GameObject\ModelObject\CharacterObject\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\System\Shader\ShaderManager.cpp">
+      <Filter>Src\System\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\System\Shader\StandardShader\StandardShader.cpp">
+      <Filter>Src\System\Shader\StandardShader</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\System\DirectX11\DirectX11System.cpp">
+      <Filter>Src\System\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Framework\Direct3D\KdSquarePolygon.cpp">
+      <Filter>Src\Framework\Direct3D</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Src\System\Shader\inc_Common.hlsli">
+      <Filter>Src\System\Shader</Filter>
+    </None>
+    <None Include="Src\System\Shader\StandardShader\inc_StandardShader.hlsli">
+      <Filter>Src\System\Shader\StandardShader</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Src\System\Shader\StandardShader\StandardShader_VS.hlsl">
+      <Filter>Src\System\Shader\StandardShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Src\System\Shader\StandardShader\StandardShader_VS_Skin.hlsl">
+      <Filter>Src\System\Shader\StandardShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Src\System\Shader\StandardShader\StandardShader_PS.hlsl">
+      <Filter>Src\System\Shader\StandardShader</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
