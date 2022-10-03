@@ -246,12 +246,12 @@ void KdModelWork::SetModel(const std::shared_ptr<KdModelData>& rModel)
 { 
 	m_spData = rModel;
 
-	UINT nodeSize = rModel->GetOriginalNodes().size();
+	size_t nodeSize = rModel->GetOriginalNodes().size();
 
 	m_coppiedNodes.resize(nodeSize);
 
 	// ノードのコピーを生成
-	for (UINT i = 0; i < nodeSize; ++i)
+	for (size_t i = 0; i < nodeSize; ++i)
 	{
 		m_coppiedNodes[i].copy(rModel->GetOriginalNodes()[i]);
 	}
