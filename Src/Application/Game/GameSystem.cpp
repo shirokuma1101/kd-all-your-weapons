@@ -92,7 +92,7 @@ void GameSystem::Init()
     }
 
     auto camera = std::make_shared<CameraObject>();
-    camera->SetFollowingTarget(player, Math::Matrix::CreateTranslation(1.f, 0.f, -3.f));
+    camera->SetFollowingTarget(player, Transform({ 0.5f, -0.1f, -0.8f }));
     AddGameObject(camera);
 
     player->SetFollowerTarget(camera);
