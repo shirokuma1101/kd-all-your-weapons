@@ -26,7 +26,7 @@ public:
 
 private:
 
-    void MouseOperator();
+    void MouseOperator(float narrow_limit, float wide_limit);
 
     void KeyOperator(float delta_time);
 

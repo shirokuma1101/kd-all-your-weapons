@@ -26,7 +26,7 @@ void Player::Update(float delta_time)
     * 操作
     **************************************************/
 
-    MouseOperator();
+    MouseOperator(-40.f, 90.f - 1.f);
     KeyOperator(delta_time);
     
     
@@ -204,7 +204,7 @@ void Player::DrawOpaque()
     }
 }
 
-void Player::MouseOperator()
+void Player::MouseOperator(float narrow_limit, float wide_limit)
 {
     auto& cm = Application::Instance().GetGameSystem()->GetInputManager()->GetCursorManager();
     auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
@@ -213,11 +213,11 @@ void Player::MouseOperator()
     cm->LockInCenter();
     Math::Vector3 rot_dir = Math::Vector3(static_cast<float>(pos.y), static_cast<float>(pos.x), 0) * (*jm)[m_name]["expand"]["status"]["mouse_sensitivity"];
     m_transform.rotation += rot_dir;
-    if (m_transform.rotation.x <= -90 + 1) {
-        m_transform.rotation.x = -90 + 1;
+    if (m_transform.rotation.x <= narrow_limit) {
+        m_transform.rotation.x = narrow_limit;
     }
-    if (m_transform.rotation.x >= 90 - 1) {
-        m_transform.rotation.x = 90 - 1;
+    if (m_transform.rotation.x >= wide_limit) {
+        m_transform.rotation.x = wide_limit;
     }
 }
 
