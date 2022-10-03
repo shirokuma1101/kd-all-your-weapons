@@ -16,7 +16,7 @@ bool DirectX11System::Init(HWND hWnd, const std::pair<int32_t, int32_t>& size, b
     return true;
 }
 
-void DirectX11System::DrawVertices(D3D_PRIMITIVE_TOPOLOGY topology, int vertex_size, UINT stride, const void* vertex_stream)
+void DirectX11System::DrawVertices(D3D_PRIMITIVE_TOPOLOGY topology, UINT vertex_size, UINT stride, const void* vertex_stream)
 {
     // プリミティブトポロジーをセット
     m_cpCtx->IASetPrimitiveTopology(topology);

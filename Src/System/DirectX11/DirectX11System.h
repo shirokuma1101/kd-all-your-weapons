@@ -24,7 +24,7 @@ public:
         return m_spShaderManager;
     }
 
-    void DrawVertices(D3D_PRIMITIVE_TOPOLOGY topology, int vertex_size, UINT stride, const void* vertex_stream);
+    void DrawVertices(D3D_PRIMITIVE_TOPOLOGY topology, UINT vertex_size, UINT stride, const void* vertex_stream);
     
 private:
 
