@@ -43,9 +43,16 @@ bool Window::Create(std::string_view title, std::pair<int32_t, int32_t> position
         this                                 // 追加情報
     );
 
+    /* クライアントサイズを設定 */
+    WINDOWINFO wi{};
+    SecureZeroMemory(&wi, sizeof(wi));
+    GetWindowInfo(m_hWnd, &wi);
+    LONG new_width  = (wi.rcWindow.right  - wi.rcWindow.left) - (wi.rcClient.right  - wi.rcClient.left) + size.first;
+    LONG new_height = (wi.rcWindow.bottom - wi.rcWindow.top)  - (wi.rcClient.bottom - wi.rcClient.top)  + size.second;
+    SetWindowPos(m_hWnd, NULL, 0, 0, new_width, new_height, SWP_NOMOVE | SWP_NOZORDER);
+
     /* ウィンドウの表示 */
     ShowWindow(m_hWnd, SW_SHOW);
-
     /* ウィンドウの更新 */
     UpdateWindow(m_hWnd);
 
