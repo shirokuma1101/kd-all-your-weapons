@@ -4,6 +4,8 @@
 #include "System/Window/Window.h"
 #include "Application/Game/GameSystem.h"
 
+#define ENABLE_DIRECTX11_DEBUG
+
 class Application
 {
 public:

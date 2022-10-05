@@ -2,8 +2,11 @@
 
 bool Application::Init()
 {
-    const std::pair<int32_t, int32_t> window_size = { 1280, 720 };
-    
+    const Window::Size     window_size    = Window::HD;
+    const Window::Position window_pos     = { 0, 0 };
+    const std::string      window_title   = "Game";
+    const bool             is_full_screen = false;
+
     /* ロケールを設定 */
     setlocale(LC_ALL, "japanese");
 
@@ -16,26 +19,23 @@ bool Application::Init()
     }
 
     /* ウィンドウ作成 */
-    if (!m_window.Create("title!", { 0, 0 }, window_size)) {
+    if (!m_window.Create(window_title, window_pos, window_size)) {
         assert::RaiseAssert("ウィンドウ作成に失敗");
         return false;
     }
 
-    // デバイスのデバッグモードを有効にする
-    bool is_debug = false;
-#ifdef _DEBUG
-    is_debug = true;
-#endif
     /* Direct3D初期化 */
-    if (!DirectX11System::Instance().Init(m_window.GetWindowHandle(), window_size, is_debug)) {
+#ifdef ENABLE_DIRECTX11_DEBUG
+    if (!DirectX11System::Instance().Init(m_window.GetWindowHandle(), window_size, true)) {
         assert::RaiseAssert("Direct3D初期化失敗");
         return false;
     }
-    
-    bool is_full_screen = false;
-    //if (MessageBoxA(m_window.GetWindowHandle(), "フルスクリーンにしますか？", "確認", MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
-    //	is_full_screen = true;
-    //}
+#else
+    if (!DirectX11System::Instance().Init(m_window.GetWindowHandle(), window_size, false)) {
+        assert::RaiseAssert("Direct3D初期化失敗");
+        return false;
+    }
+#endif
     if (is_full_screen) {
         DirectX11System::Instance().GetSwapChain()->SetFullscreenState(TRUE, 0);
     }
