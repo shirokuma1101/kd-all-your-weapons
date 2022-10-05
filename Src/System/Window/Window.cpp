@@ -2,9 +2,10 @@
 
 LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-bool Window::Create(std::string_view title, std::pair<int32_t, int32_t> position, std::pair<int32_t, int32_t> size)
+bool Window::Create(std::string_view title, Position position, Size size)
 {
-    HINSTANCE hInstance = GetInstanceHandle();
+    m_size                  = size;
+    HINSTANCE hInstance     = GetInstanceHandle();
     std::wstring class_name = sjis_to_wide(title.data());
     std::wstring title_name = sjis_to_wide(title.data());
 
@@ -35,8 +36,8 @@ bool Window::Create(std::string_view title, std::pair<int32_t, int32_t> position
         WS_OVERLAPPEDWINDOW - WS_THICKFRAME, // ウィンドウタイプを標準タイプに
         position.first,                      // ウィンドウの位置（X座標）
         position.second,                     // ウィンドウの位置（Y座標）
-        size.first,                          // ウィンドウの幅
-        size.second,                         // ウィンドウの高さ
+        m_size.first,                        // ウィンドウの幅
+        m_size.second,                       // ウィンドウの高さ
         nullptr,                             // 親ウィンドウのハンドル
         nullptr,                             // メニューのハンドル
         hInstance,                           // インスタンスハンドル
@@ -47,8 +48,8 @@ bool Window::Create(std::string_view title, std::pair<int32_t, int32_t> position
     WINDOWINFO wi{};
     SecureZeroMemory(&wi, sizeof(wi));
     GetWindowInfo(m_hWnd, &wi);
-    LONG new_width  = (wi.rcWindow.right  - wi.rcWindow.left) - (wi.rcClient.right  - wi.rcClient.left) + size.first;
-    LONG new_height = (wi.rcWindow.bottom - wi.rcWindow.top)  - (wi.rcClient.bottom - wi.rcClient.top)  + size.second;
+    LONG new_width  = (wi.rcWindow.right  - wi.rcWindow.left) - (wi.rcClient.right  - wi.rcClient.left) + m_size.first;
+    LONG new_height = (wi.rcWindow.bottom - wi.rcWindow.top)  - (wi.rcClient.bottom - wi.rcClient.top)  + m_size.second;
     SetWindowPos(m_hWnd, NULL, 0, 0, new_width, new_height, SWP_NOMOVE | SWP_NOZORDER);
 
     /* ウィンドウの表示 */
