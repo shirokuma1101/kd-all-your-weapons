@@ -6,10 +6,12 @@ class CameraObject : public GameObject
 {
 public:
 
+    CameraObject(const Math::Matrix& camera_matrix, float fov = 60.f, float aspect = 16.f / 9.f , float near_clipping_distance = 0.001f, float far_clipping_distance = 2000.f)
+        : m_spCamera(std::make_shared<CameraSystem>(camera_matrix, fov, aspect, near_clipping_distance, far_clipping_distance))
+    {}
+
     virtual void Init() override {
-        m_spCamera = std::make_shared<CameraSystem>();
-        float aspect = 16.f / 9.f;
-        m_spCamera->SetProjection(60.f, aspect, 0.01f, 2000.f);
+        m_spCamera->SetToShader();
     }
 
     virtual void Update(float delta_time) override {
@@ -36,7 +38,7 @@ public:
             if (!collider) continue;
             // 判定 (光線)
             if (collider->Intersects(DefaultCollisionType::Bump, e->GetTransform().matrix, ray, &results)) {
-                if (auto result = collision::GetFarthest(results); result) {
+                if (auto result = collision::GetNearest(results); result) {
                     m_transform.position += result->direction * result->depth;
                 }
                 results.clear();
@@ -44,10 +46,13 @@ public:
         }
 
         // 当たり判定後に再計算
-        m_spCamera->SetMatrix(m_localTransform.matrix * m_transform.Composition());
+        m_spCamera->SetMatrix(m_transform.matrix = m_localTransform.matrix * m_transform.Composition());
         m_spCamera->SetToShader();
     }
 
+    virtual const std::shared_ptr<CameraSystem>& GetCamera() const final {
+        return m_spCamera;
+    }
     virtual std::shared_ptr<CameraSystem> GetCamera() final {
         return m_spCamera;
     }
