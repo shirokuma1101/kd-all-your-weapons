@@ -29,13 +29,15 @@
     <ClInclude Include="..\Library\imgui\imgui-1.87\include\imstb_truetype.h" />
     <ClInclude Include="..\Library\imgui\imgui-1.87\include\misc\cpp\imgui_stdlib.h" />
     <ClInclude Include="Src\Application\Application.h" />
-    <ClInclude Include="Src\Application\Game\GameObject\Camera\CameraObject.h" />
+    <ClInclude Include="Src\Application\Game\GameObject\CameraObject\CameraObject.h" />
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\CharacterObject.h" />
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy\Enemy.h" />
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy\WeakRobot\WeakRobot.h" />
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Player\Player.h" />
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\DynamicObject\DynamicObject.h" />
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\ModelObject.h" />
+    <ClInclude Include="Src\Application\Game\GameObject\UIObject\Pause\Pause.h" />
+    <ClInclude Include="Src\Application\Game\GameObject\UIObject\UIObject.h" />
     <ClInclude Include="Src\Application\Game\GameSystem.h" />
     <ClInclude Include="Src\Framework\Direct3D\KdGLTFLoader.h" />
     <ClInclude Include="Src\Framework\Direct3D\KdMaterial.h" />
@@ -201,6 +203,7 @@
       <ForcedIncludeFiles>Pch.h</ForcedIncludeFiles>
       <AdditionalIncludeDirectories>.\Src;$(CPP_LIB)\boost\boost_1_79_0\include;$(CPP_LIB)\DirectXTex\DirectXTex-may2022\include;$(CPP_LIB)\DirectXTK\DirectXTK-jun2022\include;$(CPP_LIB)\EffekseerRuntime\EffekseerRuntime162d\include;$(CPP_LIB)\EffekseerRuntime\EffekseerRuntime162d\include\Effekseer;$(CPP_LIB)\fmt\fmt-8.1.1\include;$(CPP_LIB)\grpc\grpc-1.48.0\include;$(CPP_LIB)\imgui\imgui-1.87\include;$(CPP_LIB)\json-schema-validator\json-schema-validator-2.1.0\include;$(CPP_LIB)\nlohmann_json\nlohmann_json\include;$(CPP_LIB)\PhysX\PhysX-4.1.2\include;$(CPP_LIB)\Python\python-3.9.11\include;$(CPP_LIB)\strconv\strconv-1.8.10\include;$(CPP_LIB)\..\game-libraries\Src;$(CPP_LIB)\Temp\tinygltf</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -222,6 +225,7 @@
       <ForcedIncludeFiles>Pch.h</ForcedIncludeFiles>
       <AdditionalIncludeDirectories>.\Src;$(CPP_LIB)\boost\boost_1_79_0\include;$(CPP_LIB)\DirectXTex\DirectXTex-may2022\include;$(CPP_LIB)\DirectXTK\DirectXTK-jun2022\include;$(CPP_LIB)\EffekseerRuntime\EffekseerRuntime162d\include;$(CPP_LIB)\EffekseerRuntime\EffekseerRuntime162d\include\Effekseer;$(CPP_LIB)\fmt\fmt-8.1.1\include;$(CPP_LIB)\grpc\grpc-1.48.0\include;$(CPP_LIB)\imgui\imgui-1.87\include;$(CPP_LIB)\json-schema-validator\json-schema-validator-2.1.0\include;$(CPP_LIB)\nlohmann_json\nlohmann_json\include;$(CPP_LIB)\PhysX\PhysX-4.1.2\include;$(CPP_LIB)\Python\python-3.9.11\include;$(CPP_LIB)\strconv\strconv-1.8.10\include;$(CPP_LIB)\..\game-libraries\Src;$(CPP_LIB)\Temp\tinygltf</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -243,6 +247,7 @@
       <ForcedIncludeFiles>Pch.h</ForcedIncludeFiles>
       <AdditionalIncludeDirectories>.\Src;$(CPP_LIB)\boost\boost_1_79_0\include;$(CPP_LIB)\DirectXTex\DirectXTex-may2022\include;$(CPP_LIB)\DirectXTK\DirectXTK-jun2022\include;$(CPP_LIB)\EffekseerRuntime\EffekseerRuntime162d\include;$(CPP_LIB)\EffekseerRuntime\EffekseerRuntime162d\include\Effekseer;$(CPP_LIB)\fmt\fmt-8.1.1\include;$(CPP_LIB)\grpc\grpc-1.48.0\include;$(CPP_LIB)\imgui\imgui-1.87\include;$(CPP_LIB)\json-schema-validator\json-schema-validator-2.1.0\include;$(CPP_LIB)\nlohmann_json\nlohmann_json\include;$(CPP_LIB)\PhysX\PhysX-4.1.2\include;$(CPP_LIB)\Python\python-3.9.11\include;$(CPP_LIB)\strconv\strconv-1.8.10\include;$(CPP_LIB)\..\game-libraries\Src;$(CPP_LIB)\Temp\tinygltf</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -264,6 +269,7 @@
       <ForcedIncludeFiles>Pch.h</ForcedIncludeFiles>
       <AdditionalIncludeDirectories>.\Src;$(CPP_LIB)\boost\boost_1_79_0\include;$(CPP_LIB)\DirectXTex\DirectXTex-may2022\include;$(CPP_LIB)\DirectXTK\DirectXTK-jun2022\include;$(CPP_LIB)\EffekseerRuntime\EffekseerRuntime162d\include;$(CPP_LIB)\EffekseerRuntime\EffekseerRuntime162d\include\Effekseer;$(CPP_LIB)\fmt\fmt-8.1.1\include;$(CPP_LIB)\grpc\grpc-1.48.0\include;$(CPP_LIB)\imgui\imgui-1.87\include;$(CPP_LIB)\json-schema-validator\json-schema-validator-2.1.0\include;$(CPP_LIB)\nlohmann_json\nlohmann_json\include;$(CPP_LIB)\PhysX\PhysX-4.1.2\include;$(CPP_LIB)\Python\python-3.9.11\include;$(CPP_LIB)\strconv\strconv-1.8.10\include;$(CPP_LIB)\..\game-libraries\Src;$(CPP_LIB)\Temp\tinygltf</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

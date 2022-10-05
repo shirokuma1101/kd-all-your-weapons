@@ -91,6 +91,12 @@
     <Filter Include="Src\System\DirectX11">
       <UniqueIdentifier>{6d2cf5d1-e98c-4a5c-bfd9-50c806a6bf38}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\Game\GameObject\UIObject">
+      <UniqueIdentifier>{03d4e060-2d3b-41d5-bc68-10ef8a6f3b50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Game\GameObject\UIObject\Pause">
+      <UniqueIdentifier>{32667e49-ee90-4841-ad75-503dc237e10f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Pch.h">
@@ -131,9 +137,6 @@
     </ClInclude>
     <ClInclude Include="Src\Application\Game\GameSystem.h">
       <Filter>Src\Application\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Application\Game\GameObject\Camera\CameraObject.h">
-      <Filter>Src\Application\Game\GameObject\CameraObject</Filter>
     </ClInclude>
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\ModelObject.h">
       <Filter>Src\Application\Game\GameObject\ModelObject</Filter>
@@ -212,6 +215,15 @@
     </ClInclude>
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\CharacterObject.h">
       <Filter>Src\Application\Game\GameObject\ModelObject\CharacterObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\GameObject\UIObject\Pause\Pause.h">
+      <Filter>Src\Application\Game\GameObject\UIObject\Pause</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\GameObject\UIObject\UIObject.h">
+      <Filter>Src\Application\Game\GameObject\UIObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\GameObject\CameraObject\CameraObject.h">
+      <Filter>Src\Application\Game\GameObject\CameraObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
