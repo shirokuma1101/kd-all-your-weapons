@@ -15,13 +15,16 @@ public:
 
     void ImGuiUpdate() override {
         ImGui::Begin("config 1");
-        ImGui::Text("power: %.2f", m_nowChargePower);
-        ImGui::Text("cool_time: %.2f", m_nowCoolTime);
+        ImGui::Text("Power: %.2f", m_nowChargePower);
+        ImGui::Text("CT: %.2f", m_nowCT);
         ImGui::End();
     }
 
     void SetFollowerTarget(std::shared_ptr<GameObject> obj) {
-        m_wpFollowerTarget = obj;
+        m_wpFollowerCamera = obj;
+    }
+    void SetEquipWeightLimit(float equip_weight_limit) {
+        m_equipWeightLimit = equip_weight_limit;
     }
 
 private:
@@ -30,38 +33,31 @@ private:
 
     void KeyOperator(float delta_time);
 
-    Math::Vector3 GetWasdKey(const Math::Vector3& rot) {
-        auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
-        auto mat = Math::Matrix::CreateFromYawPitchRoll(convert::ToRadians(rot));
-        Math::Vector3 dir;
-        
-        if (km->GetState('W')) {
-            dir += mat.Backward();
-            dir.y = 0.f;
-        }
-        if (km->GetState('S')) {
-            dir += mat.Forward();
-            dir.y = 0.f;
-        }
-        if (km->GetState('D')) {
-            dir += mat.Right();
-        }
-        if (km->GetState('A')) {
-            dir += mat.Left();
-        }
-        
-        dir.Normalize();
-        return dir;
-    }
+    bool Collision();
+
+    void Shot(float delta_time);
+
+    // ポーズ画面を表示
+    bool m_isPause = false;
+
+    // カメラ
+    std::weak_ptr<GameObject> m_wpFollowerCamera;
     
+    // 移動系
     float m_initialVelocity = 0.f;
     float m_jumpTime        = 0.f;
 
-    float m_nowChargePower      = 0.f;
-    bool  m_isSucceededCoolTime = false;
-    bool  m_isFailedCoolTime    = false;
-    float m_nowCoolTime         = 0.f;
+    // 攻撃系
+    std::weak_ptr<DynamicObject> m_wpEquipObject;
+    float m_equipWeightLimit    = 0.f;
 
-    std::weak_ptr<GameObject> m_wpFollowerTarget;
+    float m_nowCT               = 0.f;
+    bool  m_isShotCT            = false;
+    float m_nowChargePower      = 0.f;
+    bool  m_isSucceededChargeCT = false;
+    bool  m_isFailedChargeCT    = false;
+
+    // エフェクト
+    std::weak_ptr<effekseer_helper::EffectTransform> m_wpEffectTransform;
 
 };
