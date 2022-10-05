@@ -6,20 +6,39 @@ class DynamicObject : public ModelObject {
 public:
 
     //TODO: 敵つくる、enemylist?とhpとダメージ実装
-    //TODO: 持っていられる時間を大きさに反比例させる、
     //TODO: タイトルつくる
-    //TODO: チャージ時、ショット時のエフェクト追加
+
+    enum class Selection {
+        NoSelected,
+        Equippable,
+        NotEquippable,
+    };
 
     DynamicObject(std::string_view name)
         : ModelObject(name)
     {}
 
     void PreUpdate() override {
-        m_hasInHand = false;
+        m_isEquipping = false;
+        m_selection = Selection::NoSelected;
     }
 
     void Update(float delta_time) override {
-        if (m_hasInHand) {
+        auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
+        auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
+        
+        m_weight = (*jm)[m_name]["expand"]["weight"];
+        
+        ModelObject::Update(delta_time);
+        if (!mm->IsLoaded(m_name)) return;
+
+        // Modelロード時のみ実行
+        if (!m_isLoaded) {
+            m_isLoaded = true;
+            physx_helper::PutToSleep(m_pRigidActor);
+        }
+        
+        if (m_isEquipping) {
             m_pRigidActor->setGlobalPose(physx::PxTransform(physx_helper::ToPxMat44(m_transform.matrix)));
             physx_helper::PutToSleep(m_pRigidActor);
             m_isFirstImpulse = true;
@@ -31,7 +50,6 @@ public:
                     m_isFirstImpulse = false;
                 }
             }
-            ModelObject::Update(delta_time);
             if (m_pRigidActor && m_pRigidActor->is<physx::PxRigidDynamic>()) {
                 SetMatrix(physx_helper::ToMatrix(m_pRigidActor->getGlobalPose()));
             }
@@ -43,8 +61,39 @@ public:
         }
     }
 
-    void SetHasInHand(bool has_in_hand) {
-        m_hasInHand = has_in_hand;
+    void DrawOpaque() override {
+        auto& rim_light = DirectX11System::Instance().GetShaderManager()->m_standardShader.RimLightCB();
+        
+        switch (m_selection) {
+        case DynamicObject::Selection::NoSelected:
+            rim_light.Get()->RimPower = 0.f;
+            break;
+        case DynamicObject::Selection::Equippable:
+            rim_light.Get()->RimColor = { 0.f, 1.f, 0.f };
+            rim_light.Get()->RimPower = 1.f;
+            break;
+        case DynamicObject::Selection::NotEquippable:
+            rim_light.Get()->RimColor = { 1.f, 0.f, 0.f };
+            rim_light.Get()->RimPower = 1.f;
+            break;
+        default:
+            break;
+        }
+        
+        rim_light.Write();
+        ModelObject::DrawOpaque();
+        rim_light.Get()->RimPower = 0.f;
+        rim_light.Write();
+    }
+
+    float GetWeight() const noexcept {
+        return m_weight;
+    }
+    void SetEquipping(bool equipping) {
+        m_isEquipping = equipping;
+    }
+    void SetSelection(Selection selection) {
+        m_selection = selection;
     }
 
     void Force(const Math::Vector3& dir, float power) noexcept {
@@ -55,10 +104,12 @@ public:
 
 private:
 
-    Math::Vector3 m_force;
-    bool          m_isFirstImpulse = false;
-    bool          m_hasInHand = false;
-    
-    float         m_weight = 0.f;
+    float         m_weight         = 0.f;
+    bool          m_isLoaded       = false;
+
+    Math::Vector3 m_force;                                  // 力の強さ
+    bool          m_isFirstImpulse = false;                 // 一度のみ衝撃を与える
+    bool          m_isEquipping    = false;                 // 装備しているか
+    Selection     m_selection      = Selection::NoSelected; // 選択中のオブジェクトの状態
 
 };
