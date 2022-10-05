@@ -12,8 +12,7 @@ class ModelObject : public GameObject
 public:
 
     ModelObject(std::string_view name)
-        : GameObject()
-        , m_name(name)
+        : m_name(name)
     {}
 
     virtual void Init() override {
@@ -32,7 +31,6 @@ public:
     }
     
     virtual void Update(float delta_time) override {
-        
         auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
         auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
 
@@ -56,6 +54,8 @@ public:
                 ));
             }
         }
+        
+        GameObject::Update(delta_time);
     }
 
     virtual void DrawOpaque() override {
@@ -218,27 +218,6 @@ protected:
         std::list<collision::Result> results;
         auto rays    = ToRays((*jm)[m_name]["collision"]["active"]);
         auto spheres = ToSpheres((*jm)[m_name]["collision"]["active"]);
-        //for (const auto& e : Application::Instance().GetGameSystem()->GetGameObjects()) {
-        //	const auto& collider = e->GetCollider();
-        //	if (!collider) continue;
-        //	// 光線
-        //	for (const auto& ray : rays) {
-        //		if (collider->Intersects(DefaultCollisionType::Bump, e->GetTransform().matrix, ray, &results) && results.size()) {
-        //			auto result = collision::GetNearest(results);
-        //			m_transform.position = result.position;
-        //			m_transform.position.y += ray.range;
-        //		}
-        //		results.clear();
-        //	}
-        //	// 球
-        //	for (const auto& sphere : spheres) {
-        //		if (collider->Intersects(DefaultCollisionType::Bump, e->GetTransform().matrix, sphere, &results) && results.size()) {
-        //			auto result = collision::GetNearest(results);
-        //			m_transform.position += result.position;
-        //		}
-        //		results.clear();
-        //	}
-        //}
         // 当たり判定
         for (const auto& e : Application::Instance().GetGameSystem()->GetGameObjects()) {
             const auto& collider = e->GetCollider();
