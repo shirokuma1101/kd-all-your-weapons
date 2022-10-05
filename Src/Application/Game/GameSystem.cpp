@@ -1,7 +1,7 @@
 ﻿#include "GameSystem.h"
 
 #include "Math/Convert.h"
-#include "Application/Game/GameObject/Camera/CameraObject.h"
+#include "Application/Game/GameObject/CameraObject/CameraObject.h"
 #include "Application/Game/GameObject/ModelObject/ModelObject.h"
 #include "Application/Game/GameObject/ModelObject/CharacterObject/Player/Player.h"
 #include "Application/Game/GameObject/ModelObject/CharacterObject/Enemy/Enemy.h"
@@ -25,6 +25,7 @@ void GameSystem::Init()
     m_upEffekseerMgr = std::make_unique<EffekseerManager>();
     m_upEffekseerMgr->Init(DirectX11System::Instance().GetDev().Get(), DirectX11System::Instance().GetCtx().Get());
     m_upEffekseerMgr->SetEffect("exp", "Asset/Effect/exp/exp.efk");
+    m_upEffekseerMgr->SetEffect("charge", "Asset/Effect/charge/blue_laser_edited_long.efk");
 
     /* Input */
     m_upInputMgr = std::make_unique<InputManager>(Application::Instance().GetWindow().GetWindowHandle());
@@ -50,13 +51,9 @@ void GameSystem::Init()
     DirectX11System::Instance().GetShaderManager()->m_cb8_Light.Get()->DirLight_Color = { 1.f, 1.f, 1.f };
     DirectX11System::Instance().GetShaderManager()->m_cb8_Light.Write();
 
-    DirectX11System::Instance().GetShaderManager()->m_standardShader.RimLightCB().Get()->RimColor = { 1.f, 0.f, 0.f };
-    DirectX11System::Instance().GetShaderManager()->m_standardShader.RimLightCB().Get()->RimColor = { 0.f, 1.f, 0.f };
-    DirectX11System::Instance().GetShaderManager()->m_standardShader.RimLightCB().Get()->RimPower = 1.f;
-    //DirectX11System::Instance().GetShaderManager()->m_standardShader.RimLightCB().Write();
-
     /* GameObject */
     auto player = std::make_shared<Player>("player");
+    player->SetEquipWeightLimit(2.f);
     AddGameObject(player);
 
     //auto dummy_character = std::make_shared<ModelObject>("dummy_character");
@@ -81,17 +78,18 @@ void GameSystem::Init()
         "terrain_road_03",
         "terrain_road_04",
         "terrain_road_05",
-        "terrain_road_06"
+        "terrain_road_06",
         }) {
         AddGameObject(std::make_shared<ModelObject>(name));
     }
     for (const auto& name : {
-        "props_01"
+        "props_01",
+        "props_02"
         }) {
         AddDynamicObject(std::make_shared<DynamicObject>(name));
     }
 
-    auto camera = std::make_shared<CameraObject>();
+    auto camera = std::make_shared<CameraObject>(Math::Matrix::Identity, 60.f, Window::ToAspectRatio(Application::Instance().GetWindow().GetSize()));
     camera->SetFollowingTarget(player, Transform({ 0.5f, -0.1f, -0.8f }));
     AddGameObject(camera);
 
