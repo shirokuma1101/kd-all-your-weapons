@@ -104,15 +104,18 @@ protected:
                 const auto& first_value = e.items().begin().value();
                 if (first_key == "sphere") {
                     auto sphere = pm->Sphere(first_value["radius"]);
-                    physx_helper::AttachShape(&m_pRigidActor, &sphere);
+                    auto position = first_value.count("position") ? ToVector3(first_value["position"]) : Math::Vector3::Zero;
+                    physx_helper::AttachShape(&m_pRigidActor, &sphere, physx::PxTransform(physx_helper::ToPxVec3(position)));
                 }
                 else if (first_key == "capsule") {
                     auto capsule = pm->Capsule(first_value["radius"], first_value["half_height"]);
-                    physx_helper::AttachShape(&m_pRigidActor, &capsule);
+                    auto position = first_value.count("position") ? ToVector3(first_value["position"]) : Math::Vector3::Zero;
+                    physx_helper::AttachShape(&m_pRigidActor, &capsule, physx::PxTransform(physx_helper::ToPxVec3(position)));
                 }
                 else if (first_key == "box") {
                     auto box = pm->Box(ToVector3(first_value["half_extent"]));
-                    physx_helper::AttachShape(&m_pRigidActor, &box);
+                    auto position = first_value.count("position") ? ToVector3(first_value["position"]) : Math::Vector3::Zero;
+                    physx_helper::AttachShape(&m_pRigidActor, &box, physx::PxTransform(physx_helper::ToPxVec3(position)));
                 }
                 else if (first_key == "mesh" || first_key == "convex") {
                     has_mesh = true;
