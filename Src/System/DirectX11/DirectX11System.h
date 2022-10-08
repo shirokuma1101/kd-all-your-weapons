@@ -15,7 +15,7 @@ public:
         Release();
     }
 
-    bool Init(HWND hWnd, const std::pair<int32_t, int32_t>& size, bool is_debug, bool enable_msaa = false) override;
+    bool Init(HWND hWnd, const std::pair<int32_t, int32_t>& size, bool is_debug, bool detailed_memory_infomation, bool enable_msaa = false) override;
 
     auto GetShaderManager() {
         return m_spShaderManager;

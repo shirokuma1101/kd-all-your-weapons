@@ -2,9 +2,9 @@
 
 #include "System/Shader/ShaderManager.h"
 
-bool DirectX11System::Init(HWND hWnd, const std::pair<int32_t, int32_t>& size, bool is_debug, bool enable_msaa)
+bool DirectX11System::Init(HWND hWnd, const std::pair<int32_t, int32_t>& size, bool is_debug, bool detailed_memory_infomation, bool enable_msaa)
 {
-    if (!DirectX11::Init(hWnd, size, is_debug, enable_msaa)) {
+    if (!DirectX11::Init(hWnd, size, is_debug, detailed_memory_infomation, enable_msaa)) {
         return false;
     }
     m_spShaderManager = std::make_shared<ShaderManager>();
