@@ -16,37 +16,10 @@ public:
 
     virtual void Update(float delta_time) override {
         /* メッシュに埋まらないように光線を利用して当たり判定を行う */
-        static const float ray_offset = 0.1f; // ターゲットとカメラの距離に対するオフセット
-        
-        // ターゲットの位置と回転のみ保存
-        auto& target_transform = m_wpFollowingTarget.lock()->GetTransform();
-        m_transform.position = target_transform.position;
-        m_transform.rotation = target_transform.rotation;
-
-        // ローカル行列を掛けた行列を作成
-        Math::Matrix compositied = m_localTransform.matrix * m_transform.Composition();
-
-        // プレイヤーからカメラの位置への方向ベクトルを取得
-        Math::Vector3 dir = compositied.Translation() - m_transform.matrix.Translation();
-        dir.Normalize();
-
-        // 当たり判定
-        std::list<collision::Result> results;
-        collision::Ray ray(m_transform.matrix.Translation(), dir, m_localTransform.matrix.Translation().Length() + ray_offset);
-        for (const auto& e : Application::Instance().GetGameSystem()->GetGameObjects()) {
-            const auto& collider = e->GetCollider();
-            if (!collider) continue;
-            // 判定 (光線)
-            if (collider->Intersects(DefaultCollisionType::Bump, e->GetTransform().matrix, ray, &results)) {
-                if (auto result = collision::GetNearest(results); result) {
-                    m_transform.position += result->direction * result->depth;
-                }
-                results.clear();
-            }
-        }
+        Collision();
 
         // 当たり判定後に再計算
-        m_spCamera->SetMatrix(m_transform.matrix = m_localTransform.matrix * m_transform.Composition());
+        m_spCamera->SetMatrix(m_transform.matrix);
         m_spCamera->SetToShader();
     }
 
@@ -57,18 +30,57 @@ public:
         return m_spCamera;
     }
 
-    virtual void SetFollowingTarget(std::shared_ptr<GameObject> obj, const Transform& local_transform = {}) final {
-        m_wpFollowingTarget = obj;
-        // ローカルの位置と回転のみ保存
+    virtual void SetCameraTransform(const Transform& transform, const Transform& local_transform = {}) {
+        // 位置と回転のみ保存
+        m_transform.position      = transform.position;
+        m_transform.rotation      = transform.rotation;
         m_localTransform.position = local_transform.position;
         m_localTransform.rotation = local_transform.rotation;
+        m_transform.Composition();
         m_localTransform.Composition();
     }
 
 protected:
 
+    virtual void Collision() {
+        static const float head_to_waist_length = 0.7f; // MN: 頭から腰までの長さ
+        static const float ray_offset           = 0.1f; // MN: 当たり判定の際の当たった場所から内側の距離オフセット
+
+        // 腰の角度によって移動した頭の行列を計算する
+        Math::Matrix head_matrix
+            = Math::Matrix::CreateTranslation({ 0.f, head_to_waist_length, 0.f })
+            * Math::Matrix::CreateFromYawPitchRoll(convert::ToRadians(m_transform.rotation))
+            * Math::Matrix::CreateTranslation(0.f, -head_to_waist_length, 0.f);
+        // 頭の行列を考慮したプレイヤー行列を計算する
+        Math::Matrix player_matrix
+            = head_matrix
+            * Math::Matrix::CreateTranslation(m_transform.position);
+        // ローカル行列を合成したカメラの行列を計算する
+        Math::Matrix camera_matrix
+            = m_localTransform.Composition()
+            * player_matrix;
+        
+        // プレイヤーからカメラへの方向ベクトルを取得
+        Math::Vector3 dir = camera_matrix.Translation() - player_matrix.Translation();
+        dir.Normalize();
+        // 当たり判定
+        std::list<collision::Result> results;
+        collision::Ray ray(m_transform.matrix.Translation(), dir, m_localTransform.matrix.Translation().Length() + ray_offset);
+        for (const auto& e : Application::Instance().GetGameSystem()->GetGameObjects()) {
+            const auto& collider = e->GetCollider();
+            if (!collider) continue;
+            // 判定 (光線)
+            if (collider->Intersects(DefaultCollisionType::Bump, e->GetTransform().matrix, ray, &results)) {
+                if (auto result = collision::GetNearest(results); result) {
+                    camera_matrix *= Math::Matrix::CreateTranslation(result->direction * result->depth);
+                }
+                results.clear();
+            }
+        }
+        m_transform.matrix = camera_matrix;
+    }
+
     std::shared_ptr<CameraSystem> m_spCamera;
-    std::weak_ptr<GameObject>     m_wpFollowingTarget;
     Transform                     m_localTransform;
 
 };
