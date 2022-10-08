@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Application/Game/GameObject/ModelObject/CharacterObject/CharacterObject.h"
+#include "Application/Game/GameObject/CameraObject/CameraObject.h"
 
 class Player : public CharacterObject {
 public:
@@ -20,7 +21,7 @@ public:
         ImGui::End();
     }
 
-    void SetFollowerTarget(std::shared_ptr<GameObject> obj) {
+    void SetFollowerTarget(std::shared_ptr<CameraObject> obj) {
         m_wpFollowerCamera = obj;
     }
     void SetEquipWeightLimit(float equip_weight_limit) {
@@ -29,7 +30,7 @@ public:
 
 private:
 
-    void MouseOperator(float narrow_limit, float wide_limit);
+    void MouseOperator(float delta_time, float narrow_limit, float wide_limit);
 
     void KeyOperator(float delta_time);
 
@@ -37,15 +38,24 @@ private:
 
     void Shot(float delta_time);
 
+    void SetCameraTransform(float delta_time);
+
+    void PlayAnimation(float delta_time);
+
     // ポーズ画面を表示
     bool m_isPause = false;
 
     // カメラ
-    std::weak_ptr<GameObject> m_wpFollowerCamera;
+    std::weak_ptr<CameraObject> m_wpFollowerCamera;
+    Math::Vector3 m_cameraRotaion;
+    float m_zoomTime = 0.f;
+    bool  m_isZoom   = false;
     
     // 移動系
     float m_initialVelocity = 0.f;
     float m_jumpTime        = 0.f;
+    Math::Vector3 m_moveDirection;
+    float m_angle = 0.f;
 
     // 攻撃系
     std::weak_ptr<DynamicObject> m_wpEquipObject;
@@ -56,6 +66,9 @@ private:
     float m_nowChargePower      = 0.f;
     bool  m_isSucceededChargeCT = false;
     bool  m_isFailedChargeCT    = false;
+
+    // プレイヤーのアニメーション
+    KdAnimator m_animator;
 
     // エフェクト
     std::weak_ptr<effekseer_helper::EffectTransform> m_wpEffectTransform;
