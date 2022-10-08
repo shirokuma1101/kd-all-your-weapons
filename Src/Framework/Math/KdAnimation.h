@@ -48,6 +48,13 @@ class KdAnimator
 {
 public:
 
+    std::shared_ptr<KdAnimationData> GetAnimation() const noexcept {
+        return m_spAnimation;
+    }
+    std::string GetAnimationName() const noexcept {
+        return m_spAnimation ? m_spAnimation->m_name : "";
+    }
+
 	inline void SetAnimation(const std::shared_ptr<KdAnimationData>& rData, bool isLoop = true)
 	{
 		m_spAnimation = rData;
