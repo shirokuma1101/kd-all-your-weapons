@@ -29,6 +29,7 @@ void GameSystem::Init()
 
     /* Input */
     m_upInputMgr = std::make_unique<InputManager>(Application::Instance().GetWindow().GetWindowHandle());
+    input_helper::CursorData::ShowCursor(false);
 
     /* PhysX */
     m_upPhysxMgr = std::make_unique<PhysXManager>();
@@ -43,10 +44,6 @@ void GameSystem::Init()
 
     /* Shader */
     DirectX11System::Instance().GetShaderManager()->ChangeRasterizerState(DirectX11System::Instance().GetShaderManager()->m_rs_CullNone);
-    //auto rs = directx11_helper::CreateRasterizerState(DirectX11System::Instance().GetDev().Get(), D3D11_FILL_MODE::D3D11_FILL_WIREFRAME, D3D11_CULL_MODE::D3D11_CULL_NONE, true, false);
-    //DirectX11System::Instance().GetCtx()->RSSetState(rs);
-    //memory::SafeRelease(&rs);
-
     DirectX11System::Instance().GetShaderManager()->m_cb8_Light.Get()->AmbientLight = { 0.9f, 0.8f, 0.8f, 1.f };
     DirectX11System::Instance().GetShaderManager()->m_cb8_Light.Get()->DirLight_Color = { 1.f, 1.f, 1.f };
     DirectX11System::Instance().GetShaderManager()->m_cb8_Light.Write();
@@ -55,9 +52,6 @@ void GameSystem::Init()
     auto player = std::make_shared<Player>("player");
     player->SetEquipWeightLimit(2.f);
     AddGameObject(player);
-
-    //auto dummy_character = std::make_shared<ModelObject>("dummy_character");
-    //AddGameObject(dummy_character);
 
     for (const auto& name : {
         "environment_sphere",
@@ -89,8 +83,7 @@ void GameSystem::Init()
         AddDynamicObject(std::make_shared<DynamicObject>(name));
     }
 
-    auto camera = std::make_shared<CameraObject>(Math::Matrix::Identity, 60.f, Window::ToAspectRatio(Application::Instance().GetWindow().GetSize()));
-    camera->SetFollowingTarget(player, Transform({ 0.5f, -0.1f, -0.8f }));
+    auto camera = std::make_shared<CameraObject>(Math::Matrix::Identity, 60.f, Window::ToAspectRatio(Application::Instance().GetWindow().GetSize()), 0.01f, 1000.f);
     AddGameObject(camera);
 
     player->SetFollowerTarget(camera);
