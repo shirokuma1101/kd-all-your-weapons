@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "ExternalDependencies/Asset/Json/JsonData.h"
+#include "ExternalDependencies/ImGui/ImGuiHelper.h"
 #include "ExternalDependencies/Math/Collider.h"
 #define TRANSFORM_ROTATION_USE_EULER
 #include "ExternalDependencies/Math/Transform.h"
@@ -15,7 +16,7 @@ enum class DefaultCollisionType {
 ENUM_CLASS_OPERATOR_OVERLOAD_AND(DefaultCollisionType)
 ENUM_CLASS_OPERATOR_OVERLOAD_OR(DefaultCollisionType)
 
-class GameObject : std::enable_shared_from_this<GameObject>
+class GameObject : public std::enable_shared_from_this<GameObject>
 {
 public:
 
@@ -94,7 +95,7 @@ public:
             const auto& first_key = e.items().begin().key();
             const auto& first_value = e.items().begin().value();
             if (first_key != "ray") continue;
-            ray.position  = first_value.count("position") ? ToVector3(first_value["position"]) : m_transform.position;
+            ray.position  = first_value.count("position") ? m_transform.position + ToVector3(first_value["position"]) : m_transform.position;
             ray.direction = ToVector3(first_value["direction"]);
             ray.range     = first_value["range"].get<float>();
             rays.push_back(ray);
@@ -109,7 +110,7 @@ public:
             const auto& first_key = e.items().begin().key();
             const auto& first_value = e.items().begin().value();
             if (first_key != "sphere") continue;
-            sphere.Center = first_value.count("center") ? ToVector3(first_value["center"]) : m_transform.position;
+            sphere.Center = first_value.count("center") ? m_transform.position + ToVector3(first_value["center"]) : m_transform.position;
             sphere.Radius = first_value["radius"].get<float>();
             spheres.push_back(sphere);
         }
