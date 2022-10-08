@@ -4,7 +4,7 @@ bool Application::Init()
 {
     const Window::Size     window_size    = Window::HD;
     const Window::Position window_pos     = { 0, 0 };
-    const std::string      window_title   = "Game";
+    const std::string      window_title   = "AllYourWeapons";
     const bool             is_full_screen = false;
 
     /* ロケールを設定 */
@@ -12,7 +12,11 @@ bool Application::Init()
 
     /* C++のメモリリークを知らせる */
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
+#ifdef ENABLE_BREAKPOINT_ALLOCATE_MEMORY
+    constexpr int break_alloc = ENABLE_BREAKPOINT_ALLOCATE_MEMORY;
+    _CrtSetBreakAlloc(break_alloc);
+#endif
+    
     /* COM初期化 */
     if (FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED))) {
         return false;
@@ -26,16 +30,19 @@ bool Application::Init()
 
     /* Direct3D初期化 */
 #ifdef ENABLE_DIRECTX11_DEBUG
-    if (!DirectX11System::Instance().Init(m_window.GetWindowHandle(), window_size, true)) {
-        assert::RaiseAssert("Direct3D初期化失敗");
-        return false;
-    }
+    constexpr bool is_enable_debug = true;
 #else
-    if (!DirectX11System::Instance().Init(m_window.GetWindowHandle(), window_size, false)) {
+    constexpr bool is_enable_debug = false;
+#endif
+#ifdef ENABLE_DIRECTX11_DETAILED_MEMORY_INFOMATION
+    constexpr bool is_enable_detailed_memory_infomation = true;
+#else
+    constexpr bool is_enable_detailed_memory_infomation = false;
+#endif
+    if (!DirectX11System::Instance().Init(m_window.GetWindowHandle(), window_size, is_enable_debug, is_enable_detailed_memory_infomation)) {
         assert::RaiseAssert("Direct3D初期化失敗");
         return false;
     }
-#endif
     if (is_full_screen) {
         DirectX11System::Instance().GetSwapChain()->SetFullscreenState(TRUE, 0);
     }
@@ -56,8 +63,11 @@ void Application::Run()
         m_spGameSystem->Update();
         // ゲーム描画
         m_spGameSystem->Draw();
+            
+#ifdef ENABLE_IMGUI
         // ImGui処理
         m_spGameSystem->ImGuiUpdate();
+#endif
 
         // BackBuffer -> 画面表示
         DirectX11System::Instance().GetSwapChain()->Present(0, 0);

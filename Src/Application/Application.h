@@ -4,7 +4,10 @@
 #include "System/Window/Window.h"
 #include "Application/Game/GameSystem.h"
 
+//#define ENABLE_BREAKPOINT_ALLOCATE_MEMORY 1;
 #define ENABLE_DIRECTX11_DEBUG
+//#define ENABLE_DIRECTX11_DETAILED_MEMORY_INFOMATION
+#define ENABLE_IMGUI
 
 class Application
 {
