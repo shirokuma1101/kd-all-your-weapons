@@ -42,6 +42,7 @@
 // DirectX Tool Kit
 #include <Audio.h>
 #include <SimpleMath.h>
+#include <SpriteFont.h>
 #pragma comment(lib, "DirectXTKAudioWin8.lib")
 #pragma comment(lib, "DirectXTK.lib")
 
@@ -92,6 +93,7 @@ namespace Math = DirectX::SimpleMath;
 
 // シェーダー
 #include "System/Shader/ShaderManager.h"
+
 
 /**************************************************
 * Application
