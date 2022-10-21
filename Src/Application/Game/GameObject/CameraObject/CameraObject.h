@@ -14,7 +14,7 @@ public:
         m_spCamera->SetToShader();
     }
 
-    virtual void Update(float delta_time) override {
+    virtual void Update(float) override {
         /* メッシュに埋まらないように光線を利用して当たり判定を行う */
         Collision();
 
@@ -43,18 +43,27 @@ public:
 protected:
 
     virtual void Collision() {
+        auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
+        
         static const float head_to_waist_length = 0.7f; // MN: 頭から腰までの長さ
         static const float ray_offset           = 0.1f; // MN: 当たり判定の際の当たった場所から内側の距離オフセット
-
-        // 腰の角度によって移動した頭の行列を計算する
-        Math::Matrix head_matrix
-            = Math::Matrix::CreateTranslation({ 0.f, head_to_waist_length, 0.f })
-            * Math::Matrix::CreateFromYawPitchRoll(convert::ToRadians(m_transform.rotation))
-            * Math::Matrix::CreateTranslation(0.f, -head_to_waist_length, 0.f);
-        // 頭の行列を考慮したプレイヤー行列を計算する
+        
         Math::Matrix player_matrix
-            = head_matrix
+            = Math::Matrix::CreateFromYawPitchRoll(convert::ToRadians(m_transform.rotation))
             * Math::Matrix::CreateTranslation(m_transform.position);
+        
+        // 構え時は腰の角度によって移動した頭の行列を計算する
+        if (km->GetState(VK_RBUTTON)) {
+            Math::Matrix head_matrix
+                = Math::Matrix::CreateTranslation({ 0.f, head_to_waist_length, 0.f })
+                * Math::Matrix::CreateFromYawPitchRoll(convert::ToRadians(m_transform.rotation))
+                * Math::Matrix::CreateTranslation(0.f, -head_to_waist_length, 0.f);
+            // 頭の行列を考慮したプレイヤー行列を計算する
+            player_matrix
+                = head_matrix
+                * Math::Matrix::CreateTranslation(m_transform.position);
+        }
+        
         // ローカル行列を合成したカメラの行列を計算する
         Math::Matrix camera_matrix
             = m_localTransform.Composition()
@@ -66,7 +75,7 @@ protected:
         // 当たり判定
         std::list<collision::Result> results;
         collision::Ray ray(m_transform.matrix.Translation(), dir, m_localTransform.matrix.Translation().Length() + ray_offset);
-        for (const auto& e : Application::Instance().GetGameSystem()->GetGameObjects()) {
+        for (const auto& e : Application::Instance().GetGameSystem()->GetScene()->GetGameObjects()) {
             const auto& collider = e->GetCollider();
             if (!collider) continue;
             // 判定 (光線)
