@@ -2,329 +2,242 @@
 
 void ShaderManager::Init()
 {
-    //============================================
-    // シェーダ
-    //============================================
+    auto dev = DirectX11System::Instance().GetDev().Get();
+    auto ctx = DirectX11System::Instance().GetCtx().Get();
+    
+    /**************************************************
+    * シェーダー
+    **************************************************/
+    
     m_standardShader.Init();
-    //m_effectShader.Init();
-    //m_spriteShader.Init();
+    m_spriteShader.Init();
 
-    //============================================
-    // 定数バッファ
-    //============================================
 
-    // カメラ
-    m_cb7_Camera.Create();
-    DirectX11System::Instance().GetCtx()->VSSetConstantBuffers(7, 1, m_cb7_Camera.GetBufferAddress());
-    DirectX11System::Instance().GetCtx()->PSSetConstantBuffers(7, 1, m_cb7_Camera.GetBufferAddress());
+    /**************************************************
+    * 定数バッファ
+    **************************************************/
 
-    // ライト
-    m_cb8_Light.Create();
-    m_cb8_Light.Get()->DirLight_Dir.Normalize();
-    m_cb8_Light.Write();
-    DirectX11System::Instance().GetCtx()->VSSetConstantBuffers(8, 1, m_cb8_Light.GetBufferAddress());
-    DirectX11System::Instance().GetCtx()->PSSetConstantBuffers(8, 1, m_cb8_Light.GetBufferAddress());
+    /* カメラ */
+    m_cameraCB.Create();
+    ctx->VSSetConstantBuffers(0, 1, m_cameraCB.GetBufferAddress());
+    ctx->PSSetConstantBuffers(0, 1, m_cameraCB.GetBufferAddress());
 
-    //============================================
-    // パイプラインステート関係
-    //============================================
+    /* ライト */
+    m_lightCB.Create();
+    m_lightCB.Get()->directionalLightDirection.Normalize();
+    m_lightCB.Write();
+    ctx->VSSetConstantBuffers(1, 1, m_lightCB.GetBufferAddress());
+    ctx->PSSetConstantBuffers(1, 1, m_lightCB.GetBufferAddress());
 
-    //深度ステンシルステート作成
-    m_ds_ZEnable_ZWriteEnable   = directx11_helper::CreateDepthStencilState(DirectX11System::Instance().GetDev().Get(), true, true);
-    m_ds_ZEnable_ZWriteDisable  = directx11_helper::CreateDepthStencilState(DirectX11System::Instance().GetDev().Get(), true, false);
-    m_ds_ZDisable_ZWriteDisable = directx11_helper::CreateDepthStencilState(DirectX11System::Instance().GetDev().Get(), false, false);
-
-    DirectX11System::Instance().GetCtx()->OMSetDepthStencilState(m_ds_ZEnable_ZWriteEnable, 0);
-
-    // ラスタライザステート作成
-    m_rs_CullBack = directx11_helper::CreateRasterizerState(DirectX11System::Instance().GetDev().Get(), D3D11_FILL_SOLID, D3D11_CULL_BACK, true, false);
-    m_rs_CullNone = directx11_helper::CreateRasterizerState(DirectX11System::Instance().GetDev().Get(), D3D11_FILL_SOLID, D3D11_CULL_NONE, true, false);
-
-    DirectX11System::Instance().GetCtx()->RSSetState(m_rs_CullBack);
-
-    // ブレンドステート作成
-    m_bs_Alpha = directx11_helper::CreateBlendState(DirectX11System::Instance().GetDev().Get(), directx11_helper::BlendMode::Alpha);
-    m_bs_Add   = directx11_helper::CreateBlendState(DirectX11System::Instance().GetDev().Get(), directx11_helper::BlendMode::Add);
-
-    DirectX11System::Instance().GetCtx()->OMSetBlendState(m_bs_Alpha, Math::Color(0, 0, 0, 0), 0xFFFFFFFF);
-
-    // サンプラーステート作成
-    m_ss_Anisotropic_Wrap  = directx11_helper::CreateSamplerState(DirectX11System::Instance().GetDev().Get(), directx11_helper::SamplerFilterMode::Anisotropic, 4, directx11_helper::SamplerAddressMode::Wrap, false);
-    m_ss_Anisotropic_Clamp = directx11_helper::CreateSamplerState(DirectX11System::Instance().GetDev().Get(), directx11_helper::SamplerFilterMode::Anisotropic, 4, directx11_helper::SamplerAddressMode::Clamp, false);
-    m_ss_Linear_Clamp      = directx11_helper::CreateSamplerState(DirectX11System::Instance().GetDev().Get(), directx11_helper::SamplerFilterMode::Linear, 0, directx11_helper::SamplerAddressMode::Clamp, false);
-    m_ss_Linear_Clamp_Cmp  = directx11_helper::CreateSamplerState(DirectX11System::Instance().GetDev().Get(), directx11_helper::SamplerFilterMode::Linear, 0, directx11_helper::SamplerAddressMode::Clamp, true);
-    m_ss_Point_Wrap        = directx11_helper::CreateSamplerState(DirectX11System::Instance().GetDev().Get(), directx11_helper::SamplerFilterMode::Point, 0, directx11_helper::SamplerAddressMode::Wrap, false);
     
-    DirectX11System::Instance().GetCtx()->PSSetSamplers(0, 1, &m_ss_Anisotropic_Wrap);
-}
-
-// 頂点シェーダのセット（既にセットされているシェーダーの場合はキャンセル）
-bool ShaderManager::SetVertexShader(ID3D11VertexShader* pSetVS)
-{
-    if (!pSetVS) {
-        return false;
-    }
-
-    ID3D11VertexShader* pNowVS = nullptr;
-    DirectX11System::Instance().GetCtx()->VSGetShader(&pNowVS, nullptr, nullptr);
-
-    bool needChange = pNowVS != pSetVS;
-
-    if (pNowVS) {
-        pNowVS->Release();
-    }
+    /**************************************************
+    * パイプラインステート
+    **************************************************/
     
-    if (needChange) {
-        DirectX11System::Instance().GetCtx()->VSSetShader(pSetVS, nullptr, 0);
-    }
+    /* 深度ステンシルステート作成 */
+    m_pDssEnableDepthEnableWriteDepth   = directx11_helper::CreateDepthStencilState(dev, true, true);
+    m_pDssEnableDepthDisableWriteDepth  = directx11_helper::CreateDepthStencilState(dev, true, false);
+    m_pDssDisableDepthDisableWriteDepth = directx11_helper::CreateDepthStencilState(dev, false, false);
+    ctx->OMSetDepthStencilState(m_pDssEnableDepthEnableWriteDepth, 0);
 
-    return needChange;
-}
+    /* ブレンドステート作成 */
+    m_pBSAlpha                          = directx11_helper::CreateBlendState(dev, directx11_helper::BlendMode::Alpha);
+    m_pBSAdd                            = directx11_helper::CreateBlendState(dev, directx11_helper::BlendMode::Add);
+    ctx->OMSetBlendState(m_pBSAlpha, Math::Color(0, 0, 0, 0), 0xFFFFFFFF);
 
-// ピクセルシェーダのセット（既にセットされているシェーダーの場合はキャンセル）
-bool ShaderManager::SetPixelShader(ID3D11PixelShader* pSetPS)
-{
-    if (!pSetPS) {
-        return false;
-    }
+    /* ラスタライズステート作成 */
+    m_pRSCullNone                       = directx11_helper::CreateRasterizerState(dev, D3D11_FILL_SOLID, D3D11_CULL_NONE, true, false);
+    m_pRSCullBack                       = directx11_helper::CreateRasterizerState(dev, D3D11_FILL_SOLID, D3D11_CULL_BACK, true, false);
+    ctx->RSSetState(m_pRSCullBack);
 
-    ID3D11PixelShader* pNowPS = nullptr;
-    DirectX11System::Instance().GetCtx()->PSGetShader(&pNowPS, nullptr, nullptr);
-
-    bool needChange = pNowPS != pSetPS;
-
-    if (pNowPS) {
-        pNowPS->Release();
-    }
-
-    if (needChange) {
-        DirectX11System::Instance().GetCtx()->PSSetShader(pSetPS, nullptr, 0);
-    }
-
-    return needChange;
-}
-
-bool ShaderManager::SetInputLayout(ID3D11InputLayout* pSetLayout)
-{
-    if (!pSetLayout) {
-        return false;
-    }
-
-    ID3D11InputLayout* pNowLayout = nullptr;
-
-    DirectX11System::Instance().GetCtx()->IAGetInputLayout(&pNowLayout);
-
-    bool needChange = pNowLayout != pSetLayout;
-
-    if (pNowLayout) {
-        pNowLayout->Release();
-    }
-    
-    if (needChange) {
-        DirectX11System::Instance().GetCtx()->IASetInputLayout(pSetLayout);
-    }
-
-    return needChange;
-}
-
-bool ShaderManager::SetVSConstantBuffer(int startSlot, ID3D11Buffer* const* pSetVSBuffer)
-{
-    if (!pSetVSBuffer) {
-        return false;
-    }
-
-    ID3D11Buffer* pNowVSBuffer = nullptr;
-
-    DirectX11System::Instance().GetCtx()->VSGetConstantBuffers(startSlot, 1, &pNowVSBuffer);
-
-    bool needChange = pNowVSBuffer != *pSetVSBuffer;
-
-    if (pNowVSBuffer) {
-        pNowVSBuffer->Release();
-    }
-
-    if (needChange) {
-        DirectX11System::Instance().GetCtx()->VSSetConstantBuffers(startSlot, 1, pSetVSBuffer);
-    }
-
-    return needChange;
-}
-
-bool ShaderManager::SetPSConstantBuffer(int startSlot, ID3D11Buffer* const* pSetPSBuffer)
-{
-    if (!pSetPSBuffer) {
-        return false;
-    }
-
-    ID3D11Buffer* pNowPSBuffer = nullptr;
-
-    DirectX11System::Instance().GetCtx()->PSGetConstantBuffers(startSlot, 1, &pNowPSBuffer);
-
-    bool needChange = pNowPSBuffer != *pSetPSBuffer;
-
-    if (pNowPSBuffer) {
-        pNowPSBuffer->Release();
-    }
-
-    if (needChange) {
-        DirectX11System::Instance().GetCtx()->PSSetConstantBuffers(startSlot, 1, pSetPSBuffer);
-    }
-
-    return needChange;
-}
-
-void ShaderManager::ChangeDepthStencilState(ID3D11DepthStencilState* pSetDs)
-{
-    if (!pSetDs) return;
-
-    ID3D11DepthStencilState* pNowDs = nullptr;
-    DirectX11System::Instance().GetCtx()->OMGetDepthStencilState(&pNowDs, 0);
-
-    if (pNowDs != pSetDs) {
-        m_ds_Undo = pNowDs;
-
-        DirectX11System::Instance().GetCtx()->OMSetDepthStencilState(pSetDs, 0);
-    }
-
-    if (pNowDs) {
-        pNowDs->Release();
-    }
-}
-
-void ShaderManager::UndoDepthStencilState()
-{
-    if (!m_ds_Undo) return;
-
-    DirectX11System::Instance().GetCtx()->OMSetDepthStencilState(m_ds_Undo, 0);
-
-    m_ds_Undo = nullptr;
-}
-
-void ShaderManager::ChangeRasterizerState(ID3D11RasterizerState* pSetRs)
-{
-    if (!pSetRs) return;
-
-    ID3D11RasterizerState* pNowRs = nullptr;
-    DirectX11System::Instance().GetCtx()->RSGetState(&pNowRs);
-
-    if (pNowRs != pSetRs) {
-        m_rs_Undo = pNowRs;
-
-        DirectX11System::Instance().GetCtx()->RSSetState(pSetRs);
-    }
-
-    if (pNowRs) {
-        pNowRs->Release();
-    }
-}
-
-void ShaderManager::UndoRasterizerState()
-{
-    if (!m_rs_Undo) return;
-
-    DirectX11System::Instance().GetCtx()->RSSetState(m_rs_Undo);
-
-    m_rs_Undo = nullptr;
-}
-
-void ShaderManager::ChangeBlendState(ID3D11BlendState* pSetBs)
-{
-    if (!pSetBs) return;
-
-    ID3D11BlendState* pNowBs = nullptr;
-    DirectX11System::Instance().GetCtx()->OMGetBlendState(&pNowBs, nullptr, nullptr);
-
-    if (pNowBs != pSetBs) {
-        m_bs_Undo = pNowBs;
-
-        DirectX11System::Instance().GetCtx()->OMSetBlendState(pSetBs, Math::Color(0, 0, 0, 0), 0xFFFFFFFF);
-    }
-
-    if (pNowBs) {
-        pNowBs->Release();
-    }
-}
-
-void ShaderManager::UndoBlendState()
-{
-    if (!m_bs_Undo) return;
-
-    DirectX11System::Instance().GetCtx()->OMSetBlendState(m_bs_Undo, Math::Color(0, 0, 0, 0), 0xFFFFFFFF);
-
-    m_bs_Undo = nullptr;
-}
-
-void ShaderManager::ChangeSamplerState(int slot, ID3D11SamplerState* pSetSs)
-{
-    if (!pSetSs) return;
-
-    ID3D11SamplerState* pNowSs = nullptr;
-    DirectX11System::Instance().GetCtx()->PSGetSamplers(slot, 1, &pNowSs);
-
-    if (pNowSs != pSetSs) {
-        m_ss_Undo = pNowSs;
-
-        DirectX11System::Instance().GetCtx()->PSSetSamplers(slot, 1, &pSetSs);
-    }
-
-    if (pNowSs) {
-        pNowSs->Release();
-    }
-}
-
-void ShaderManager::UndoSamplerState()
-{
-    if (!m_ss_Undo) { return; }
-
-    DirectX11System::Instance().GetCtx()->PSSetSamplers(0, 1, &m_ss_Undo);
-
-    m_ss_Undo = nullptr;
-}
-
-void ShaderManager::AddPointLight(const Math::Vector3& pos, const Math::Vector3& color, float radius, bool isBright)
-{
-    ShaderManager::cbLight* cbLight = m_cb8_Light.Get();
-
-    ShaderManager::cbLight::PointLight& modifyPointLight = cbLight->PointLights[cbLight->PointLight_Num];
-
-    modifyPointLight.Pos = pos;
-    modifyPointLight.Color = color;
-    modifyPointLight.Radius = radius;
-    modifyPointLight.IsBright = isBright;
-
-    ++cbLight->PointLight_Num;
+    /* サンプラーステート作成 */
+    m_pSSPointWrap                      = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::Point, 0, directx11_helper::SamplerAddressMode::Wrap, false);
+    m_pSSLinearClamp                    = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::Linear, 0, directx11_helper::SamplerAddressMode::Clamp, false);
+    m_pSSLinearClampComp                = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::Linear, 0, directx11_helper::SamplerAddressMode::Clamp, true);
+    m_pSSAnisotropicWrap                = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::Anisotropic, 4, directx11_helper::SamplerAddressMode::Wrap, false);
+    m_pSSAnisotropicClamp               = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::Anisotropic, 4, directx11_helper::SamplerAddressMode::Clamp, false);
+    ctx->PSSetSamplers(0, 1, &m_pSSAnisotropicWrap);
 }
 
 void ShaderManager::Release()
 {
     m_standardShader.Release();
-    //m_effectShader.Release();
-    //m_spriteShader.Release();
+    m_spriteShader.Release();
 
-    m_cb7_Camera.Release();
-    m_cb8_Light.Release();
+    m_cameraCB.Release();
+    m_lightCB.Release();
 
-    //深度ステンシルステート開放
-    memory::SafeRelease(&m_ds_ZEnable_ZWriteEnable);
-    memory::SafeRelease(&m_ds_ZEnable_ZWriteDisable);
-    memory::SafeRelease(&m_ds_ZDisable_ZWriteDisable);
-    m_ds_Undo = nullptr;
+    /* 深度ステンシルステート解放 */
+    memory::SafeRelease(&m_pDssEnableDepthEnableWriteDepth);
+    memory::SafeRelease(&m_pDssEnableDepthDisableWriteDepth);
+    memory::SafeRelease(&m_pDssDisableDepthDisableWriteDepth);
+    m_pDssUndo = nullptr;
 
-    // ラスタライザステート解放
-    memory::SafeRelease(&m_rs_CullBack);
-    memory::SafeRelease(&m_rs_CullNone);
-    m_rs_Undo = nullptr;
+    /* ブレンドステート解放 */
+    memory::SafeRelease(&m_pBSAlpha);
+    memory::SafeRelease(&m_pBSAdd);
+    m_pBSUndo = nullptr;
 
-    // ブレンドステート解放
-    memory::SafeRelease(&m_bs_Alpha);
-    memory::SafeRelease(&m_bs_Add);
-    m_bs_Undo = nullptr;
+    /* ラスタライズステート解放 */
+    memory::SafeRelease(&m_pRSCullNone);
+    memory::SafeRelease(&m_pRSCullBack);
+    m_pRSUndo = nullptr;
 
-    // サンプラーステート解放
-    memory::SafeRelease(&m_ss_Anisotropic_Wrap);
-    memory::SafeRelease(&m_ss_Anisotropic_Clamp);
-    memory::SafeRelease(&m_ss_Linear_Clamp);
-    memory::SafeRelease(&m_ss_Linear_Clamp_Cmp);
-    memory::SafeRelease(&m_ss_Point_Wrap);
-    m_ss_Undo = nullptr;
+    /* サンプラーステート解放 */
+    memory::SafeRelease(&m_pSSPointWrap);
+    memory::SafeRelease(&m_pSSLinearClamp);
+    memory::SafeRelease(&m_pSSLinearClampComp);
+    memory::SafeRelease(&m_pSSAnisotropicWrap);
+    memory::SafeRelease(&m_pSSAnisotropicClamp);
+    m_pSSUndo = nullptr;
+}
+
+bool ShaderManager::SetVertexShader(ID3D11VertexShader* vs)
+{
+    if (!vs) {
+        return false;
+    }
+
+    ID3D11VertexShader* now_vs = nullptr;
+    DirectX11System::Instance().GetCtx()->VSGetShader(&now_vs, nullptr, nullptr);
+    
+    if (now_vs) {
+        now_vs->Release();
+    }
+
+    if (now_vs != vs) {
+        DirectX11System::Instance().GetCtx()->VSSetShader(vs, nullptr, 0);
+        return true;
+    }
+
+    return false;
+}
+
+bool ShaderManager::SetPixelShader(ID3D11PixelShader* ps)
+{
+    if (!ps) {
+        return false;
+    }
+
+    ID3D11PixelShader* now_ps = nullptr;
+    DirectX11System::Instance().GetCtx()->PSGetShader(&now_ps, nullptr, nullptr);
+
+    if (now_ps) {
+        now_ps->Release();
+    }
+
+    if (now_ps != ps) {
+        DirectX11System::Instance().GetCtx()->PSSetShader(ps, nullptr, 0);
+        return true;
+    }
+
+    return false;
+}
+
+void ShaderManager::ChangeDepthStencilState(ID3D11DepthStencilState* dss)
+{
+    if (!dss) return;
+
+    ID3D11DepthStencilState* now_dss = nullptr;
+    DirectX11System::Instance().GetCtx()->OMGetDepthStencilState(&now_dss, 0);
+
+    if (now_dss != dss) {
+        m_pDssUndo = now_dss;
+
+        DirectX11System::Instance().GetCtx()->OMSetDepthStencilState(dss, 0);
+    }
+
+    if (now_dss) {
+        now_dss->Release();
+    }
+}
+
+void ShaderManager::UndoDepthStencilState()
+{
+    if (!m_pDssUndo) return;
+
+    DirectX11System::Instance().GetCtx()->OMSetDepthStencilState(m_pDssUndo, 0);
+
+    m_pDssUndo = nullptr;
+}
+
+void ShaderManager::ChangeBlendState(ID3D11BlendState* bs)
+{
+    if (!bs) return;
+
+    ID3D11BlendState* now_bs = nullptr;
+    DirectX11System::Instance().GetCtx()->OMGetBlendState(&now_bs, nullptr, nullptr);
+
+    if (now_bs != bs) {
+        m_pBSUndo = now_bs;
+
+        DirectX11System::Instance().GetCtx()->OMSetBlendState(bs, Math::Color(0, 0, 0, 0), 0xFFFFFFFF);
+    }
+
+    if (now_bs) {
+        now_bs->Release();
+    }
+}
+
+void ShaderManager::UndoBlendState()
+{
+    if (!m_pBSUndo) return;
+
+    DirectX11System::Instance().GetCtx()->OMSetBlendState(m_pBSUndo, Math::Color(0, 0, 0, 0), 0xFFFFFFFF);
+
+    m_pBSUndo = nullptr;
+}
+
+void ShaderManager::ChangeRasterizerState(ID3D11RasterizerState* rs)
+{
+    if (!rs) return;
+
+    ID3D11RasterizerState* now_rs = nullptr;
+    DirectX11System::Instance().GetCtx()->RSGetState(&now_rs);
+
+    if (now_rs != rs) {
+        m_pRSUndo = now_rs;
+
+        DirectX11System::Instance().GetCtx()->RSSetState(rs);
+    }
+
+    if (now_rs) {
+        now_rs->Release();
+    }
+}
+
+void ShaderManager::UndoRasterizerState()
+{
+    if (!m_pRSUndo) return;
+
+    DirectX11System::Instance().GetCtx()->RSSetState(m_pRSUndo);
+
+    m_pRSUndo = nullptr;
+}
+
+void ShaderManager::ChangeSamplerState(int slot, ID3D11SamplerState* ss)
+{
+    if (!ss) return;
+
+    ID3D11SamplerState* now_ss = nullptr;
+    DirectX11System::Instance().GetCtx()->PSGetSamplers(slot, 1, &now_ss);
+
+    if (now_ss != ss) {
+        m_pSSUndo = now_ss;
+
+        DirectX11System::Instance().GetCtx()->PSSetSamplers(slot, 1, &ss);
+    }
+
+    if (now_ss) {
+        now_ss->Release();
+    }
+}
+
+void ShaderManager::UndoSamplerState()
+{
+    if (!m_pSSUndo) return;
+
+    DirectX11System::Instance().GetCtx()->PSSetSamplers(0, 1, &m_pSSUndo);
+
+    m_pSSUndo = nullptr;
 }

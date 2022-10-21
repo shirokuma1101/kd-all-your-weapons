@@ -1,112 +1,120 @@
 ﻿#pragma once
 
 #include "StandardShader/StandardShader.h"
-//#include "EffectShader/KdEffectShader.h"
-//#include "SpriteShader/KdSpriteShader.h"
+#include "SpriteShader/SpriteShader.h"
 
 class ShaderManager
 {
 public:
-
+    
     ShaderManager() {}
     ~ShaderManager() {
         Release();
     }
 
-    // 初期化
     void Init();
 
-    StandardShader m_standardShader;
-    //EffectShader		m_effectShader;
-    //SpriteShader		m_spriteShader;
+    void Release();
+    
+    auto& GetStandardShader() noexcept {
+        return m_standardShader;
+    }
+    auto& GetStandardShader() const noexcept {
+        return m_standardShader;
+    }
+    auto& GetSpriteShader() noexcept {
+        return m_spriteShader;
+    }
+    auto& GetSpriteShader() const noexcept {
+        return m_spriteShader;
+    }
+    auto& GetCameraCB() noexcept {
+        return m_cameraCB;
+    }
+    auto& GetCameraCB() const noexcept {
+        return m_cameraCB;
+    }
+    auto& GetLightCB() noexcept {
+        return m_lightCB;
+    }
+    auto& GetLightCB() const noexcept {
+        return m_lightCB;
+    }
 
-    bool SetVertexShader(ID3D11VertexShader* pSetVS);
-    bool SetPixelShader(ID3D11PixelShader* pSetPS);
+    bool SetVertexShader(ID3D11VertexShader* vs);
+    bool SetPixelShader(ID3D11PixelShader* ps);
 
-    bool SetInputLayout(ID3D11InputLayout* pSetLayout);
-    bool SetVSConstantBuffer(int startSlot, ID3D11Buffer* const* pSetBuffer);
-    bool SetPSConstantBuffer(int startSlot, ID3D11Buffer* const* pSetBuffer);
-
-    void ChangeDepthStencilState(ID3D11DepthStencilState* pSetDs);
+    /* 深度ステンシル */
+    void ChangeDepthStencilState(ID3D11DepthStencilState* dss);
     void UndoDepthStencilState();
 
-    void ChangeRasterizerState(ID3D11RasterizerState* pSetRs);
-    void UndoRasterizerState();
-
-    void ChangeBlendState(ID3D11BlendState* pSetBs);
+    /* ブレンドステート */
+    void ChangeBlendState(ID3D11BlendState* bs);
     void UndoBlendState();
 
-    void ChangeSamplerState(int slot, ID3D11SamplerState* pSetSs);
+    /* ラスタライザステート */
+    void ChangeRasterizerState(ID3D11RasterizerState* rs);
+    void UndoRasterizerState();
+
+    /* サンプラーステート */
+    void ChangeSamplerState(int slot, ID3D11SamplerState* ss);
     void UndoSamplerState();
-
-    void AddPointLight(const Math::Vector3& pos, const Math::Vector3& color, float radius, bool isBright);
-
-    struct cbCamera {
-        Math::Matrix mView;    // ビュー行列
-        Math::Matrix mProj;    // 射影行列
-        Math::Matrix mProjInv; // 射影行列：逆行列
-        Math::Vector3 CamPos;  // カメラのワールド座標
-
-        int					DistanceFogEnable  = 0;           // 距離フォグ有効
-        Math::Vector3		DistanceFogColor   = { 1, 1, 1 }; // 距離フォグ色
-        float				DistanceFogDensity = 0.001f;      // 距離フォグ減衰率
-    };
-    // カメラ定数バッファ
-    DirectX11ConstantBufferSystem<cbCamera> m_cb7_Camera;
-
-    struct cbLight {
-        static const int MaxPointLightNum = 100;
-        // 環境光
-        Math::Vector4 AmbientLight        = { 0.3f, 0.3f, 0.3f, 1.0f };
-        // 平行光
-        Math::Vector3 DirLight_Dir        = { -1.0f, -1.0f, 1.0f }; // 光の方向
-        float         _blank1             = 0.0f;
-        Math::Vector3 DirLight_Color      = { 2.0f, 2.0f, 2.0f };   // 光の色
-        float         _blank2             = 0.0f;
-        Math::Matrix  DirLight_mVP;                                 // ビュー行列と正射影行列の合成行列
-        
-        // 使用数
-        int           PointLight_Num = 0;
-        float         _blank3[3]     = { 0.0f, 0.0f ,0.0f };
-
-        // データ
-        struct PointLight {
-            Math::Vector3 Color;         // 色
-            float	      Radius = 0.0f; // 半径
-            Math::Vector3 Pos;           // 座標
-            int           IsBright = 0;  // 明度用ライトかどうか
-        };
-        std::array<PointLight, MaxPointLightNum> PointLights;
-    };
-    // ライト定数バッファ
-    DirectX11ConstantBufferSystem<cbLight> m_cb8_Light;
-
-    //深度ステンシル
-    ID3D11DepthStencilState* m_ds_ZEnable_ZWriteEnable   = nullptr; // 深度バッファの利用ON、 深度に書き込みON
-    ID3D11DepthStencilState* m_ds_ZEnable_ZWriteDisable  = nullptr; // 深度バッファの利用ON、 深度に書き込みOFF
-    ID3D11DepthStencilState* m_ds_ZDisable_ZWriteDisable = nullptr; // 深度バッファの利用OFF、深度に書き込みOFF
-    ID3D11DepthStencilState* m_ds_Undo                   = nullptr;
-
-    // ラスタライズステート
-    ID3D11RasterizerState* m_rs_CullBack = nullptr; // 描画カリングモード：裏面の描画省略
-    ID3D11RasterizerState* m_rs_CullNone = nullptr; // 描画カリングモード：描画省略なし
-    ID3D11RasterizerState* m_rs_Undo     = nullptr;
-
-    // ブレンドステート
-    ID3D11BlendState* m_bs_Alpha = nullptr; // 透明度による色合成
-    ID3D11BlendState* m_bs_Add   = nullptr; // 加算による色合成
-    ID3D11BlendState* m_bs_Undo  = nullptr;
-
-    // サンプラーステート
-    ID3D11SamplerState* m_ss_Anisotropic_Wrap  = nullptr; // 異方性補間：テクスチャ繰り返し
-    ID3D11SamplerState* m_ss_Anisotropic_Clamp = nullptr; // 異方性補間：テクスチャ範囲外は端のピクセルを延長
-    ID3D11SamplerState* m_ss_Linear_Clamp      = nullptr; // 線形補間：　テクスチャ範囲外は端のピクセルを延長
-    ID3D11SamplerState* m_ss_Linear_Clamp_Cmp  = nullptr; // 線形補間：　テクスチャ範囲外は端のピクセルを延長・比較機能付き
-    ID3D11SamplerState* m_ss_Point_Wrap        = nullptr; // 補間なし：　テクスチャ繰り返し
-    ID3D11SamplerState* m_ss_Undo              = nullptr;
-
+    
 private:
 
-    void Release();
+    // カメラ定数バッファ
+    struct CameraCB {
+        Math::Matrix  view;       // 64byte: ビュー行列
+        Math::Matrix  projection; // 64byte: 射影行列
+        Math::Vector3 position;   // 12byte: カメラのワールド座標
+
+        int           distanceFogEnable  = 0;                 //  4byte: 距離フォグ有効
+        Math::Vector3 distanceFogColor   = { 1.f, 1.f, 1.f }; // 12byte: 距離フォグ色
+        float         distanceFogDensity = 0.001f;            //  4byte: 距離フォグ減衰率
+    }; // 160byte
+
+    // ライト定数バッファ
+    struct LightCB {
+        Math::Vector3 ambientLight              = { 0.3f, 0.3f, 0.3f };  // 12byte: 環境光
+        DIRECTX11_HELPER_PADDING_4BYTE(0);                               //  4byte: パディング0
+
+        Math::Vector3 directionalLightDirection = { -1.f, -1.f, 1.f };   // 12byte: 平行光の方向
+        DIRECTX11_HELPER_PADDING_4BYTE(1);                               //  4byte: パディング1
+        Math::Vector3 directionalLightColor     = { 1.f, 1.f, 1.f };     // 12byte: 平行光の色
+        DIRECTX11_HELPER_PADDING_4BYTE(2);                               //  4byte: パディング2
+        Math::Matrix  directionalLightVP;                                // 64byte: 平行光のビュー射影行列
+    }; // 112byte
+    
+    StandardShader m_standardShader;
+    SpriteShader   m_spriteShader; 
+
+    DirectX11ConstantBufferSystem<CameraCB> m_cameraCB;
+    DirectX11ConstantBufferSystem<LightCB>  m_lightCB;
+
+public:
+
+    /* 深度ステンシルステート */
+    ID3D11DepthStencilState* m_pDssEnableDepthEnableWriteDepth   = nullptr; // 深度バッファの利用ON、 深度に書き込みON
+    ID3D11DepthStencilState* m_pDssEnableDepthDisableWriteDepth  = nullptr; // 深度バッファの利用ON、 深度に書き込みOFF
+    ID3D11DepthStencilState* m_pDssDisableDepthDisableWriteDepth = nullptr; // 深度バッファの利用OFF、深度に書き込みOFF
+    ID3D11DepthStencilState* m_pDssUndo                          = nullptr; // 元に戻す
+
+    /* ブレンドステート */
+    ID3D11BlendState*        m_pBSAlpha                          = nullptr; // 透明度による色合成
+    ID3D11BlendState*        m_pBSAdd                            = nullptr; // 加算による色合成
+    ID3D11BlendState*        m_pBSUndo                           = nullptr; // 元に戻す
+
+    /* ラスタライズステート */
+    ID3D11RasterizerState*   m_pRSCullNone                       = nullptr; // 描画カリングモード：描画省略なし
+    ID3D11RasterizerState*   m_pRSCullBack                       = nullptr; // 描画カリングモード：裏面の描画省略
+    ID3D11RasterizerState*   m_pRSUndo                           = nullptr; // 元に戻す
+
+    /* サンプラーステート */
+    ID3D11SamplerState*      m_pSSPointWrap                      = nullptr; // ポイントサンプリング   : テクスチャの端を固定する
+    ID3D11SamplerState*      m_pSSLinearClamp                    = nullptr; // バイリニアサンプリング : テクスチャの端を繋げて繰り返す
+    ID3D11SamplerState*      m_pSSLinearClampComp                = nullptr; // バイリニアサンプリング : テクスチャの端を繋げて繰り返す・比較機能ON
+    ID3D11SamplerState*      m_pSSAnisotropicWrap                = nullptr; // 異方性フィルタリング   : テクスチャの端を固定する
+    ID3D11SamplerState*      m_pSSAnisotropicClamp               = nullptr; // 異方性フィルタリング   : テクスチャの端を繋げて繰り返す
+    ID3D11SamplerState*      m_pSSUndo                           = nullptr; // 元に戻す
     
 };
