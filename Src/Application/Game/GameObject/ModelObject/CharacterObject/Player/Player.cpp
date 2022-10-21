@@ -1,6 +1,15 @@
 ﻿#include "Player.h"
 
 #include "Application/Game/GameObject/ModelObject/DynamicObject/DynamicObject.h"
+#include "Application/Game/Scene/GameScene/GameScene.h"
+
+void Player::Init()
+{
+    auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
+    mm->Load("props_dirt");
+    mm->Load("gravity_gun");
+    CharacterObject::Init();
+}
 
 void Player::Update(float delta_time)
 {
@@ -18,18 +27,8 @@ void Player::Update(float delta_time)
     /**************************************************
     * 操作
     **************************************************/
-
-    if (km->GetState(VK_ESCAPE, KeyManager::KeyState::Press)) {
-        if (!m_isPause) {
-            m_isPause = true;
-        }
-        else {
-            m_isPause = false;
-        }
-    }
-    if (m_isPause) return;
     
-    MouseOperator(delta_time, -40.f, 60.f); // MN: カメラの可動範囲
+    MouseOperator(delta_time, -70.f, 60.f); // MN: カメラの可動範囲
     KeyOperator(delta_time);
     
     
@@ -67,13 +66,19 @@ void Player::Update(float delta_time)
     SetCameraTransform(delta_time);
 
     PlayAnimation(delta_time);
+
+    // デバッグ
+    if (km->GetState(VK_CONTROL, KeyManager::KeyState::Press)) {
+        m_equipWeightLimit += 5.f;
+    }
 }
 
 void Player::DrawOpaque()
 {
     auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
     auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
-    
+
+    // プレイヤー
     if (mm->IsLoaded(m_name) && m_spModel) {
         auto rotation_matrix = Math::Matrix::CreateFromYawPitchRoll(
             convert::ToRadians(m_angle + 180.f),
@@ -86,9 +91,35 @@ void Player::DrawOpaque()
             m_transform.position.z
         );
         
-        DirectX11System::Instance().GetShaderManager()->m_standardShader.DrawModel(
+        DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().DrawModel(
             *m_spModel,
             Math::Matrix::CreateScale(m_transform.scale) * rotation_matrix * translation_matrix
+        );
+    }
+    // Gravity Gun
+    if (mm->IsLoaded("gravity_gun")) {
+        auto rotation_matrix = Math::Matrix::CreateFromYawPitchRoll(
+            convert::ToRadians(m_angle + 180.f),
+            convert::ToRadians(0.f),
+            convert::ToRadians(m_transform.rotation.z)
+        );
+        auto translation_matrix = Math::Matrix::CreateTranslation(
+            m_transform.position.x,
+            m_transform.position.y - (*jm)[m_name]["expand"]["status"]["height"].get<float>(),
+            m_transform.position.z
+        );
+
+        static auto spModel = mm->CopyData("gravity_gun");
+
+        DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().DrawModel(
+            *spModel,
+            Math::Matrix::CreateScale(2.0f)
+            * Math::Matrix::CreateRotationY(convert::ToRadians(90.f))
+            * Math::Matrix::CreateRotationX(convert::ToRadians(-30.f))
+            * Math::Matrix::CreateTranslation(0.f, -0.05f, -0.1f)
+            * m_gravityGunMatrix
+            * rotation_matrix
+            * translation_matrix
         );
     }
 }
@@ -114,8 +145,8 @@ void Player::MouseOperator(float delta_time, float narrow_limit, float wide_limi
     if (km->GetState('W') || km->GetState('S') || km->GetState('A') || km->GetState('D')) {
         m_transform.rotation.y = m_cameraRotaion.y;
     }
-    // 構え時はマウスの方向固定
-    if (km->GetState(VK_RBUTTON)) {
+    // スプリント時か構え時はマウスの方向固定
+    if ((km->GetState(VK_SHIFT) && km->GetState('W')) || km->GetState(VK_RBUTTON)) {
         m_transform.rotation = m_cameraRotaion;
         m_angle              = m_cameraRotaion.y;
         m_moveDirection      = Math::Matrix::CreateRotationY(convert::ToRadians(m_angle)).Backward();
@@ -124,7 +155,7 @@ void Player::MouseOperator(float delta_time, float narrow_limit, float wide_limi
     else {
         m_transform.rotation.x = 0.f;
         
-        const float angle_speed = 180.f * delta_time; // MN: 回転速度
+        const float angle_speed = 270.f * delta_time; // MN: 回転速度
         // -180 ～ 180
         float angle = convert::ToDegrees(std::atan2(m_moveDirection.x, m_moveDirection.z));
         // 0 ～ 360
@@ -214,7 +245,7 @@ bool Player::Collision()
     auto rays = ToRays((*jm)[m_name]["collision"]["active"]);
     auto spheres = ToSpheres((*jm)[m_name]["collision"]["active"]);
 
-    for (const auto& e : Application::Instance().GetGameSystem()->GetGameObjects()) {
+    for (const auto& e : Application::Instance().GetGameSystem()->GetScene()->GetGameObjects()) {
         const auto& collider = e->GetCollider();
         if (!collider) continue;
         // 地面との判定 (光線)
@@ -249,12 +280,14 @@ bool Player::Collision()
 
 void Player::Shot(float delta_time)
 {
+    auto& am = Application::Instance().GetGameSystem()->GetAudioManager();
     auto& em = Application::Instance().GetGameSystem()->GetEffekseerManager();
     auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
     auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
+    auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
 
     static const float charge_threshold  = 2.f; // MN: キーが被っているので、素早くキーを離した際の閾値
-    static const float release_range_max = 4.f; // MN: 装備しているものをプレイヤーからどれだけ離すかの最大値
+    static const float release_range_max = 3.f; // MN: 装備しているものをプレイヤーからどれだけ離すかの最大値
     float shot_ct               = (*jm)[m_name]["expand"]["shot"]["shot_ct"];
     float charge_max            = (*jm)[m_name]["expand"]["shot"]["charge_max"];
     float charge_increase_speed = (*jm)[m_name]["expand"]["shot"]["charge_increase_speed"];
@@ -273,6 +306,11 @@ void Player::Shot(float delta_time)
     }
     normalized_backward.Normalize();
 
+    // SceneがGameの場合はGameSceneにキャストする
+    if (Application::Instance().GetGameSystem()->GetScene()->GetSceneType() != Scene::SceneType::Game) return;
+    // GameSceneと確定しているのでstatic
+    auto game_scene = std::static_pointer_cast<GameScene>(Application::Instance().GetGameSystem()->GetScene());
+
     // 構え
     if (km->GetState(VK_RBUTTON)) {
         // DynamicObjectを持っていない場合
@@ -282,7 +320,7 @@ void Player::Shot(float delta_time)
             std::weak_ptr<DynamicObject> nearest_obj;
             // 光線を作成
             auto ray = collision::Ray(position, normalized_backward, (*jm)[m_name]["expand"]["status"]["reachable_range"]);
-            for (const auto& e : Application::Instance().GetGameSystem()->GetDynamicObjects()) {
+            for (const auto& e : game_scene->GetDynamicObjects()) {
                 const auto sp_e = e.lock();
                 const auto& collider = sp_e->GetCollider();
                 if (!collider) continue;
@@ -299,17 +337,32 @@ void Player::Shot(float delta_time)
             // DynamicObjectが当たった場合
             if (collision::GetNearest(results)) {
                 auto sp_obj = nearest_obj.lock();
-                // 選択可能
-                if (sp_obj->GetWeight() <= m_equipWeightLimit) {
+                // 選択可能 (重量制限未満)
+                if (!m_isShotCT && !m_isSucceededChargeCT && !m_isFailedChargeCT && sp_obj->GetWeight() <= m_equipWeightLimit) {
                     sp_obj->SetSelection(DynamicObject::Selection::Equippable);
-                    // 重量制限未満、CT時以外にDynamicObjectを所持する
-                    if (!m_isShotCT && !m_isSucceededChargeCT && !m_isFailedChargeCT && km->GetState('F')) {
+                    // DynamicObjectを所持する
+                    if (km->GetState('F')) {
                         m_wpEquipObject = nearest_obj;
                     }
                 }
                 // 選択不可能
                 else {
                     sp_obj->SetSelection(DynamicObject::Selection::NotEquippable);
+                }
+            }
+            // 当たらなかった場合、dirtを生成する
+            else if (!m_isShotCT && !m_isSucceededChargeCT && !m_isFailedChargeCT && km->GetState('F')) {
+                for (const auto& e : Application::Instance().GetGameSystem()->GetScene()->GetGameObjects()) {
+                    const auto& collider = e->GetCollider();
+                    if (!collider) continue;
+                    // Objectとの判定 (光線)
+                    collider->Intersects(DefaultCollisionType::Bump, e->GetTransform().matrix, ray, &results);
+                }
+                if (results.size()) {
+                    auto sp_obj = std::make_shared<DynamicObject>("props_dirt");
+                    sp_obj->SetModel(mm->CopyData("props_dirt"));
+                    game_scene->AddDynamicObject(sp_obj);
+                    m_wpEquipObject = sp_obj;
                 }
             }
         }
@@ -323,6 +376,11 @@ void Player::Shot(float delta_time)
                 if (m_nowChargePower > charge_max) {
                     m_isFailedChargeCT = true;
                 }
+                // SEが未だ再生されていない場合
+                if (m_wpChargeSE.expired()) {
+                    // SEを再生
+                    m_wpChargeSE = am->Play("charge_se");
+                }
                 // エフェクトが未だ再生されていない場合
                 if (m_wpEffectTransform.expired()) {
                     // 閾値を下回っている場合エフェクトの再生開始
@@ -334,7 +392,7 @@ void Player::Shot(float delta_time)
                 }
                 else {
                     m_wpEffectTransform.lock()->matrix
-                        = Math::Matrix::CreateTranslation(0.f, 0.f, 2.f)
+                        = Math::Matrix::CreateTranslation(0.5f, -1.f, 2.f)
                         * Math::Matrix::CreateScale(0.25f)
                         * Math::Matrix::CreateFromYawPitchRoll(convert::ToRadians(m_transform.rotation))
                         * Math::Matrix::CreateTranslation(m_transform.position);
@@ -345,6 +403,9 @@ void Player::Shot(float delta_time)
                 m_wpEquipObject.lock()->Force(m_transform.matrix.Backward(), 0.f);
                 m_wpEquipObject.reset();
                 m_nowChargePower = 0.f;
+                if (!m_wpChargeSE.expired()) {
+                    m_wpChargeSE.lock()->Stop();
+                }
                 if (!m_wpEffectTransform.expired()) {
                     m_wpEffectTransform.lock()->maxFrame = 0;
                 }
@@ -371,6 +432,9 @@ void Player::Shot(float delta_time)
                     // 成功CT有効
                     m_isSucceededChargeCT = true;
                 }
+                if (!m_wpChargeSE.expired()) {
+                    m_wpChargeSE.lock()->Stop();
+                }
                 if (!m_wpEffectTransform.expired()) {
                     m_wpEffectTransform.lock()->maxFrame = 0;
                 }
@@ -383,6 +447,9 @@ void Player::Shot(float delta_time)
             m_wpEquipObject.lock()->Force(m_transform.matrix.Backward(), 0.f);
             m_wpEquipObject.reset();
             m_nowChargePower = 0.f;
+            if (!m_wpChargeSE.expired()) {
+                m_wpChargeSE.lock()->Stop();
+            }
             if (!m_wpEffectTransform.expired()) {
                 m_wpEffectTransform.lock()->maxFrame = 0;
             }
@@ -555,4 +622,9 @@ void Player::PlayAnimation(float delta_time)
     }
     // 行列を更新
     m_spModel->CalcNodeMatrices();
+
+    auto right_hand = m_spModel->FindWorkNode("mixamorig:RightHandMiddle1");
+    if (right_hand) {
+        m_gravityGunMatrix = Math::Matrix::CreateScale(100.f) * right_hand->m_worldTransform;
+    }
 }

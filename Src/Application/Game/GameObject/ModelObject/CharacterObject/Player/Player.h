@@ -10,6 +10,8 @@ public:
         : CharacterObject(name)
     {}
 
+    void Init() override;
+
     void Update(float delta_time) override;
     
     void DrawOpaque() override;
@@ -18,6 +20,9 @@ public:
         ImGui::Begin("config 1");
         ImGui::Text("Power: %.2f", m_nowChargePower);
         ImGui::Text("CT: %.2f", m_nowCT);
+        ImGui::Text("ppx: %.2f", m_transform.position.x);
+        ImGui::Text("ppy: %.2f", m_transform.position.y);
+        ImGui::Text("ppz: %.2f", m_transform.position.z);
         ImGui::End();
     }
 
@@ -42,9 +47,6 @@ private:
 
     void PlayAnimation(float delta_time);
 
-    // ポーズ画面を表示
-    bool m_isPause = false;
-
     // カメラ
     std::weak_ptr<CameraObject> m_wpFollowerCamera;
     Math::Vector3 m_cameraRotaion;
@@ -67,9 +69,12 @@ private:
     bool  m_isSucceededChargeCT = false;
     bool  m_isFailedChargeCT    = false;
 
+    // Gravity Gunの行列
+    Math::Matrix m_gravityGunMatrix;
     // プレイヤーのアニメーション
     KdAnimator m_animator;
-
+    // SE
+    std::weak_ptr<audio_helper::SoundInstance> m_wpChargeSE;
     // エフェクト
     std::weak_ptr<effekseer_helper::EffectTransform> m_wpEffectTransform;
 
