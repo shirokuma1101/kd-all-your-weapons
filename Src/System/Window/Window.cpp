@@ -2,7 +2,7 @@
 
 LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-bool Window::Create(std::string_view title, Position position, Size size)
+bool Window::Create(std::string_view title, const Position& position, const Size& size)
 {
     m_size                  = size;
     HINSTANCE hInstance     = GetInstanceHandle();
@@ -45,12 +45,7 @@ bool Window::Create(std::string_view title, Position position, Size size)
     );
 
     /* クライアントサイズを設定 */
-    WINDOWINFO wi{};
-    SecureZeroMemory(&wi, sizeof(wi));
-    GetWindowInfo(m_hWnd, &wi);
-    LONG new_width  = (wi.rcWindow.right  - wi.rcWindow.left) - (wi.rcClient.right  - wi.rcClient.left) + m_size.first;
-    LONG new_height = (wi.rcWindow.bottom - wi.rcWindow.top)  - (wi.rcClient.bottom - wi.rcClient.top)  + m_size.second;
-    SetWindowPos(m_hWnd, NULL, 0, 0, new_width, new_height, SWP_NOMOVE | SWP_NOZORDER);
+    Resize(size);
 
     /* ウィンドウの表示 */
     ShowWindow(m_hWnd, SW_SHOW);
@@ -74,6 +69,17 @@ bool Window::ProcessMessage()
         DispatchMessage(&msg);
     }
     return true;
+}
+
+void Window::Resize(const Size& size)
+{
+    m_size = size;
+    WINDOWINFO wi{};
+    SecureZeroMemory(&wi, sizeof(wi));
+    GetWindowInfo(m_hWnd, &wi);
+    LONG new_width  = (wi.rcWindow.right  - wi.rcWindow.left) - (wi.rcClient.right  - wi.rcClient.left) + m_size.first;
+    LONG new_height = (wi.rcWindow.bottom - wi.rcWindow.top)  - (wi.rcClient.bottom - wi.rcClient.top)  + m_size.second;
+    SetWindowPos(m_hWnd, NULL, 0, 0, new_width, new_height, SWP_NOMOVE | SWP_NOZORDER);
 }
 
 LRESULT CALLBACK Window::StaticWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

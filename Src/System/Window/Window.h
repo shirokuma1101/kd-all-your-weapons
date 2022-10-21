@@ -28,9 +28,11 @@ public:
         return GetModuleHandle(0);
     }
 
-    bool Create(std::string_view title, Position position, Size size);
+    bool Create(std::string_view title, const Position& position, const Size& size);
 
     bool ProcessMessage();
+
+    void Resize(const Size& size);
 
     static float ToAspectRatio(const Size& size) noexcept {
         return static_cast<float>(size.first) / static_cast<float>(size.second);
