@@ -1,12 +1,11 @@
 ﻿#pragma once
 
-#include "System/GameObject/GameObject.h"
-
 #include "ExternalDependencies/Audio/AudioManager.h"
 #include "ExternalDependencies/Effekseer/EffekseerManager.h"
 #include "ExternalDependencies/Input/InputManager.h"
 #include "ExternalDependencies/PhysX/PhysXManager.h"
 #include "System/Asset/AssetManager/AssetManager.h"
+#include "Application/Game/Scene/Scene.h"
 
 class DynamicObject;
 
@@ -23,19 +22,6 @@ public:
     void Draw();
     void ImGuiUpdate();
 
-    std::list<std::shared_ptr<GameObject>>& GetGameObjects() noexcept {
-        return m_spGameObjects;
-    }
-    const std::list<std::shared_ptr<GameObject>>& GetGameObjects() const noexcept {
-        return m_spGameObjects;
-    }
-    std::list<std::weak_ptr<DynamicObject>>& GetDynamicObjects() noexcept {
-        return m_wpDynamicObjects;
-    }
-    const std::list<std::weak_ptr<DynamicObject>>& GetDynamicObjects() const noexcept {
-        return m_wpDynamicObjects;
-    }
-
     const std::unique_ptr<AudioManager>& GetAudioManager() const noexcept {
         return m_upAudioMgr;
     }
@@ -51,14 +37,17 @@ public:
     const std::unique_ptr<AssetManager>& GetAssetManager() const noexcept {
         return m_upAssetMgr;
     }
-
-    void AddGameObject(const std::shared_ptr<GameObject>& obj, bool init = true) {
-        if (init) {
-            obj->Init();
-        }
-        m_spGameObjects.push_back(obj);
+    
+    std::shared_ptr<Scene>& GetScene() noexcept {
+        return m_spScene;
     }
-    void AddDynamicObject(const std::shared_ptr<DynamicObject>& obj, bool init = true);
+    const std::shared_ptr<Scene>& GetScene() const noexcept {
+        return m_spScene;
+    }
+    
+    void ChangeScene(Scene::SceneType scene_type);
+
+    void CalcFps();
     
     /*
     auto& am = Application::Instance().GetGameSystem()->GetAudioManager();
@@ -79,13 +68,15 @@ private:
         imgui_helper::Release();
     }
 
-    std::unique_ptr<AudioManager>           m_upAudioMgr;
-    std::unique_ptr<EffekseerManager>       m_upEffekseerMgr;
-    std::unique_ptr<InputManager>           m_upInputMgr;
-    std::unique_ptr<PhysXManager>           m_upPhysxMgr;
-    std::unique_ptr<AssetManager>           m_upAssetMgr;
-    
-    std::list<std::shared_ptr<GameObject>>  m_spGameObjects;
-    std::list<std::weak_ptr<DynamicObject>> m_wpDynamicObjects;
+    std::unique_ptr<AudioManager>     m_upAudioMgr;
+    std::unique_ptr<EffekseerManager> m_upEffekseerMgr;
+    std::unique_ptr<InputManager>     m_upInputMgr;
+    std::unique_ptr<PhysXManager>     m_upPhysxMgr;
+    std::unique_ptr<AssetManager>     m_upAssetMgr;
+    std::shared_ptr<Scene>            m_spScene;
 
+    double m_fps            = 0;
+    bool   m_isUnlimitedFps = false;
+    float  m_fpsLimit       = 0;
+    
 };

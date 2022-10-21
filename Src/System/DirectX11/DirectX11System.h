@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "Utility/Macro.h"
-
 #include "ExternalDependencies/DirectX11/DirectX11.h"
 
 class ShaderManager;
@@ -17,14 +16,14 @@ public:
 
     bool Init(HWND hWnd, const std::pair<int32_t, int32_t>& size, bool is_debug, bool detailed_memory_infomation, bool enable_msaa = false) override;
 
-    auto GetShaderManager() {
+    auto GetShaderManager() noexcept {
         return m_spShaderManager;
     }
-    auto GetShaderManager() const {
-        return m_spShaderManager;
+    auto GetShaderManager() const noexcept {
+        return std::const_pointer_cast<const ShaderManager>(m_spShaderManager);
     }
 
-    void DrawVertices(D3D_PRIMITIVE_TOPOLOGY topology, UINT vertex_size, UINT stride, const void* vertex_stream);
+    void DrawVertices(D3D_PRIMITIVE_TOPOLOGY topology, UINT vertex_size, UINT stride, const void* vertex_stream) const;
     
 private:
 
@@ -34,7 +33,7 @@ private:
 
     std::array<std::shared_ptr<DirectX11BufferSystem>, 10> m_spTempFixedVertexBuffers;
     std::shared_ptr<DirectX11BufferSystem>                 m_spTempVertexBuffer;
-
-    SIMPLE_SINGLETON(DirectX11System, Instance);
-
+    
+    MACRO_SINGLETON(DirectX11System, WorkInstance, Instance, Destruct);
+    
 };

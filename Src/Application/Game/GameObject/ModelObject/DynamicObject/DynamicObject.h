@@ -5,9 +5,6 @@
 class DynamicObject : public ModelObject {
 public:
 
-    //TODO: 敵つくる、enemylist?とhpとダメージ実装
-    //TODO: タイトルつくる
-
     enum class Selection {
         NoSelected,
         Equippable,
@@ -62,28 +59,28 @@ public:
     }
 
     void DrawOpaque() override {
-        auto& rim_light = DirectX11System::Instance().GetShaderManager()->m_standardShader.RimLightCB();
+        auto rim_light = DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().GetRimLightCB().Get();
         
         switch (m_selection) {
         case DynamicObject::Selection::NoSelected:
-            rim_light.Get()->RimPower = 0.f;
+            rim_light->rimPower = 0.f;
             break;
         case DynamicObject::Selection::Equippable:
-            rim_light.Get()->RimColor = { 0.f, 1.f, 0.f };
-            rim_light.Get()->RimPower = 1.f;
+            rim_light->rimColor = { 0.f, 1.f, 0.f };
+            rim_light->rimPower = 1.f;
             break;
         case DynamicObject::Selection::NotEquippable:
-            rim_light.Get()->RimColor = { 1.f, 0.f, 0.f };
-            rim_light.Get()->RimPower = 1.f;
+            rim_light->rimColor = { 1.f, 0.f, 0.f };
+            rim_light->rimPower = 1.f;
             break;
         default:
             break;
         }
         
-        rim_light.Write();
+        DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().GetRimLightCB().Write();
         ModelObject::DrawOpaque();
-        rim_light.Get()->RimPower = 0.f;
-        rim_light.Write();
+        rim_light->rimPower = 0.f;
+        DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().GetRimLightCB().Write(true);
     }
 
     float GetWeight() const noexcept {

@@ -6,15 +6,17 @@
 #define TRANSFORM_ROTATION_USE_EULER
 #include "ExternalDependencies/Math/Transform.h"
 
-#include "System/Math/CameraSystem.h"
+#include "System/DirectX11/DirectX11CameraSystem.h"
 #include "System/Math/Collision.h"
 
 enum class DefaultCollisionType {
+    None   = 0,
     Bump   = 1 << 0,
     Attack = 1 << 1,
+    Road   = 1 << 2,
 };
-ENUM_CLASS_OPERATOR_OVERLOAD_AND(DefaultCollisionType)
-ENUM_CLASS_OPERATOR_OVERLOAD_OR(DefaultCollisionType)
+MACRO_ENUM_CLASS_OPERATOR_OVERLOAD_AND(DefaultCollisionType)
+MACRO_ENUM_CLASS_OPERATOR_OVERLOAD_OR(DefaultCollisionType)
 
 class GameObject : public std::enable_shared_from_this<GameObject>
 {
@@ -154,8 +156,22 @@ public:
     static Transform ToTransform(const JsonData::Json& json) {
         auto position = json.count("position") ? ToVector3(json["position"]) : Math::Vector3::Zero;
         auto rotation = json.count("rotation") ? ToVector3(json["rotation"]) : Math::Vector3::Zero;
-        auto scale    = json.count("scale") ? ToVector3(json["scale"]) : Math::Vector3::One;
+        auto scale    = json.count("scale")    ? ToVector3(json["scale"])    : Math::Vector3::One;
         return Transform(position, rotation, scale);
+    }
+    /* stringからDefaultCollisionTypeに変換 */
+    static DefaultCollisionType ToDefaultCollisionType(std::string_view str) {
+        auto dct = DefaultCollisionType::None;
+        if (str == "bump") {
+            dct = DefaultCollisionType::Bump;
+        }
+        if (str == "attack") {
+            dct = DefaultCollisionType::Attack;
+        }
+        if (str == "road") {
+            dct = DefaultCollisionType::Road;
+        }
+        return dct;
     }
 
 protected:

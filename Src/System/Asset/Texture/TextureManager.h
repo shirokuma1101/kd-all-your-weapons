@@ -7,8 +7,8 @@ class TextureManager : public IAssetManager<TextureData>
 {
 public:
 
-	TextureManager() {}
-	~TextureManager() {
+    TextureManager() {}
+    ~TextureManager() {
         Release();
     }
 

@@ -9,18 +9,20 @@ public:
     TextureData(std::string_view path)
         : IAssetData(path)
     {}
-	~TextureData() override {
-		Release();
-	}
+    ~TextureData() override {
+        Release();
+    }
 
-	bool Load() const override {
-		return LoadProcess([&] {
-			return m_upAssetData->Load(m_filePath);
-		});
-	}
+    bool Load() override {
+        return
+            LoadProcess([&] {
+                return m_upAssetData->Load(m_filePath);
+            }
+        );
+    }
 
 private:
 
-	void Release() {}
+    void Release() {}
 
 };

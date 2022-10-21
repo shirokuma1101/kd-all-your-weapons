@@ -1,14 +1,23 @@
 ﻿#include "GameSystem.h"
 
 #include "Math/Convert.h"
-#include "Application/Game/GameObject/CameraObject/CameraObject.h"
-#include "Application/Game/GameObject/ModelObject/ModelObject.h"
-#include "Application/Game/GameObject/ModelObject/CharacterObject/Player/Player.h"
-#include "Application/Game/GameObject/ModelObject/CharacterObject/Enemy/Enemy.h"
-#include "Application/Game/GameObject/ModelObject/DynamicObject/DynamicObject.h"
+#include "Application/Game/Scene/TitleScene/TitleScene.h"
+#include "Application/Game/Scene/GameScene/GameScene.h"
+#include "Application/Game/Scene/ResultScene/ResultScene.h"
 
 void GameSystem::Init()
 {
+    /**************************************************
+    * ini
+    **************************************************/
+    const Window::Size window_size = Window::FHD;
+    const float        rendering_resolution_percent = 100.f;
+    const bool         is_full_screen = false;
+    const double       fps = 144.0;
+    Application::WorkInstance().SetWindowSettings(window_size, rendering_resolution_percent, is_full_screen);
+    m_fpsLimit = fps;
+    
+
     /**************************************************
     * Manager
     **************************************************/
@@ -19,7 +28,9 @@ void GameSystem::Init()
     /* Audio */
     m_upAudioMgr = std::make_unique<AudioManager>();
     m_upAudioMgr->Init();
-    m_upAudioMgr->SetAudio("test", "D:/OneDrive/SystemFolderForSync/Music/VOCALOID/VOCALOID/マジカルミライ/wav/マジカルミライ2013_1.wav");
+    m_upAudioMgr->SetAudio("aki_bgm", "Asset/Sound/aki_bgm.wav");
+    m_upAudioMgr->SetAudio("charge_se", "Asset/Sound/charge_se.wav");
+    //m_upAudioMgr->Play("aki_bgm", AudioManager::PlayFlags::Loop)->SetVolume(0.5f);
 
     /* Effekseer */
     m_upEffekseerMgr = std::make_unique<EffekseerManager>();
@@ -29,7 +40,7 @@ void GameSystem::Init()
 
     /* Input */
     m_upInputMgr = std::make_unique<InputManager>(Application::Instance().GetWindow().GetWindowHandle());
-    input_helper::CursorData::ShowCursor(false);
+    //input_helper::CursorData::ShowCursor(false);
 
     /* PhysX */
     m_upPhysxMgr = std::make_unique<PhysXManager>();
@@ -40,61 +51,22 @@ void GameSystem::Init()
     m_upAssetMgr->Register(AssetManager::AssetType::Json, "Asset/Json/json_list.json");
     m_upAssetMgr->Load(AssetManager::AssetType::Json);
     m_upAssetMgr->Register(AssetManager::AssetType::Model, m_upAssetMgr->GetJsonMgr()->GetAssets(), { "model" });
+    
+    
+    /**************************************************
+    * Scene
+    **************************************************/
 
-
-    /* Shader */
-    DirectX11System::Instance().GetShaderManager()->ChangeRasterizerState(DirectX11System::Instance().GetShaderManager()->m_rs_CullNone);
-    DirectX11System::Instance().GetShaderManager()->m_cb8_Light.Get()->AmbientLight = { 0.9f, 0.8f, 0.8f, 1.f };
-    DirectX11System::Instance().GetShaderManager()->m_cb8_Light.Get()->DirLight_Color = { 1.f, 1.f, 1.f };
-    DirectX11System::Instance().GetShaderManager()->m_cb8_Light.Write();
-
-    /* GameObject */
-    auto player = std::make_shared<Player>("player");
-    player->SetEquipWeightLimit(2.f);
-    AddGameObject(player);
-
-    for (const auto& name : {
-        "environment_sphere",
-        "abandoned_abandon_hospital2",
-        "abandoned_building_construction",
-        "abandoned_favela",
-        "abandoned_post_apocalyptic_building",
-        "abandoned_post_apocalyptic_building_with_props",
-        //"post-apocalyptic_building_1",
-        //"post-apocalyptic_building_2",
-        //"post-apocalyptic_building_3",
-        //"post-apocalyptic_building_4",
-        //"post-apocalyptic_building_5",
-        //"post-apocalyptic_building_6",
-        //"abandoned_ruin_building",
-        "terrain_road_01",
-        "terrain_road_02",
-        "terrain_road_03",
-        "terrain_road_04",
-        "terrain_road_05",
-        "terrain_road_06",
-        }) {
-        AddGameObject(std::make_shared<ModelObject>(name));
-    }
-    for (const auto& name : {
-        "props_01",
-        "props_02"
-        }) {
-        AddDynamicObject(std::make_shared<DynamicObject>(name));
-    }
-
-    auto camera = std::make_shared<CameraObject>(Math::Matrix::Identity, 60.f, Window::ToAspectRatio(Application::Instance().GetWindow().GetSize()), 0.01f, 1000.f);
-    AddGameObject(camera);
-
-    player->SetFollowerTarget(camera);
+    m_spScene = std::make_shared<GameScene>();
+    m_spScene->Init();
 }
 
 void GameSystem::Update()
 {
     /* Time */
+    CalcFps();
     static const double delta_time_threshold = 1.0;
-    const double        delta_time = Application::Instance().GetDeltaTime();
-    const float         fdelta_time = static_cast<float>(delta_time);
+    const double        delta_time           = Application::Instance().GetDeltaTime();
     if (delta_time > delta_time_threshold || delta_time <= 0.0) return;
 
     /* Manager */
@@ -102,26 +74,15 @@ void GameSystem::Update()
     m_upInputMgr->Update();
     m_upPhysxMgr->Update(delta_time);
 
-    /* GameObject */
-    for (const auto& obj : m_spGameObjects) {
-        obj->PreUpdate();
-    }
-    for (auto iter = m_spGameObjects.begin(); iter != m_spGameObjects.end();) {
-        (*iter)->Update(fdelta_time);
-        if ((*iter)->IsObjectAlive()) {
-            ++iter;
-        }
-        else {
-            iter = m_spGameObjects.erase(iter);
-        }
-    }
+    /* Scene */
+    ChangeScene(m_spScene->Update(static_cast<float>(delta_time)));
     
     // Set in place of camera
-    m_upAudioMgr->Update(DirectX11System::Instance().GetShaderManager()->m_cb7_Camera.Get()->CamPos, {});
+    m_upAudioMgr->Update(DirectX11System::Instance().GetShaderManager()->GetCameraCB().Get()->position, {});
     // Set camera to Effekseer
     m_upEffekseerMgr->SetCamera(
-        DirectX11System::Instance().GetShaderManager()->m_cb7_Camera.Get()->mProj,
-        DirectX11System::Instance().GetShaderManager()->m_cb7_Camera.Get()->mView
+        DirectX11System::Instance().GetShaderManager()->GetCameraCB().Get()->projection,
+        DirectX11System::Instance().GetShaderManager()->GetCameraCB().Get()->view
     );
 
     if (m_upInputMgr->GetKeyManager()->GetState(VK_F1, KeyManager::KeyState::Press)) {
@@ -131,73 +92,118 @@ void GameSystem::Update()
 
 void GameSystem::Draw()
 {
-    DirectX11System::Instance().GetCtx()->ClearRenderTargetView(DirectX11System::Instance().GetBackBuffer()->GetRtv(), directx11_helper::blue);
+    const FLOAT color[4] = { 0.6f, 0.6f, 0.6f, 1.f };
+    DirectX11System::Instance().GetCtx()->ClearRenderTargetView(DirectX11System::Instance().GetBackBuffer()->GetRtv(), color);
     DirectX11System::Instance().GetCtx()->ClearDepthStencilView(DirectX11System::Instance().GetZBuffer()->GetDsv(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-    DirectX11System::Instance().GetShaderManager()->m_standardShader.SetToDevice();
-    for (const auto& e : m_spGameObjects) {
-        e->DrawTransparent();
-    }
-    for (const auto& e : m_spGameObjects) {
-        e->DrawOpaque();
-    }
+    /* Scene */
+    m_spScene->Draw();
 
+    /* Effekseer */
     m_upEffekseerMgr->Draw();
 }
 
 void GameSystem::ImGuiUpdate()
 {
-    static bool is_push = true;
-    if (m_upInputMgr->GetKeyManager()->GetState(VK_F2, KeyManager::KeyState::Press)) {
-        if (!is_push)is_push = true;
-        else is_push = false;
-    }
-    if (is_push) return;
-    
     imgui_helper::Begin();
     
-    double delta_time = Application::Instance().GetDeltaTime();
+    static bool is_show = false;
+    if (m_upInputMgr->GetKeyManager()->GetState(VK_F2, KeyManager::KeyState::Press)) {
+        if (!is_show) {
+            is_show = true;
+        }
+        else {
+            is_show = false;
+        }
+    }
+    if (is_show) {
+        static int  resolution = 0;
+        static bool is_change_resolution = false;
+
+        ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
+        ImGui::SetNextWindowSize(ImVec2(300.f, 150.f));
+        if (ImGui::Begin("GameSystem")) {
+            ImGui::Text("FPS: %lf", m_fps);
+            ImGui::Checkbox("Unlimited FPS", &m_isUnlimitedFps);
+            ImGui::SliderFloat("FPS Limit", &m_fpsLimit, 5, 240);
+
+            is_change_resolution |= ImGui::RadioButton("HD", &resolution, 0);
+            ImGui::SameLine();
+            is_change_resolution |= ImGui::RadioButton("FHD", &resolution, 1);
+            ImGui::SameLine();
+            is_change_resolution |= ImGui::RadioButton("QHD", &resolution, 2);
+            ImGui::SameLine();
+            is_change_resolution |= ImGui::RadioButton("UHD", &resolution, 3);
+        }
+        ImGui::End();
+
+        if (is_change_resolution) {
+            is_change_resolution = false;
+            switch (resolution) {
+            case 0:
+                Application::WorkInstance().SetWindowSettings(Window::HD);
+                break;
+            case 1:
+                Application::WorkInstance().SetWindowSettings(Window::FHD);
+                break;
+            case 2:
+                Application::WorkInstance().SetWindowSettings(Window::QHD);
+                break;
+            case 3:
+                Application::WorkInstance().SetWindowSettings(Window::UHD);
+                break;
+            }
+        }
+        m_spScene->ImGuiUpdate();
+    }
+    
+    imgui_helper::Draw();
+}
+
+void GameSystem::ChangeScene(Scene::SceneType scene_type)
+{
+    if (scene_type != m_spScene->GetSceneType()) {
+        switch (scene_type) {
+        case Scene::SceneType::Title:
+            m_spScene = std::make_shared<TitleScene>();
+            break;
+        case Scene::SceneType::Game:
+            m_spScene = std::make_shared<GameScene>();
+            break;
+        case Scene::SceneType::Result:
+            m_spScene = std::make_shared<ResultScene>();
+            break;
+        default:
+            break;
+        }
+        m_spScene->Init();
+    }
+}
+
+void GameSystem::CalcFps()
+{
+    const double delta_time = Application::Instance().GetDeltaTime();
 
     static const double interval_sec = 1.0; // FPS取得更新間隔
     static double       elapsed_sec  = 0.0; // FPS取得用経過時間
     static int          fps_counter  = 0;   // FPS取得用カウンタ
 
-    static double       now_fps         = 0.0;  // 現在のFPS
-    static float        fps_limit_float = 60.f; // FPS制限
-
+    // FPS取得
     elapsed_sec += delta_time;
     ++fps_counter;
     if (elapsed_sec > interval_sec) {
-        now_fps = static_cast<float>(fps_counter / interval_sec);
+        m_fps = fps_counter / interval_sec;
         elapsed_sec = 0.0;
         fps_counter = 0;
     }
 
-    ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
-    ImGui::SetNextWindowSize(ImVec2(200.f, 200.f));
-    if (ImGui::Begin("SceneManagement")) {
-        ImGui::Text("FPS: %lf", now_fps);
-        ImGui::SliderFloat("Limit", &fps_limit_float, 5, 144);
-    }
-    ImGui::End();
-
-    double fps_limit = 1000.0 / static_cast<double>(fps_limit_float);
-    double delta_time_ms = convert::SToMS(delta_time);
-    fps_limit -= delta_time_ms;
-    //Sleep(static_cast<DWORD>(std::round(fps_limit > 0.0 ? fps_limit : 0.0)));
-
-    for (const auto& e : m_spGameObjects) {
-        e->ImGuiUpdate();
-    }
-
-    imgui_helper::Draw();
-}
-
-void GameSystem::AddDynamicObject(const std::shared_ptr<DynamicObject>& obj, bool init)
-{
-    if (init) {
-        obj->Init();
-    }
-    m_wpDynamicObjects.push_back(obj);
-    m_spGameObjects.push_back(obj);
+    // FPS制御
+    if (m_isUnlimitedFps) return;
+    double limit_ms = 1000.0 / static_cast<double>(m_fpsLimit);
+    if (double sleep = limit_ms - convert::SToMS(delta_time); sleep > 0.f) {
+        if (sleep > limit_ms) {
+            sleep = limit_ms;
+        }
+        Sleep(static_cast<DWORD>(sleep));
+    };
 }

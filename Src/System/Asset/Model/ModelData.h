@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <ExternalDependencies/Asset/IAsset/IAssetData.h>
 
@@ -13,7 +13,7 @@ public:
 		Release();
 	}
 
-	bool Load() const override {
+	bool Load() override {
 		const bool successed = LoadProcess([&] {
 			return m_upAssetData->Load(m_filePath);
 		});
@@ -32,6 +32,6 @@ private:
 	
 	void Release() {}
 
-	mutable std::shared_ptr<KdModelWork> m_spModel = nullptr;
+	std::shared_ptr<KdModelWork> m_spModel = nullptr;
 
 };

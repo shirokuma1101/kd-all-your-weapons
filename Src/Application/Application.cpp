@@ -1,11 +1,15 @@
 ﻿#include "Application.h"
 
+//#define ENABLE_BREAKPOINT_ALLOCATE_MEMORY 100;
+#define ENABLE_DIRECTX11_DEBUG
+//#define ENABLE_DIRECTX11_DETAILED_MEMORY_INFOMATION
+#define ENABLE_IMGUI
+
 bool Application::Init()
 {
     const Window::Size     window_size    = Window::HD;
     const Window::Position window_pos     = { 0, 0 };
     const std::string      window_title   = "AllYourWeapons";
-    const bool             is_full_screen = false;
 
     /* ロケールを設定 */
     setlocale(LC_ALL, "japanese");
@@ -24,7 +28,7 @@ bool Application::Init()
 
     /* ウィンドウ作成 */
     if (!m_window.Create(window_title, window_pos, window_size)) {
-        assert::RaiseAssert("ウィンドウ作成に失敗");
+        assert::RaiseAssert(ASSERT_FILE_LINE, "ウィンドウ作成に失敗");
         return false;
     }
 
@@ -39,14 +43,11 @@ bool Application::Init()
 #else
     constexpr bool is_enable_detailed_memory_infomation = false;
 #endif
-    if (!DirectX11System::Instance().Init(m_window.GetWindowHandle(), window_size, is_enable_debug, is_enable_detailed_memory_infomation)) {
-        assert::RaiseAssert("Direct3D初期化失敗");
+    if (!DirectX11System::WorkInstance().Init(m_window.GetWindowHandle(), window_size, is_enable_debug, is_enable_detailed_memory_infomation)) {
+        assert::RaiseAssert(ASSERT_FILE_LINE, "Direct3D初期化失敗");
         return false;
     }
-    if (is_full_screen) {
-        DirectX11System::Instance().GetSwapChain()->SetFullscreenState(TRUE, 0);
-    }
-
+    
     m_spGameSystem = std::make_shared<GameSystem>();
     m_spGameSystem->Init();
 
@@ -73,7 +74,7 @@ void Application::Run()
         DirectX11System::Instance().GetSwapChain()->Present(0, 0);
 
         // 経過時間を計算
-        m_time.CalcDeltaTime();
+        m_deltaTime.Calc();
     }
 
     Release();

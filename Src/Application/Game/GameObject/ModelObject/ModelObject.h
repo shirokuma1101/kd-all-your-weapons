@@ -19,6 +19,7 @@ public:
         auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
         auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
 
+        mm->LoadedOnlyOnceReset(m_name);
         if (!mm->AsyncLoad(m_name)) return;
 
         // Create transform
@@ -62,7 +63,7 @@ public:
         auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
 
         if (mm->IsLoaded(m_name) && m_spModel) {
-            DirectX11System::Instance().GetShaderManager()->m_standardShader.DrawModel(*m_spModel, m_transform.matrix);
+            DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().DrawModel(*m_spModel, m_transform.matrix, { "COL" });
         }
     }
 
@@ -95,7 +96,7 @@ protected:
                 m_pRigidActor = pm->CreateDynamic(m_transform.position, m_transform.rotation);
             }
             else {
-                assert::RaiseAssert("");
+                assert::RaiseAssert(ASSERT_FILE_LINE, "");
             }
 
             bool has_mesh = false;
@@ -110,7 +111,8 @@ protected:
                 else if (first_key == "capsule") {
                     auto capsule = pm->Capsule(first_value["radius"], first_value["half_height"]);
                     auto position = first_value.count("position") ? ToVector3(first_value["position"]) : Math::Vector3::Zero;
-                    physx_helper::AttachShape(&m_pRigidActor, &capsule, physx::PxTransform(physx_helper::ToPxVec3(position)));
+                    auto rotation = first_value.count("rotation") ? ToVector3(first_value["rotation"]) : Math::Vector3::Zero;
+                    physx_helper::AttachShape(&m_pRigidActor, &capsule, physx::PxTransform(physx_helper::ToPxVec3(position), physx_helper::ToPxQuat(Math::Quaternion::CreateFromYawPitchRoll(convert::ToRadians(rotation)))));
                 }
                 else if (first_key == "box") {
                     auto box = pm->Box(ToVector3(first_value["half_extent"]));
@@ -137,7 +139,7 @@ protected:
                 else if (first_key == "mesh") {
                     std::string node_name;
                     if (first_value.count("node_name")) {
-                        node_name = first_value;
+                        node_name = first_value["node_name"];
                     }
                     m_upDefaultCollider->AddCollisionShape(std::make_shared<CollisionModel<DefaultCollisionType>>(DefaultCollisionType::Bump, m_spModel, node_name));
                 }
@@ -203,7 +205,7 @@ protected:
                 if (first_key == "mesh") {
                     std::string node_name;
                     if (first_value.count("node_name")) {
-                        node_name = first_value;
+                        node_name = first_value["node_name"];
                     }
                     m_upDefaultCollider->AddCollisionShape(std::make_shared<CollisionModel<DefaultCollisionType>>(DefaultCollisionType::Bump, m_spModel, node_name));
                 }
@@ -222,7 +224,7 @@ protected:
         auto rays    = ToRays((*jm)[m_name]["collision"]["active"]);
         auto spheres = ToSpheres((*jm)[m_name]["collision"]["active"]);
         // 当たり判定
-        for (const auto& e : Application::Instance().GetGameSystem()->GetGameObjects()) {
+        for (const auto& e : Application::Instance().GetGameSystem()->GetScene()->GetGameObjects()) {
             const auto& collider = e->GetCollider();
             if (!collider) continue;
             // 地面との判定 (光線)

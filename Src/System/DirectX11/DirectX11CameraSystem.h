@@ -20,18 +20,12 @@ public:
     }
 
     void SetToShader() {
-        auto cb_camera = DirectX11System::Instance().GetShaderManager()->m_cb7_Camera.Get();
-        
-        // カメラ座標をセット
-        cb_camera->CamPos = m_camera.cameraMatrix.Translation();
-        // ビュー行列をセット
-        cb_camera->mView = m_camera.viewMatrix;
-        // 射影行列をセット
-        cb_camera->mProj = m_camera.projection.matrix;
-        cb_camera->mProjInv = cb_camera->mProj.Invert();
+        auto camera_cb = DirectX11System::WorkInstance().GetShaderManager()->GetCameraCB().Get();
+        camera_cb->view = m_camera.viewMatrix;
+        camera_cb->projection = m_camera.projection.matrix;
+        camera_cb->position = m_camera.cameraMatrix.Translation();
 
-        // カメラ情報(ビュー行列、射影行列)を、シェーダの定数バッファへ書き込む
-        DirectX11System::Instance().GetShaderManager()->m_cb7_Camera.Write();
+        DirectX11System::WorkInstance().GetShaderManager()->GetCameraCB().Write();
     }
 
 private:

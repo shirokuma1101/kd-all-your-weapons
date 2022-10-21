@@ -7,16 +7,19 @@ bool DirectX11System::Init(HWND hWnd, const std::pair<int32_t, int32_t>& size, b
     if (!DirectX11::Init(hWnd, size, is_debug, detailed_memory_infomation, enable_msaa)) {
         return false;
     }
+
     m_spShaderManager = std::make_shared<ShaderManager>();
     m_spShaderManager->Init();
+    
     for (auto&& e : m_spTempFixedVertexBuffers) {
         e = std::make_shared<DirectX11BufferSystem>();
     }
     m_spTempVertexBuffer = std::make_shared<DirectX11BufferSystem>();
+
     return true;
 }
 
-void DirectX11System::DrawVertices(D3D_PRIMITIVE_TOPOLOGY topology, UINT vertex_size, UINT stride, const void* vertex_stream)
+void DirectX11System::DrawVertices(D3D_PRIMITIVE_TOPOLOGY topology, UINT vertex_size, UINT stride, const void* vertex_stream) const
 {
     // プリミティブトポロジーをセット
     m_cpCtx->IASetPrimitiveTopology(topology);
@@ -26,14 +29,14 @@ void DirectX11System::DrawVertices(D3D_PRIMITIVE_TOPOLOGY topology, UINT vertex_
 
     // 最適な固定長バッファを検索
     std::shared_ptr<DirectX11BufferSystem> buffer = nullptr;
-    for (auto&& n : m_spTempFixedVertexBuffers) {
+    for (const auto& n : m_spTempFixedVertexBuffers) {
         if (total_size < n->GetSize()) {
             buffer = n;
             break;
         }
     }
     // 可変長のバッファを使用
-    if (buffer == nullptr) {
+    if (!buffer) {
         buffer = m_spTempVertexBuffer;
         // 頂点バッファのサイズが小さいときは、リサイズのため再作成する
         if (m_spTempVertexBuffer->GetSize() < total_size) {
