@@ -5,10 +5,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     hInstance; hPrevInstance; lpCmdLine; nShowCmd; // C4100 'identifier' : unreferenced formal parameter
     
     // インスタンスを取得
-    auto& app = Application::Instance();
+    auto& app = Application::WorkInstance();
 
     // 初期化
-    if (!app.Init()) return -1;
+    if (!app.Init()) {
+        return -1;
+    }
 
     // 実行
     app.Run();
