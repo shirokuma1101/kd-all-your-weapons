@@ -55,9 +55,6 @@
     <Filter Include="Src\System\Asset\Model">
       <UniqueIdentifier>{0d78d255-9cdf-48dc-9905-5320f98aebab}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Src\System\Asset\Texture">
-      <UniqueIdentifier>{8341bf4f-d575-49da-bf57-06e49cc437fc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Src\Application\Game\GameObject\ModelObject\CharacterObject">
       <UniqueIdentifier>{1c66ca13-8c21-473f-aacc-d5dd41a73903}</UniqueIdentifier>
     </Filter>
@@ -76,9 +73,6 @@
     <Filter Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy">
       <UniqueIdentifier>{9edc9f37-946f-43c0-ad3e-81c31001332d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy\WeakRobot">
-      <UniqueIdentifier>{367d668d-09d0-4611-ac69-d42e9ef4693c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Src\Application\Game\GameObject\ModelObject\DynamicObject">
       <UniqueIdentifier>{7ee0e5e7-c766-4924-9049-dcf6fe0b6c91}</UniqueIdentifier>
     </Filter>
@@ -94,8 +88,29 @@
     <Filter Include="Src\Application\Game\GameObject\UIObject">
       <UniqueIdentifier>{03d4e060-2d3b-41d5-bc68-10ef8a6f3b50}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Src\Application\Game\GameObject\UIObject\Pause">
-      <UniqueIdentifier>{32667e49-ee90-4841-ad75-503dc237e10f}</UniqueIdentifier>
+    <Filter Include="Src\Application\Game\Scene">
+      <UniqueIdentifier>{de20f1ca-a17a-4a02-8ba3-253bf16c772d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Game\Scene\TitleScene">
+      <UniqueIdentifier>{34611147-a0fb-42bb-b952-bfb07c02928f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Game\Scene\ResultScene">
+      <UniqueIdentifier>{c21bb87d-988e-4523-9498-9d2bc8affb3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Game\Scene\GameScene">
+      <UniqueIdentifier>{7f57e237-f9f1-4eb7-8171-73f2d6a115aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Game\GameObject\UIObject\TitleUI">
+      <UniqueIdentifier>{209cfe81-720e-44e0-8cee-c5e89220d576}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Game\GameObject\UIObject\GameUI">
+      <UniqueIdentifier>{457534c2-2435-4f98-82b8-444ea79508d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\System\Shader\SpriteShader">
+      <UniqueIdentifier>{c85a0f85-5e18-4762-9dc2-f9057d0cbf4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\System\Asset\Texture">
+      <UniqueIdentifier>{f8fb4ffe-bab6-4360-8ab0-61aafcc84bbb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -153,16 +168,7 @@
     <ClInclude Include="Src\System\Asset\Model\ModelData.h">
       <Filter>Src\System\Asset\Model</Filter>
     </ClInclude>
-    <ClInclude Include="Src\System\Asset\Texture\TextureManager.h">
-      <Filter>Src\System\Asset\Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\System\Asset\Texture\TextureData.h">
-      <Filter>Src\System\Asset\Texture</Filter>
-    </ClInclude>
     <ClInclude Include="Src\System\Math\Collision.h">
-      <Filter>Src\System\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\System\Math\CameraSystem.h">
       <Filter>Src\System\Math</Filter>
     </ClInclude>
     <ClInclude Include="Src\Framework\Math\KdAnimation.h">
@@ -189,9 +195,6 @@
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy\Enemy.h">
       <Filter>Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy\WeakRobot\WeakRobot.h">
-      <Filter>Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy\WeakRobot</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\DynamicObject\DynamicObject.h">
       <Filter>Src\Application\Game\GameObject\ModelObject\DynamicObject</Filter>
     </ClInclude>
@@ -216,14 +219,44 @@
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\CharacterObject.h">
       <Filter>Src\Application\Game\GameObject\ModelObject\CharacterObject</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\Game\GameObject\UIObject\Pause\Pause.h">
-      <Filter>Src\Application\Game\GameObject\UIObject\Pause</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Application\Game\GameObject\UIObject\UIObject.h">
       <Filter>Src\Application\Game\GameObject\UIObject</Filter>
     </ClInclude>
     <ClInclude Include="Src\Application\Game\GameObject\CameraObject\CameraObject.h">
       <Filter>Src\Application\Game\GameObject\CameraObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\Scene\Scene.h">
+      <Filter>Src\Application\Game\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\Scene\GameScene\GameScene.h">
+      <Filter>Src\Application\Game\Scene\GameScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\Scene\TitleScene\TitleScene.h">
+      <Filter>Src\Application\Game\Scene\TitleScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\Scene\ResultScene\ResultScene.h">
+      <Filter>Src\Application\Game\Scene\ResultScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\GameObject\UIObject\TitleUI\TitleUI.h">
+      <Filter>Src\Application\Game\GameObject\UIObject\TitleUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Game\GameObject\UIObject\GameUI\GameUI.h">
+      <Filter>Src\Application\Game\GameObject\UIObject\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\Shader\SpriteShader\SpriteShader.h">
+      <Filter>Src\System\Shader\SpriteShader</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\DirectX11\DirectX11CameraSystem.h">
+      <Filter>Src\System\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\Asset\Texture\TextureManager.h">
+      <Filter>Src\System\Asset\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\Asset\Texture\TextureData.h">
+      <Filter>Src\System\Asset\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Framework\Direct3D\KdTrailPolygon.h">
+      <Filter>Src\Framework\Direct3D</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -296,24 +329,57 @@
     <ClCompile Include="Src\Framework\Direct3D\KdSquarePolygon.cpp">
       <Filter>Src\Framework\Direct3D</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy\Enemy.cpp">
+      <Filter>Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Game\Scene\GameScene\GameScene.cpp">
+      <Filter>Src\Application\Game\Scene\GameScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Game\Scene\TitleScene\TitleScene.cpp">
+      <Filter>Src\Application\Game\Scene\TitleScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Game\Scene\ResultScene\ResultScene.cpp">
+      <Filter>Src\Application\Game\Scene\ResultScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\System\Shader\SpriteShader\SpriteShader.cpp">
+      <Filter>Src\System\Shader\SpriteShader</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Game\GameObject\UIObject\TitleUI\TitleUI.cpp">
+      <Filter>Src\Application\Game\GameObject\UIObject\TitleUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Game\GameObject\UIObject\GameUI\GameUI.cpp">
+      <Filter>Src\Application\Game\GameObject\UIObject\GameUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Framework\Direct3D\KdTrailPolygon.cpp">
+      <Filter>Src\Framework\Direct3D</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Src\System\Shader\inc_Common.hlsli">
+    <None Include="Src\System\Shader\Common.hlsli">
       <Filter>Src\System\Shader</Filter>
     </None>
-    <None Include="Src\System\Shader\StandardShader\inc_StandardShader.hlsli">
+    <None Include="Src\System\Shader\StandardShader\StandardShader.hlsli">
       <Filter>Src\System\Shader\StandardShader</Filter>
+    </None>
+    <None Include="Src\System\Shader\SpriteShader\SpriteShader.hlsli">
+      <Filter>Src\System\Shader\SpriteShader</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Src\System\Shader\StandardShader\StandardShader_VS.hlsl">
+    <FxCompile Include="Src\System\Shader\StandardShader\StandardShaderVS.hlsl">
       <Filter>Src\System\Shader\StandardShader</Filter>
     </FxCompile>
-    <FxCompile Include="Src\System\Shader\StandardShader\StandardShader_VS_Skin.hlsl">
+    <FxCompile Include="Src\System\Shader\StandardShader\StandardShaderVSSkin.hlsl">
       <Filter>Src\System\Shader\StandardShader</Filter>
     </FxCompile>
-    <FxCompile Include="Src\System\Shader\StandardShader\StandardShader_PS.hlsl">
+    <FxCompile Include="Src\System\Shader\StandardShader\StandardShaderPS.hlsl">
       <Filter>Src\System\Shader\StandardShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Src\System\Shader\SpriteShader\SpriteShaderPS.hlsl">
+      <Filter>Src\System\Shader\SpriteShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Src\System\Shader\SpriteShader\SpriteShaderVS.hlsl">
+      <Filter>Src\System\Shader\SpriteShader</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
