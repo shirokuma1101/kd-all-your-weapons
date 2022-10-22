@@ -9,7 +9,7 @@ PSIn main(VSIn vs_in)
     ps_in.Pos = mul(ps_in.Pos, Projection);
 
     // UV座標
-    ps_in.UV = ps_in.UV;
+    ps_in.UV = vs_in.UV;
 
     return ps_in;
 }

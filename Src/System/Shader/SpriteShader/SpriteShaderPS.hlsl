@@ -1,4 +1,4 @@
-#include "inc_SpriteShader.hlsli"
+#include "SpriteShader.hlsli"
 
 // テクスチャ
 Texture2D Tex : register(t0);
