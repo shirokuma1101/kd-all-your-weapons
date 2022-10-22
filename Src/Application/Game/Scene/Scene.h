@@ -50,11 +50,10 @@ public:
             e->DrawOpaque();
         }
         
-        DirectX11System::WorkInstance().GetShaderManager()->GetSpriteShader().Begin();
+        DirectX11System::WorkInstance().GetShaderManager()->GetSpriteShader().SetToDevice();
         for (const auto& e : m_spGameObjects) {
             e->DrawSprite();
         }
-        DirectX11System::WorkInstance().GetShaderManager()->GetSpriteShader().End();
     }
     virtual void ImGuiUpdate() {
         for (const auto& e : m_spGameObjects) {
