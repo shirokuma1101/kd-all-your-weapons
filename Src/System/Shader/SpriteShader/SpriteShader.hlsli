@@ -12,7 +12,7 @@ struct VSIn
 
 struct PSIn
 {
-    float4 Pos : SV_POSITON;
+    float4 Pos : SV_POSITION;
     float2 UV  : TEXCOORD0;
 };
 
