@@ -26,3 +26,4 @@ bld/
 # others
 /Asset
 /exe
+*.inc
