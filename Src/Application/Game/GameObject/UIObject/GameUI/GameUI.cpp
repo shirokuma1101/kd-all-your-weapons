@@ -41,3 +41,8 @@ void GameUI::DrawSprite()
     }
     DirectX11System::WorkInstance().GetShaderManager()->GetSpriteShader().SetMatrix(Math::Matrix::Identity);
 }
+
+void GameUI::DrawFont()
+{
+    DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().Draw("genkai", "genkai", GetPositionFromPercentage(10.f, 5.f), true, directx11_helper::white, GetSizePercentageForHDWidthBased());
+}

@@ -10,7 +10,9 @@ public:
 
     void Update(float delta_time) override;
 
-    void DrawSprite();
+    void DrawSprite() override;
+
+    void DrawFont() override;
 
 private:
 
