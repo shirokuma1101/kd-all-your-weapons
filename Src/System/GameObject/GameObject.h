@@ -49,6 +49,8 @@ public:
     virtual void DrawOpaque() {}
     /* 2D描画 */
     virtual void DrawSprite() {}
+    /* フォント描画 */
+    virtual void DrawFont() {}
 
     /* ImGui処理 */
     virtual void ImGuiUpdate() {}

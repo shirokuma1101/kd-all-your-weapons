@@ -6,7 +6,7 @@
 class ShaderManager
 {
 public:
-    
+
     ShaderManager() {}
     ~ShaderManager() {
         Release();
@@ -15,7 +15,7 @@ public:
     void Init();
 
     void Release();
-    
+
     auto& GetStandardShader() noexcept {
         return m_standardShader;
     }
@@ -27,6 +27,12 @@ public:
     }
     auto& GetSpriteShader() const noexcept {
         return m_spriteShader;
+    }
+    auto& GetSpriteFont() noexcept {
+        return m_spriteFont;
+    }
+    auto& GetSpriteFont() const noexcept {
+        return m_spriteFont;
     }
     auto& GetCameraCB() noexcept {
         return m_cameraCB;
@@ -40,6 +46,8 @@ public:
     auto& GetLightCB() const noexcept {
         return m_lightCB;
     }
+
+    void SetToDevice();
 
     bool SetVertexShader(ID3D11VertexShader* vs);
     bool SetPixelShader(ID3D11PixelShader* ps);
@@ -86,7 +94,8 @@ private:
     }; // 112byte
     
     StandardShader m_standardShader;
-    SpriteShader   m_spriteShader; 
+    SpriteShader   m_spriteShader;
+    SpriteFont     m_spriteFont; // シェーダーではない
 
     DirectX11ConstantBufferSystem<CameraCB> m_cameraCB;
     DirectX11ConstantBufferSystem<LightCB>  m_lightCB;

@@ -10,6 +10,7 @@ bool DirectX11System::Init(HWND hWnd, const std::pair<int32_t, int32_t>& size, b
 
     m_spShaderManager = std::make_shared<ShaderManager>();
     m_spShaderManager->Init();
+    m_spShaderManager->SetToDevice();
     
     for (auto&& e : m_spTempFixedVertexBuffers) {
         e = std::make_shared<DirectX11BufferSystem>();

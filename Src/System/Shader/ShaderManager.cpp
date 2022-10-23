@@ -11,6 +11,7 @@ void ShaderManager::Init()
     
     m_standardShader.Init();
     m_spriteShader.Init();
+    m_spriteFont.Init();
 
 
     /**************************************************
@@ -19,15 +20,9 @@ void ShaderManager::Init()
 
     /* カメラ */
     m_cameraCB.Create();
-    ctx->VSSetConstantBuffers(0, 1, m_cameraCB.GetBufferAddress());
-    ctx->PSSetConstantBuffers(0, 1, m_cameraCB.GetBufferAddress());
-
+    
     /* ライト */
     m_lightCB.Create();
-    m_lightCB.Get()->directionalLightDirection.Normalize();
-    m_lightCB.Write();
-    ctx->VSSetConstantBuffers(1, 1, m_lightCB.GetBufferAddress());
-    ctx->PSSetConstantBuffers(1, 1, m_lightCB.GetBufferAddress());
 
     
     /**************************************************
@@ -63,6 +58,7 @@ void ShaderManager::Release()
 {
     m_standardShader.Release();
     m_spriteShader.Release();
+    m_spriteFont.Release();
 
     m_cameraCB.Release();
     m_lightCB.Release();
@@ -90,6 +86,17 @@ void ShaderManager::Release()
     memory::SafeRelease(&m_pSSAnisotropicWrap);
     memory::SafeRelease(&m_pSSAnisotropicClamp);
     m_pSSUndo = nullptr;
+}
+
+void ShaderManager::SetToDevice()
+{
+    m_lightCB.Get()->directionalLightDirection.Normalize();
+    m_lightCB.Write();
+    
+    DirectX11System::Instance().GetCtx().Get()->VSSetConstantBuffers(0, 1, m_cameraCB.GetBufferAddress());
+    DirectX11System::Instance().GetCtx().Get()->PSSetConstantBuffers(0, 1, m_cameraCB.GetBufferAddress());
+    DirectX11System::Instance().GetCtx().Get()->VSSetConstantBuffers(1, 1, m_lightCB.GetBufferAddress());
+    DirectX11System::Instance().GetCtx().Get()->PSSetConstantBuffers(1, 1, m_lightCB.GetBufferAddress());
 }
 
 bool ShaderManager::SetVertexShader(ID3D11VertexShader* vs)

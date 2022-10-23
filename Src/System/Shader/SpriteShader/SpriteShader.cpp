@@ -237,3 +237,47 @@ void SpriteShader::DrawCircle(const Math::Vector2& pos, float radius, const Math
         DirectX11System::Instance().DrawVertices(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, vertex_count, sizeof(vertex), &vertex[0]);
     }
 }
+
+bool SpriteFont::Init()
+{
+    m_upSpriteBatch = std::make_unique<DirectX::SpriteBatch>(DirectX11System::Instance().GetCtx().Get());
+    return true;
+}
+
+void SpriteFont::Draw(std::string_view font_name, std::string_view text, const Math::Vector2& pos, bool align_center, const Math::Color& color, float scale)
+{
+    // フォントデータを取得
+    if (auto iter = m_upSpriteFonts.find(font_name.data()); iter != m_upSpriteFonts.end()) {
+        // 文字列を作成
+        auto wtext = sjis_to_wide(text.data());
+        // 中心座標を計算
+        Math::Vector2 origin;
+        if (align_center) {
+            origin = convert::ToHalf(Math::Vector2(iter->second->MeasureString(wtext.data())));
+        }
+        // 画面中央を(0, 0)とするためにViewportから補正値を計算
+        auto v = DirectX11System::Instance().GetViewport();
+        Math::Vector2 offset_pos(pos.x + convert::ToHalf(v.Width), -pos.y + convert::ToHalf(v.Height));
+
+        // 描画
+        iter->second->DrawString(m_upSpriteBatch.get(), wtext.data(), offset_pos, color, 0.f, origin, scale);
+    }
+}
+
+void SpriteFont::Begin()
+{
+    DirectX11System::Instance().GetCtx()->OMGetBlendState(&m_saveState.pBlendState, m_saveState.factor, &m_saveState.mask);
+    DirectX11System::Instance().GetCtx()->CSGetSamplers(0, 1, &m_saveState.pSamplerState);
+    DirectX11System::Instance().GetCtx()->OMGetDepthStencilState(&m_saveState.pDepthStencilState, &m_saveState.stencilRef);
+    DirectX11System::Instance().GetCtx()->RSGetState(&m_saveState.pRasterizerState);
+    m_upSpriteBatch->Begin(DirectX::SpriteSortMode_Deferred, m_saveState.pBlendState, m_saveState.pSamplerState, m_saveState.pDepthStencilState, m_saveState.pRasterizerState);
+}
+
+void SpriteFont::End()
+{
+    m_upSpriteBatch->End();
+    memory::SafeRelease(&m_saveState.pBlendState);
+    memory::SafeRelease(&m_saveState.pSamplerState);
+    memory::SafeRelease(&m_saveState.pDepthStencilState);
+    memory::SafeRelease(&m_saveState.pRasterizerState);
+}
