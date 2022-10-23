@@ -44,5 +44,6 @@ void GameUI::DrawSprite()
 
 void GameUI::DrawFont()
 {
-    DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().Draw("genkai", "genkai", GetPositionFromPercentage(10.f, 5.f), true, directx11_helper::white, GetSizePercentageForHDWidthBased());
+    DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().Draw("genkai", "Weight Limit", GetPositionFromPercentage(15.f, 5.f), true, directx11_helper::white, GetSizePercentageForHDWidthBased());
+    DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().Draw("genkai", "Selected Weight", GetPositionFromPercentage(15.f, 10.f), true, directx11_helper::white, GetSizePercentageForHDWidthBased());
 }

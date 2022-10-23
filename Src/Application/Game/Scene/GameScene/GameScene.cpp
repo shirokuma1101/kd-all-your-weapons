@@ -38,7 +38,6 @@ void GameScene::Init()
         "abandoned_building_construction",
         "abandoned_favela",
         "abandoned_post_apocalyptic_building",
-        //"abandoned_post_apocalyptic_building_with_props",
         "post-apocalyptic_building_1",
         "post-apocalyptic_building_2",
         "post-apocalyptic_building_3",
