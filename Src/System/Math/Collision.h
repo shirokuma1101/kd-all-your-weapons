@@ -1,19 +1,22 @@
-#pragma once
+ï»¿#pragma once
 
 #include "ExternalDependencies/Math/Collision.h"
 
 namespace model_collision {
 	inline bool Intersects(const KdMesh& mesh, const collision::Ray& target, const Math::Matrix& mat, collision::Result* res = nullptr) {
 		memset(res, 0, sizeof(collision::Result));
-		// ‹ts—ñ
+		// é€†è¡Œåˆ—
 		Math::Matrix  inv_mat = mat.Invert();
-		// ƒ[ƒ‹ƒhÀ•W‚É•ÏŠ·
-		Math::Vector3 inv_target_position = DirectX::XMVector3TransformCoord(target.position, inv_mat);
-		Math::Vector3 inv_target_direction = DirectX::XMVector3TransformNormal(target.direction, inv_mat);
-		// ƒŒƒC‚Ì•ûŒüƒxƒNƒgƒ‹‚Ì’·‚³ (‹ts—ñ‚ÉŠgk‚ª‚ ‚éê‡’·‚³‚É‚à”½‰f‚³‚ê‚é)
+		// ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ã«å¤‰æ›
+		Math::Vector3 inv_target_position     = DirectX::XMVector3TransformCoord(target.position, inv_mat);
+		Math::Vector3 inv_target_direction    = DirectX::XMVector3TransformNormal(target.direction, inv_mat);
+		// ãƒ¬ã‚¤ã®æ–¹å‘ãƒ™ã‚¯ãƒˆãƒ«ã®é•·ã• (é€†è¡Œåˆ—ã«æ‹¡ç¸®ãŒã‚ã‚‹å ´åˆé•·ã•ã«ã‚‚åæ˜ ã•ã‚Œã‚‹)
 		float         target_direction_length = inv_target_direction.Length();
-		// ƒŒƒC‚Ì’·‚³‚ª•Ï‚í‚éˆ×A”»’è—p‚ÌÅ‘å‹——£‚É‚à”½‰f‚³‚¹‚é
-		float         limit_range = target.range * target_direction_length;
+		// ãƒ¬ã‚¤ã®é•·ã•ãŒå¤‰ã‚ã‚‹ç‚ºã€åˆ¤å®šç”¨ã®æœ€å¤§è·é›¢ã«ã‚‚åæ˜ ã•ã›ã‚‹
+		float         limit_range             = target.range * target_direction_length;
+        // çŸ­ããªã‚‹å ´åˆã¯ãã®ã¾ã¾ã«ã™ã‚‹
+		limit_range = limit_range < target.range ? target.range : limit_range;
+        // æ­£è¦åŒ–
 		inv_target_direction.Normalize();
 
 
@@ -54,7 +57,7 @@ namespace model_collision {
 
 			if (dist <= limit_range) {
 				hit = true;
-				// l—¶‚³‚ê‚Ä‚¢‚½Šg‘å—¦‚ğŒ³‚É–ß‚·
+				// è€ƒæ…®ã•ã‚Œã¦ã„ãŸæ‹¡å¤§ç‡ã‚’å…ƒã«æˆ»ã™
 				dist /= target_direction_length;
 				if (dist < closest_dist) {
 					closest_dist = dist;
@@ -76,9 +79,9 @@ namespace model_collision {
 	}
 	inline bool Intersects(const KdMesh& mesh, const collision::BoundingSphere& target, const Math::Matrix& mat, collision::Result* res = nullptr) {
 		memset(res, 0, sizeof(collision::Result));
-		// ‹ts—ñ
+		// é€†è¡Œåˆ—
 		Math::Matrix  inv_mat = mat.Invert();
-		// ƒ[ƒ‹ƒhÀ•W‚É•ÏŠ·
+		// ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ã«å¤‰æ›
 		Math::Vector3 inv_sphere_position = DirectX::XMVector3TransformCoord(Math::Vector3(target.Center), inv_mat);
 
 
