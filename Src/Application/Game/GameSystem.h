@@ -78,5 +78,7 @@ private:
     double m_fps            = 0;
     bool   m_isUnlimitedFps = false;
     float  m_fpsLimit       = 0;
+
+    float  m_masterVolume = 0.f;
     
 };

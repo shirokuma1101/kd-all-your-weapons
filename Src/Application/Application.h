@@ -29,11 +29,11 @@ public:
         return m_deltaTime.time;
     }
 
-    void SetWindowSettings(const Window::Size& size, float rendering_resolution_percent = 100.f, bool is_full_screen = false) {
+    void SetWindowSettings(const Window::Size& size, float rendering_resolution_percentage = 100.f, bool is_full_screen = false) {
         m_window.Resize(size);
         DirectX11System::WorkInstance().Resize({
-            static_cast<Window::Size::first_type>(size.first * (rendering_resolution_percent / 100.f)),
-            static_cast<Window::Size::second_type>(size.second * (rendering_resolution_percent / 100.f))
+            static_cast<Window::Size::first_type>(size.first * (rendering_resolution_percentage / 100.f)),
+            static_cast<Window::Size::second_type>(size.second * (rendering_resolution_percentage / 100.f))
             });
         if (is_full_screen) {
             DirectX11System::Instance().GetSwapChain()->SetFullscreenState(TRUE, 0);

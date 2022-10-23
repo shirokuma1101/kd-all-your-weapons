@@ -10,12 +10,15 @@ void GameSystem::Init()
     /**************************************************
     * ini
     **************************************************/
-    const Window::Size window_size = Window::FHD;
-    const float        rendering_resolution_percent = 100.f;
-    const bool         is_full_screen = false;
-    const double       fps = 144.0;
-    Application::WorkInstance().SetWindowSettings(window_size, rendering_resolution_percent, is_full_screen);
-    m_fpsLimit = fps;
+    const Window::Size window_size                      = Window::HD;
+    const float        rendering_resolution_percentage = 100.f;
+    const bool         is_full_screen                   = false;
+    const double       fps                              = 144.0;
+    const float        masterVolume                     = 0.25f;
+    
+    Application::WorkInstance().SetWindowSettings(window_size, rendering_resolution_percentage, is_full_screen);
+    m_fpsLimit     = fps;
+    m_masterVolume = masterVolume;
     
 
     /**************************************************
@@ -28,9 +31,10 @@ void GameSystem::Init()
     /* Audio */
     m_upAudioMgr = std::make_unique<AudioManager>();
     m_upAudioMgr->Init();
+    m_upAudioMgr->SetMasterVolume(m_masterVolume);
     m_upAudioMgr->SetAudio("aki_bgm", "Asset/Sound/aki_bgm.wav");
     m_upAudioMgr->SetAudio("charge_se", "Asset/Sound/charge_se.wav");
-    //m_upAudioMgr->Play("aki_bgm", AudioManager::PlayFlags::Loop)->SetVolume(0.5f);
+    m_upAudioMgr->Play("aki_bgm", AudioManager::PlayFlags::Loop);
 
     /* Effekseer */
     m_upEffekseerMgr = std::make_unique<EffekseerManager>();
@@ -51,6 +55,9 @@ void GameSystem::Init()
     m_upAssetMgr->Register(AssetManager::AssetType::Json, "Asset/Json/json_list.json");
     m_upAssetMgr->Load(AssetManager::AssetType::Json);
     m_upAssetMgr->Register(AssetManager::AssetType::Model, m_upAssetMgr->GetJsonMgr()->GetAssets(), { "model" });
+
+    /* Font */
+    DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().AddFont("genkai", "Asset/Font/GenkaiMincho.dat");
     
     
     /**************************************************
@@ -105,9 +112,13 @@ void GameSystem::Draw()
 
 void GameSystem::ImGuiUpdate()
 {
+    static bool  is_show                         = false;
+    static int   resolution                      = 0;
+    static bool  is_full_screen                  = false;
+    static float rendering_resolution_percentage = 100.f;
+    
     imgui_helper::Begin();
     
-    static bool is_show = false;
     if (m_upInputMgr->GetKeyManager()->GetState(VK_F2, KeyManager::KeyState::Press)) {
         if (!is_show) {
             is_show = true;
@@ -117,43 +128,57 @@ void GameSystem::ImGuiUpdate()
         }
     }
     if (is_show) {
-        static int  resolution = 0;
-        static bool is_change_resolution = false;
-
         ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
-        ImGui::SetNextWindowSize(ImVec2(300.f, 150.f));
+        ImGui::SetNextWindowSize(ImVec2(300.f, 250.f));
         if (ImGui::Begin("GameSystem")) {
+            /* FPS */
             ImGui::Text("FPS: %lf", m_fps);
             ImGui::Checkbox("Unlimited FPS", &m_isUnlimitedFps);
-            ImGui::SliderFloat("FPS Limit", &m_fpsLimit, 5, 240);
-
-            is_change_resolution |= ImGui::RadioButton("HD", &resolution, 0);
+            ImGui::SliderFloat("FPS Limit", &m_fpsLimit, 24, 240);
+            /* Resolution */
+            ImGui::RadioButton("HD", &resolution, 0);
             ImGui::SameLine();
-            is_change_resolution |= ImGui::RadioButton("FHD", &resolution, 1);
+            ImGui::RadioButton("FHD", &resolution, 1);
             ImGui::SameLine();
-            is_change_resolution |= ImGui::RadioButton("QHD", &resolution, 2);
+            ImGui::RadioButton("QHD", &resolution, 2);
             ImGui::SameLine();
-            is_change_resolution |= ImGui::RadioButton("UHD", &resolution, 3);
+            ImGui::RadioButton("UHD", &resolution, 3);
+            /* Rendering Resolution Percentage */
+            ImGui::SliderFloat("RenderingResolution", &rendering_resolution_percentage, 50.f, 200.f);
+            const auto& size = Application::Instance().GetWindow().GetSize();
+            ImGui::Text("%d x %d", static_cast<Window::Size::first_type>(size.first * (rendering_resolution_percentage / 100.f)), static_cast<Window::Size::second_type>(size.second * (rendering_resolution_percentage / 100.f)));
+            /* Full Screen */
+            ImGui::Checkbox("Full screen", &is_full_screen);
+            /* Audio */
+            //ImGui::Checkbox("Mute", &m_isMute);
+            ImGui::SliderFloat("Master Volume", &m_masterVolume, 0.f, 1.f);
+            /* Scene */
+            //ImGui::Text("Scene");
+            //ImGui::Text("Name: %s", m_spScene->GetName().c_str());
+            //ImGui::Text("ID: %d", m_spScene->GetID());
+            
         }
-        ImGui::End();
-
-        if (is_change_resolution) {
-            is_change_resolution = false;
+        if (ImGui::Button("Apply")) {
             switch (resolution) {
             case 0:
-                Application::WorkInstance().SetWindowSettings(Window::HD);
+                Application::WorkInstance().SetWindowSettings(Window::HD, rendering_resolution_percentage, is_full_screen);
                 break;
             case 1:
-                Application::WorkInstance().SetWindowSettings(Window::FHD);
+                Application::WorkInstance().SetWindowSettings(Window::FHD, rendering_resolution_percentage, is_full_screen);
                 break;
             case 2:
-                Application::WorkInstance().SetWindowSettings(Window::QHD);
+                Application::WorkInstance().SetWindowSettings(Window::QHD, rendering_resolution_percentage, is_full_screen);
                 break;
             case 3:
-                Application::WorkInstance().SetWindowSettings(Window::UHD);
+                Application::WorkInstance().SetWindowSettings(Window::UHD, rendering_resolution_percentage, is_full_screen);
                 break;
             }
+            //ImGui::GetStyle().ScaleAllSizes(convert::ToUndoPercent(rendering_resolution_percentage));
+
+            m_upAudioMgr->SetMasterVolume(m_masterVolume);
         }
+        ImGui::End();
+        
         m_spScene->ImGuiUpdate();
     }
     
