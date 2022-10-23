@@ -42,6 +42,7 @@ public:
         return m_sceneType;
     }
     virtual void Draw() {
+        DirectX11System::WorkInstance().GetShaderManager()->SetToDevice();
         DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().SetToDevice();
         for (const auto& e : m_spGameObjects) {
             e->DrawTransparent();
@@ -54,6 +55,12 @@ public:
         for (const auto& e : m_spGameObjects) {
             e->DrawSprite();
         }
+
+        DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().Begin();
+        for (const auto& e : m_spGameObjects) {
+            e->DrawFont();
+        }
+        DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().End();
     }
     virtual void ImGuiUpdate() {
         for (const auto& e : m_spGameObjects) {
