@@ -56,15 +56,12 @@ void SpriteShader::Release()
 
 void SpriteShader::SetToDevice()
 {
-    UINT viewport = 1;
-    D3D11_VIEWPORT vp{};
-    DirectX11System::Instance().GetCtx()->RSGetViewports(&viewport, &vp);
-    
-    m_projectionCB.Get()->projection = DirectX::XMMatrixOrthographicLH(vp.Width, vp.Height, 0, 1);
+    auto v = DirectX11System::Instance().GetViewport();
+    m_projectionCB.Get()->projection = DirectX::XMMatrixOrthographicLH(v.Width, v.Height, 0, 1);
     m_projectionCB.Write();
 
-    DirectX11System::Instance().GetCtx()->VSSetShader(m_pVS, nullptr, 0);
-    DirectX11System::Instance().GetCtx()->PSSetShader(m_pPS, nullptr, 0);
+    DirectX11System::Instance().GetCtx()->VSSetShader(m_pVS, 0, 0);
+    DirectX11System::Instance().GetCtx()->PSSetShader(m_pPS, 0, 0);
     DirectX11System::Instance().GetCtx()->IASetInputLayout(m_pInputLayout);
 
     DirectX11System::Instance().GetCtx()->VSSetConstantBuffers(2, 1, m_spriteCB.GetBufferAddress());
@@ -73,78 +70,67 @@ void SpriteShader::SetToDevice()
     DirectX11System::Instance().GetCtx()->PSSetConstantBuffers(3, 1, m_projectionCB.GetBufferAddress());
 }
 
-void SpriteShader::DrawTex(const DirectX11Texture& tex, const Math::Vector2& pos, const Math::Vector2& rect, const Math::Rectangle* src_rect, const Math::Color& color, const Math::Vector2& pivot)
+void SpriteShader::DrawTex(const DirectX11Texture& tex, const Math::Matrix& world, const Math::Vector2& rect, const Math::Vector2& uv_min, const Math::Vector2& uv_max, const Math::Color& color, const Math::Vector2& pivot)
 {
     DirectX11System::Instance().GetCtx()->PSSetShaderResources(0, 1, tex.GetSrvAddress());
-    
+
+    m_spriteCB.Get()->transform = world;
     m_spriteCB.Get()->color = color;
     m_spriteCB.Write();
-    
-    Math::Vector2 uv_min = { 0, 0 };
-    Math::Vector2 uv_max = { 1, 1 };
-    if (src_rect) {
-        uv_min.x = src_rect->x / (float)tex.GetTextureDesc().Width;
-        uv_min.y = src_rect->y / (float)tex.GetTextureDesc().Height;
-        uv_max.x = (src_rect->x + src_rect->width) / (float)tex.GetTextureDesc().Width;
-        uv_max.y = (src_rect->y + src_rect->height) / (float)tex.GetTextureDesc().Height;
-    }
 
-    // 頂点作成
-    float x1 = pos.x;
-    float y1 = pos.y;
-    float x2 = (float)(pos.x + rect.x);
-    float y2 = (float)(pos.y + rect.y);
-
-    // 基準点(Pivot)分ずらす
-    x1 -= pivot.x * rect.x;
-    x2 -= pivot.x * rect.x;
-    y1 -= pivot.y * rect.y;
-    y2 -= pivot.y * rect.y;
+    // 頂点作成、基準点(Pivot)分ずらす
+    float x1 = -(pivot.x * rect.x);
+    float y1 = -(pivot.y * rect.y);
+    float x2 = rect.x - pivot.x * rect.x;
+    float y2 = rect.y - pivot.y * rect.y;
 
     Vertex vertex[] = {
-        { {x1, y1, 0},	{uv_min.x, uv_max.y} },
-        { {x1, y2, 0},	{uv_min.x, uv_min.y} },
-        { {x2, y1, 0},	{uv_max.x, uv_max.y} },
-        { {x2, y2, 0},	{uv_max.x, uv_min.y} },
+        { {x1, y1, 0}, {uv_min.x, uv_max.y} },
+        { {x1, y2, 0}, {uv_min.x, uv_min.y} },
+        { {x2, y1, 0}, {uv_max.x, uv_max.y} },
+        { {x2, y2, 0}, {uv_max.x, uv_min.y} },
     };
-    DirectX11System::Instance().DrawVertices(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 4, sizeof(vertex), vertex);
+    DirectX11System::Instance().DrawVertices(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 4, sizeof(Vertex), vertex);
 
     // セットしたテクスチャを解除しておく
     ID3D11ShaderResourceView* srv = nullptr;
     DirectX11System::Instance().GetCtx()->PSSetShaderResources(0, 1, &srv);
 }
 
-void SpriteShader::DrawPoint(const Math::Vector2& pos, const Math::Color& color)
+void SpriteShader::DrawPoint(const Math::Matrix& world, const Math::Color& color)
 {
     DirectX11System::Instance().GetCtx()->PSSetShaderResources(0, 1, DirectX11System::Instance().GetWhiteTexture()->GetSrvAddress());
 
+    m_spriteCB.Get()->transform = world;
     m_spriteCB.Get()->color = color;
     m_spriteCB.Write();
     
     Vertex vertex[] = {
-        { {pos.x, pos.y, 0},{0, 0} },
+        { {0, 0, 0},{0, 0} },
     };
-    DirectX11System::Instance().DrawVertices(D3D_PRIMITIVE_TOPOLOGY_POINTLIST, 1, sizeof(vertex), vertex);
+    DirectX11System::Instance().DrawVertices(D3D_PRIMITIVE_TOPOLOGY_POINTLIST, 1, sizeof(Vertex), vertex);
 }
 
-void SpriteShader::DrawLine(const Math::Vector2& pos1, const Math::Vector2& pos2, const Math::Color& color)
+void SpriteShader::DrawLine(const Math::Matrix& world, const Math::Color& color)
 {
     DirectX11System::Instance().GetCtx()->PSSetShaderResources(0, 1, DirectX11System::Instance().GetWhiteTexture()->GetSrvAddress());
 
+    m_spriteCB.Get()->transform = world;
     m_spriteCB.Get()->color = color;
     m_spriteCB.Write();
     
     Vertex vertex[] = {
-        { {pos1.x, pos1.y, 0}, {0, 0} },
-        { {pos2.x, pos2.y, 0}, {1, 0} },
+        { {-0.5f, 0, 0}, {0, 0} },
+        { {0.5f, 0, 0}, {1, 0} },
     };
-    DirectX11System::Instance().DrawVertices(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, 2, sizeof(vertex), vertex);
+    DirectX11System::Instance().DrawVertices(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, 2, sizeof(Vertex), vertex);
 }
 
-void SpriteShader::DrawTriangle(const Math::Vector2& pos1, const Math::Vector2& pos2, const Math::Vector2& pos3, const Math::Color& color, bool fill)
+void SpriteShader::DrawTriangle(const Math::Matrix& world, const Math::Vector2& pos1, const Math::Vector2& pos2, const Math::Vector2& pos3, const Math::Color& color, bool fill)
 {
     DirectX11System::Instance().GetCtx()->PSSetShaderResources(0, 1, DirectX11System::Instance().GetWhiteTexture()->GetSrvAddress());
 
+    m_spriteCB.Get()->transform = world;
     m_spriteCB.Get()->color = color;
     m_spriteCB.Write();
 
@@ -154,20 +140,21 @@ void SpriteShader::DrawTriangle(const Math::Vector2& pos1, const Math::Vector2& 
         { {pos3.x, pos3.y, 0}, {0, 0} },
         { {pos1.x, pos1.y, 0}, {1, 0} },
     };
-    DirectX11System::Instance().DrawVertices(fill ? D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP : D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, 4, sizeof(vertex), vertex);
+    DirectX11System::Instance().DrawVertices(fill ? D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP : D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, 4, sizeof(Vertex), vertex);
 }
 
-void SpriteShader::DrawBox(const Math::Vector2& pos, const Math::Vector2& extent, const Math::Color& color, bool fill)
+void SpriteShader::DrawBox(const Math::Matrix& world, const Math::Vector2& half_extent, const Math::Color& color, bool fill)
 {
     DirectX11System::Instance().GetCtx()->PSSetShaderResources(0, 1, DirectX11System::Instance().GetWhiteTexture()->GetSrvAddress());
-    
+
+    m_spriteCB.Get()->transform = world;
     m_spriteCB.Get()->color = color;
     m_spriteCB.Write();
 
-    Math::Vector3 p1 = { pos.x - extent.x, pos.y - extent.y, 0 };
-    Math::Vector3 p2 = { pos.x - extent.x, pos.y + extent.y, 0 };
-    Math::Vector3 p3 = { pos.x + extent.x, pos.y + extent.y, 0 };
-    Math::Vector3 p4 = { pos.x + extent.x, pos.y - extent.y, 0 };
+    Math::Vector3 p1 = { -half_extent.x, -half_extent.y, 0 };
+    Math::Vector3 p2 = { -half_extent.x, +half_extent.y, 0 };
+    Math::Vector3 p3 = { +half_extent.x, +half_extent.y, 0 };
+    Math::Vector3 p4 = { +half_extent.x, -half_extent.y, 0 };
 
     // 描画
     if (fill) {
@@ -177,7 +164,7 @@ void SpriteShader::DrawBox(const Math::Vector2& pos, const Math::Vector2& extent
             { p4, {0, 0}},
             { p3, {0, 0}}
         };
-        DirectX11System::Instance().DrawVertices(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 4, sizeof(vertex), vertex);
+        DirectX11System::Instance().DrawVertices(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 4, sizeof(Vertex), vertex);
     }
     else {
         Vertex vertex[] = {
@@ -187,16 +174,17 @@ void SpriteShader::DrawBox(const Math::Vector2& pos, const Math::Vector2& extent
             { p4, {0, 0}},
             { p1, {0, 0}}
         };
-        DirectX11System::Instance().DrawVertices(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, 5, sizeof(vertex), vertex);
+        DirectX11System::Instance().DrawVertices(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, 5, sizeof(Vertex), vertex);
     }
 }
 
-void SpriteShader::DrawCircle(const Math::Vector2& pos, float radius, const Math::Color& color, bool fill)
+void SpriteShader::DrawCircle(const Math::Matrix& world, float radius, const Math::Color& color, bool fill)
 {
     if (radius <= 0.f) return;
 
     DirectX11System::Instance().GetCtx()->PSSetShaderResources(0, 1, DirectX11System::Instance().GetWhiteTexture()->GetSrvAddress());
-    
+
+    m_spriteCB.Get()->transform = world;
     m_spriteCB.Get()->color = color;
     m_spriteCB.Write();
 
@@ -209,15 +197,15 @@ void SpriteShader::DrawCircle(const Math::Vector2& pos, float radius, const Math
         
         for (int i = 0; i < face_count; ++i) {
             int idx = i * 3;
-            vertex[idx].pos.x = pos.x;
-            vertex[idx].pos.y = pos.y;
+            vertex[idx].pos.x = 0;
+            vertex[idx].pos.y = 0;
             
-            vertex[idx + 1].pos.x = pos.x + std::cos(DirectX::XMConvertToRadians(i * (360.0f / (face_count - 1)))) * radius;
-            vertex[idx + 1].pos.y = pos.y + std::sin(DirectX::XMConvertToRadians(i * (360.0f / (face_count - 1)))) * radius;
+            vertex[idx + 1].pos.x = std::cos(DirectX::XMConvertToRadians(i * (360.0f / (face_count - 1)))) * radius;
+            vertex[idx + 1].pos.y = std::sin(DirectX::XMConvertToRadians(i * (360.0f / (face_count - 1)))) * radius;
             vertex[idx + 1].pos.z = 0;
             
-            vertex[idx + 2].pos.x = pos.x + std::cos(DirectX::XMConvertToRadians((i + 1) * (360.0f / (face_count - 1)))) * radius;
-            vertex[idx + 2].pos.y = pos.y + std::sin(DirectX::XMConvertToRadians((i + 1) * (360.0f / (face_count - 1)))) * radius;
+            vertex[idx + 2].pos.x = std::cos(DirectX::XMConvertToRadians((i + 1) * (360.0f / (face_count - 1)))) * radius;
+            vertex[idx + 2].pos.y = std::sin(DirectX::XMConvertToRadians((i + 1) * (360.0f / (face_count - 1)))) * radius;
             vertex[idx + 2].pos.z = 0;
         }
         DirectX11System::Instance().DrawVertices(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, (int)vertex.size(), sizeof(vertex), &vertex[0]);
@@ -230,11 +218,11 @@ void SpriteShader::DrawCircle(const Math::Vector2& pos, float radius, const Math
         std::vector<Vertex> vertex(vertex_count); // 半径により頂点数を調整
         
         for (int i = 0; i < vertex_count; ++i) {
-            vertex[i].pos.x = pos.x + cos(DirectX::XMConvertToRadians(i * (360.0f / (vertex_count - 1)))) * radius;
-            vertex[i].pos.y = pos.y + sin(DirectX::XMConvertToRadians(i * (360.0f / (vertex_count - 1)))) * radius;
+            vertex[i].pos.x = cos(DirectX::XMConvertToRadians(i * (360.0f / (vertex_count - 1)))) * radius;
+            vertex[i].pos.y = sin(DirectX::XMConvertToRadians(i * (360.0f / (vertex_count - 1)))) * radius;
             vertex[i].pos.z = 0;
         }
-        DirectX11System::Instance().DrawVertices(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, vertex_count, sizeof(vertex), &vertex[0]);
+        DirectX11System::Instance().DrawVertices(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, vertex_count, sizeof(Vertex), &vertex[0]);
     }
 }
 

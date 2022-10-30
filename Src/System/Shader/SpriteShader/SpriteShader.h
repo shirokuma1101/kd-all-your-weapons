@@ -20,40 +20,53 @@ public:
 
     void Release();
 
-    void SetMatrix(const Math::Matrix& matrix) {
-        m_spriteCB.Get()->transform = matrix;
-    }
-
     void SetToDevice();
 
     void DrawTex(
         const DirectX11Texture& tex,
-        const Math::Vector2&    pos,
+        const Math::Matrix&     world,
         const Math::Vector2&    rect,
-        const Math::Rectangle*  src_rect = nullptr,
-        const Math::Color&      color    = directx11_helper::white,
-        const Math::Vector2&    pivot    = { 0.5, 0.5f }
+        const Math::Vector2&    uv_min = { 0.f, 0.f },
+        const Math::Vector2&    uv_max = { 1.f, 1.f },
+        const Math::Color&      color  = directx11_helper::white,
+        const Math::Vector2&    pivot  = { 0.5, 0.5f }
     );
 
     void DrawTex(
         const DirectX11Texture& tex,
-        const Math::Vector2&    pos,
-        const Math::Rectangle*  src_rect = nullptr,
-        const Math::Color&      color    = directx11_helper::white,
-        const Math::Vector2&    pivot    = { 0.5, 0.5f }
+        const Math::Matrix&     world,
+        const Math::Vector2&    rect,
+        const Math::Rectangle&  src_rect,
+        const Math::Color&      color = directx11_helper::white,
+        const Math::Vector2&    pivot = { 0.5, 0.5f }
     ) {
-        DrawTex(tex, pos, { static_cast<float>(tex.GetTextureDesc().Width), static_cast<float>(tex.GetTextureDesc().Height) }, src_rect, color, pivot);
+        Math::Vector2 uv_min = { 0, 0 };
+        Math::Vector2 uv_max = { 1, 1 };
+        uv_min.x = src_rect.x / static_cast<float>(tex.GetTextureDesc().Width);
+        uv_min.y = src_rect.y / static_cast<float>(tex.GetTextureDesc().Height);
+        uv_max.x = (src_rect.x + src_rect.width) / static_cast<float>(tex.GetTextureDesc().Width);
+        uv_max.y = (src_rect.y + src_rect.height) / static_cast<float>(tex.GetTextureDesc().Height);
+        DrawTex(tex, world, rect, uv_min, uv_max, color, pivot);
     }
 
-    void DrawPoint(const Math::Vector2& pos, const Math::Color& color = directx11_helper::white);
+    void DrawTex(
+        const DirectX11Texture& tex,
+        const Math::Matrix&     world = Math::Matrix::Identity,
+        const Math::Color&      color = directx11_helper::white,
+        const Math::Vector2&    pivot = { 0.5, 0.5f }
+    ) {
+        DrawTex(tex, world, { static_cast<float>(tex.GetTextureDesc().Width), static_cast<float>(tex.GetTextureDesc().Height) }, { 0.f, 0.f }, { 1.f, 1.f }, color, pivot);
+    }
 
-    void DrawLine(const Math::Vector2& pos1, const Math::Vector2& pos2, const Math::Color& color = directx11_helper::white);
+    void DrawPoint(const Math::Matrix& world, const Math::Color& color = directx11_helper::white);
 
-    void DrawTriangle(const Math::Vector2& pos1, const Math::Vector2& pos2, const Math::Vector2& pos3, const Math::Color& color = directx11_helper::white, bool fill = true);
+    void DrawLine(const Math::Matrix& world, const Math::Color& color = directx11_helper::white);
 
-    void DrawBox(const Math::Vector2& pos, const Math::Vector2& extent, const Math::Color& color = directx11_helper::white, bool fill = true);
+    void DrawTriangle(const Math::Matrix& world, const Math::Vector2& pos1, const Math::Vector2& pos2, const Math::Vector2& pos3, const Math::Color& color = directx11_helper::white, bool fill = true);
 
-    void DrawCircle(const Math::Vector2& pos, float radius, const Math::Color& color = directx11_helper::white, bool fill = true);
+    void DrawBox(const Math::Matrix& world, const Math::Vector2& half_extent, const Math::Color& color = directx11_helper::white, bool fill = true);
+
+    void DrawCircle(const Math::Matrix& world, float radius, const Math::Color& color = directx11_helper::white, bool fill = true);
 
 private:
 

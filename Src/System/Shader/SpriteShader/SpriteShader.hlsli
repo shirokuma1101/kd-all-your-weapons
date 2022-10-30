@@ -27,4 +27,3 @@ cbuffer ProjectionCB : register(b3)
 {
     row_major float4x4 Projection; // 射影変換行列
 };
-
