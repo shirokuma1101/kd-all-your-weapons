@@ -6,17 +6,15 @@
 #define TRANSFORM_ROTATION_USE_EULER
 #include "ExternalDependencies/Math/Transform.h"
 
-#include "System/DirectX11/DirectX11CameraSystem.h"
+#include "System/Math/CameraProperties.h"
 #include "System/Math/Collision.h"
 
-enum class DefaultCollisionType {
+enum DefaultCollisionType {
     None   = 0,
     Bump   = 1 << 0,
     Attack = 1 << 1,
     Road   = 1 << 2,
 };
-MACRO_ENUM_CLASS_OPERATOR_OVERLOAD_AND(DefaultCollisionType)
-MACRO_ENUM_CLASS_OPERATOR_OVERLOAD_OR(DefaultCollisionType)
 
 class GameObject : public std::enable_shared_from_this<GameObject>
 {
