@@ -11,3 +11,23 @@ public:
     {}
 
 };
+
+class DirectX11RenderTargetSystem : public DirectX11RenderTarget
+{
+public:
+
+    DirectX11RenderTargetSystem()
+        : DirectX11RenderTarget(DirectX11System::Instance().GetDev().Get(), DirectX11System::Instance().GetCtx().Get())
+    {}
+
+};
+
+class DirectX11RenderTargetChangerSystem : public DirectX11RenderTargetChanger
+{
+public:
+
+    DirectX11RenderTargetChangerSystem()
+        : DirectX11RenderTargetChanger(DirectX11System::Instance().GetDev().Get(), DirectX11System::Instance().GetCtx().Get())
+    {}
+
+};
