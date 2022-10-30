@@ -8,28 +8,13 @@ Texture2D MRTex       : register(t2); // メタリック/ラフネステクス�
 Texture2D NormalTex   : register(t3); // 法線マップテクスチャ
 
 // 特殊処理用テクスチャ
+Texture2D ShadowTex   : register(t10); // シャドウテクスチャ
 Texture2D DissolveTex : register(t11); // ディゾルブテクスチャ
 
 // サンプラーステート
-SamplerState Sampler : register(s0);
+SamplerState           Sampler     : register(s0);
+SamplerComparisonState SamplerComp : register(s1);
 
-// BlinnPhong NDF
-// ・lightDir    … ライトの方向
-// ・vCam        … ピクセルからカメラへの方向
-// ・normal      … 法線
-// ・specPower   … 反射の鋭さ
-/*
-float BlinnPhong(float3 lightDir, float3 vCam, float3 normal, float specPower)
-{
-    float3 H = normalize(-lightDir + vCam);
-    // カメラの角度差(0～1)
-    float NdotH = saturate(dot(normal, H));
-    float spec = pow(NdotH, specPower);
-
-    // 正規化Blinn-Phong
-    return spec * ((specPower + 2) / (2 * 3.1415926535));
-}
-*/
 // Lambert拡散反射光を計算
 float3 CalcLambertDiffuse(float3 light_dir, float3 light_col, float3 normal)
 {
@@ -64,17 +49,22 @@ float4 main(PSIn ps_in) : SV_Target0
     //{
     //    discard;
     //}
-    
+
     
     /* カメラ */
     float3 cam_dir = Position - ps_in.WorldPos; // カメラへの方向
     float cam_dist = length(cam_dir);           // カメラ - ピクセル距離
     cam_dir = normalize(cam_dir);
-    
+
 
     /* 材質色 */
     // ベースカラー
     float4 base_color = BaseTex.Sample(Sampler, ps_in.UV) * BaseColor * ps_in.Color;
+    //アルファテスト
+    if (base_color.a < 0.1f)
+    {
+        discard;
+    }
     // 金属性
     float4 mr = MRTex.Sample(Sampler, ps_in.UV);
     float metallic = mr.b * Metallic;
@@ -84,93 +74,87 @@ float4 main(PSIn ps_in) : SV_Target0
     float3 normal = normalize(NormalTex.Sample(Sampler, ps_in.UV).rgb * 2 - 1);
     normal = ps_in.WorldTangent * normal.x + ps_in.WorldBinormal * normal.y + ps_in.WorldNormal * normal.z;
 
-    
-    /* ライティング */
 
+    /* シャドウ */
+    // 最終的な影
+    float shadow = 1.0f;
+    {
+        // ピクセルの3D座標から、DepthMapFromLight空間へ変換
+        float4 light_pos = mul(float4(ps_in.WorldPos, 1), DirectionalLightVP);
+        light_pos.xyz /= light_pos.w;
+
+        // 深度マップの範囲内？
+        if (abs(light_pos.x) <= 1 && abs(light_pos.y) <= 1 && light_pos.z <= 1)
+        {
+            // 射影座標 -> UV座標へ変換
+            float2 uv = light_pos.xy * float2(1, -1) * 0.5 + 0.5;
+            // ライトカメラからの距離
+            float z = light_pos.z - 0.002; // シャドウアクネ対策
+        
+            // 画像のサイズからテクセルサイズを求める
+            float w, h;
+            ShadowTex.GetDimensions(w, h);
+            float tw = 1.0 / w;
+            float th = 1.0 / h;
+    
+            // uvの周辺3x3も判定し、平均値を求める
+            shadow = 0;
+            for (int y = -1; y <= 1; y++)
+            {
+                for (int x = -1; x <= 1; x++)
+                {
+                    shadow += ShadowTex.SampleCmpLevelZero(SamplerComp, uv + float2(x * tw, y * th), z);
+                }
+            }
+            shadow *= 0.11;
+        }
+    }
+
+    /* ライティング */
     // 最終的な色
     float3 color = 0;
-    
-    /* 平行光 */
     {
-        /*
-        // 材質の拡散色　非金属ほど材質の色になり、金属ほど拡散色は無くなる
-        const float3 base_diffuse = lerp(base_color.rgb, float3(0, 0, 0), metallic);
-        // 材質の反射色　非金属ほど光の色をそのまま反射し、金属ほど材質の色が乗る
-        const float3 base_specular = lerp(0.04, base_color.rgb, metallic);
-        
-        // Diffuse(拡散光) 正規化Lambertを使用
-        // 光の方向と法線の方向との角度さが光の強さになる
-        float light_diffuse = dot(-DirectionalLightDirection, normal);
-        light_diffuse = saturate(light_diffuse); // マイナス値は0にする　0(暗)～1(明)になる
-        // 正規化Lambert
-        light_diffuse /= 3.1415926535;
-        // 光の色 * 材質の拡散色 * 透明率
-        color += (DirectionalLightColor * light_diffuse) * base_diffuse * base_color.a;
-
-        // Specular(反射色) 正規化Blinn-Phong NDFを使用
-        // 反射した光の強さを求める
-        // ラフネスから、Blinn-Phong用のSpecularPowerを求める
-        float smoothness = 1.0 - roughness; // ラフネスを逆転させ「滑らか」さにする
-        float specular_power = pow(2, 13 * smoothness); // 1～8192
-        // Blinn-Phong NDF
-        float spec = BlinnPhong(DirectionalLightDirection, cam_dir, normal, specular_power);
-        // 光の色 * 反射光の強さ * 材質の反射色 * 正規化係数 * 透明率
-        color += (DirectionalLightColor * spec) * base_specular * base_color.a;
-        */
-    }
-    {
+        /* 平行光 */
         // ディレクションライトによるLambert拡散反射光を計算する
         float3 diff_direction = CalcLambertDiffuse(DirectionalLightDirection, DirectionalLightColor, normal);
         // ディレクションライトによるPhong鏡面反射光を計算する
         float3 spec_direction = CalcPhongSpecular(DirectionalLightDirection, DirectionalLightColor, cam_dir, normal);
-        /* TODO: PointLight
-        // ポイントライトによるLambert拡散反射光とPhong鏡面反射光を計算する
-        // サーフェイスに入射するポイントライトの光の向きを計算する
-        float3 ligDir = psIn.worldPos - ptPosition;
-        // 正規化して大きさ1のベクトルにする
-        ligDir = normalize(ligDir);
-        // 減衰なしのLambert拡散反射光を計算する
-        float3 diffPoint = CalcLambertDiffuse(
-            ligDir,     // ライトの方向
-            ptColor,    // ライトのカラー
-            psIn.normal // サーフェイスの法線
-        );
-        // 減衰なしのPhong鏡面反射光を計算する
-        float3 specPoint = CalcPhongSpecular(
-            ligDir,        // ライトの方向
-            ptColor,       // ライトのカラー
-            psIn.worldPos, // サーフェイスのワールド座標
-            psIn.normal    // サーフェイスの法線
-        );
-        // 距離による影響率を計算する
-        float3 distance = length(psIn.worldPos - ptPosition);
-        // 影響率は距離に比例して小さくなっていく
-        float affect = 1.0f - 1.0f / ptRange * distance;
-        // 影響力がマイナスにならないように補正をかける
-        if (affect < 0.0f)
+
+        /* ポイントライト */
+        float3 diffuse_light = 0;
+        float3 specular_light = 0;
+        for (int i = 0; i < PointLightCount; i++)
         {
-            affect = 0.0f;
+            // サーフェイスに入射するポイントライトの光の向きを計算する
+            float3 light_dir = ps_in.WorldPos - PointLights[i].Position;
+            // ポイントライトからの距離
+            float light_dist = length(light_dir);
+            // ポイントライトへの方向を正規化
+            light_dir = normalize(light_dir);
+            // ポイントライトによる減衰なしのLambert拡散反射光を計算する
+            float3 diff_point = CalcLambertDiffuse(light_dir, PointLights[i].Color, normal);
+            // ポイントライトによる減衰なしのPhong鏡面反射光を計算する
+            float3 spec_point = CalcPhongSpecular(light_dir, PointLights[i].Color, cam_dir, normal);
+            // ポイントライトによる減衰を計算する
+            float att = 1.0f / (PointLights[i].Attenuation.x + PointLights[i].Attenuation.y * light_dist + PointLights[i].Attenuation.z * light_dist * light_dist);
+            // ポイントライトによる減衰を適用する
+            diff_point *= att;
+            spec_point *= att;
+            // ポイントライトによるLambert拡散反射光を加算する
+            diffuse_light += diff_point;
+            // ポイントライトによるPhong鏡面反射光を加算する
+            specular_light += spec_point;
         }
-        // 影響を指数関数的にする。今回のサンプルでは3乗している
-        affect = pow(affect, 3.0f);
-        // 拡散反射光と鏡面反射光に影響率を乗算して影響を弱める
-        diffPoint *= affect;
-        specPoint *= affect;
-        // 2つの反射光を合算して最終的な反射光を求める
-        float3 diffuseLig = diffPoint + diff_direction;
-        float3 specularLig = specPoint + spec_direction;
-        */
-        float3 diffuse_lig = diff_direction;
-        float3 specular_lig = spec_direction;
-
+        // ディレクションライトを加算する
+        diffuse_light += diff_direction * shadow;
+        specular_light += spec_direction * shadow;
         // 拡散反射光と鏡面反射光、環境光を足し算して、最終的な光を求める
-        float3 lig = diffuse_lig + specular_lig + AmbientLight;
+        float3 light = diffuse_light + specular_light + AmbientLight;
         color += BaseTex.Sample(Sampler, ps_in.UV).xyz;
-
         // テクスチャカラーに求めた光を乗算して最終出力カラーを求める
-        color.xyz *= lig;
+        color.xyz *= light;
     }
-    
+
     /* エミッシブ */
     color += EmissiveTex.Sample(Sampler, ps_in.UV).rgb * Emissive;
 
@@ -178,16 +162,18 @@ float4 main(PSIn ps_in) : SV_Target0
     if (DistanceFogEnable && FogEnable)
     {
         // フォグ 1(近い)～0(遠い)
-        float fog = saturate(1.0 / exp(cam_dist * DistanceFogDensity));
+        float fog = saturate((DistanceFogEnd - cam_dist) / (DistanceFogEnd - DistanceFogStart));
+        //float fog = exp(-0.06 * cam_dist);
+        //float fog = exp(-mul(0.03 * cam_dist, 2));
         color.rgb = lerp(DistanceFogColor, color.rgb, fog);
     }
-    
+
     /* リムライト */
     // 内積を用いて0.0～1.0を出している (worldnormalを使用)
     float rim = 1.0f - saturate(dot(cam_dir, ps_in.WorldNormal));
     // 最終的なリムの値を出す。
     float3 emission = RimColor.rgb * pow(rim, RimPower) * RimPower;
     color.rgb += emission;
-    
+
     return float4(color, base_color.a);
 }

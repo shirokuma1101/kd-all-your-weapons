@@ -6,15 +6,6 @@
 
 struct VSIn
 {
-    float4 Pos     : POSITION;  // 頂点座標
-    float2 UV      : TEXCOORD0; // テクスチャUV座標
-    float3 Normal  : NORMAL;    // 法線ベクトル
-    float4 Color   : COLOR;     // 頂点色
-    float3 Tangent : TANGENT;   // 接線
-};
-
-struct VSSkinIn
-{
     float4 Pos        : POSITION;   // 頂点座標
     float2 UV         : TEXCOORD0;  // テクスチャUV座標
     float3 Normal     : NORMAL;     // 法線ベクトル
@@ -35,6 +26,14 @@ struct PSIn
     float3 WorldBinormal : TEXCOORD5;   // ワールド従法線
 };
 
+struct ShadowPSIn
+{
+    float4 Pos         : SV_POSITION; // 射影座標
+    float2 UV          : TEXCOORD0;   // UV座標
+    float4 Color       : TEXCOORD1;   // 色
+    float4 WorldPos    : TEXCOORD2;   // ワールド3D座標
+};
+
 /* Object */
 cbuffer ObjectCB : register(b2)
 {
@@ -50,7 +49,7 @@ cbuffer ObjectCB : register(b2)
 };
 
 /* Mesh */
-cbuffer ObjectCB : register(b3)
+cbuffer MeshCB : register(b3)
 {
     row_major float4x4 World; // ワールド変換行列
 };
@@ -67,7 +66,8 @@ cbuffer MaterialCB : register(b4)
 /* Bones */
 cbuffer BonesCB : register(b5)
 {
-    row_major float4x4 Bones[300];
+    int                BonesEnable; // ボーン有効
+    row_major float4x4 Bones[128];
 };
 
 /* RimLight */

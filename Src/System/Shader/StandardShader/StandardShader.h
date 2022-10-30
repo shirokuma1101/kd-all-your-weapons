@@ -45,6 +45,12 @@ public:
     }
 
     void SetToDevice();
+    
+    void BeginShadow();
+    void EndShadow();
+
+    void BeginStandard();
+    void EndStandard();
 
     void DrawPolygon(const KdPolygon& poly, const Math::Matrix& world);
 
@@ -81,10 +87,12 @@ private:
     }; // 48byte
 
     // ボーン定数バッファ
-    static constexpr int BONES_MAX = 300;
+    static constexpr int BONES_MAX = 128;
     struct BonesCB {
-        Math::Matrix bones[BONES_MAX]; // 64byte: ボーン行列
-    }; // 64byte
+        int          bonesEnable = 0;       //     4byte: ボーン有効
+        DIRECTX11_HELPER_PADDING_12BYTE(0); //    12byte: パディング0
+        Math::Matrix bones[BONES_MAX];      // 19200byte: ボーン行列
+    }; // 19216byte
 
     // リムライト定数バッファ
     struct RimLightCB {
@@ -102,8 +110,11 @@ private:
 
     ID3D11VertexShader* m_pVS              = nullptr;
     ID3D11InputLayout*  m_pInputLayout     = nullptr;
-    ID3D11VertexShader* m_pVSSkin          = nullptr;
-    ID3D11InputLayout*  m_pInputLayoutSkin = nullptr;
     ID3D11PixelShader*  m_pPS              = nullptr;
+
+    ID3D11VertexShader* m_pShadowVS        = nullptr;
+    ID3D11PixelShader*  m_pShadowPS        = nullptr;
+    DirectX11RenderTargetSystem        m_shadowRT;
+    DirectX11RenderTargetChangerSystem m_shadowRtc;
     
 };

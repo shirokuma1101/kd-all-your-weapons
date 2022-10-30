@@ -3,6 +3,21 @@
 
 PSIn main(VSIn vs_in)
 {
+    if (BonesEnable)
+    {
+        /* スキニング */
+        // 行列を合成
+        row_major float4x4 bones = 0; // 行列を0埋め
+        [unroll]
+        for (int i = 0; i < 4; i++)
+        {
+            bones += Bones[vs_in.SkinIndex[i]] * vs_in.SkinWeight[i];
+        }
+        // 座標と法線に適用
+        vs_in.Pos = mul(vs_in.Pos, bones);
+        vs_in.Normal = mul(vs_in.Normal, (float3x3) bones);
+    }
+    
     PSIn ps_in;
     
     // キャラクターの座標変換 : ローカル座標系 -> ワールド座標系へ変換
