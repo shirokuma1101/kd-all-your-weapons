@@ -43,24 +43,36 @@ public:
     }
     virtual void Draw() {
         DirectX11System::WorkInstance().GetShaderManager()->SetToDevice();
-        DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().SetToDevice();
-        for (const auto& e : m_spGameObjects) {
-            e->DrawTransparent();
+        {
+            auto& shader = DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader();
+            shader.SetToDevice();
+            //for (const auto& e : m_spGameObjects) {
+            //    e->DrawTransparent();
+            //}
+            shader.BeginShadow();
+            for (const auto& e : m_spGameObjects) {
+                e->DrawOpaque();
+            }
+            shader.EndShadow();
+            shader.BeginStandard();
+            for (const auto& e : m_spGameObjects) {
+                e->DrawOpaque();
+            }
+            shader.EndStandard();
         }
-        for (const auto& e : m_spGameObjects) {
-            e->DrawOpaque();
+        {
+            DirectX11System::WorkInstance().GetShaderManager()->GetSpriteShader().SetToDevice();
+            for (const auto& e : m_spGameObjects) {
+                e->DrawSprite();
+            }
         }
-        
-        DirectX11System::WorkInstance().GetShaderManager()->GetSpriteShader().SetToDevice();
-        for (const auto& e : m_spGameObjects) {
-            e->DrawSprite();
+        {
+            DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().Begin();
+            for (const auto& e : m_spGameObjects) {
+                e->DrawFont();
+            }
+            DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().End();
         }
-
-        DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().Begin();
-        for (const auto& e : m_spGameObjects) {
-            e->DrawFont();
-        }
-        DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().End();
     }
     virtual void ImGuiUpdate() {
         for (const auto& e : m_spGameObjects) {

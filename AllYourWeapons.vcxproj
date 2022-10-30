@@ -58,10 +58,10 @@
     <ClInclude Include="Src\System\Asset\Texture\TextureData.h" />
     <ClInclude Include="Src\System\Asset\Texture\TextureManager.h" />
     <ClInclude Include="Src\System\DirectX11\DirectX11BufferSystem.h" />
-    <ClInclude Include="Src\System\DirectX11\DirectX11CameraSystem.h" />
     <ClInclude Include="Src\System\DirectX11\DirectX11System.h" />
     <ClInclude Include="Src\System\DirectX11\DirectX11TextureSystem.h" />
     <ClInclude Include="Src\System\GameObject\GameObject.h" />
+    <ClInclude Include="Src\System\Math\CameraProperties.h" />
     <ClInclude Include="Src\System\Math\Collision.h" />
     <ClInclude Include="Src\System\Shader\ShaderManager.h" />
     <ClInclude Include="Src\System\Shader\SpriteShader\SpriteShader.h" />
@@ -105,6 +105,7 @@
     <None Include="Src\System\Shader\Common.hlsli" />
     <None Include="Src\System\Shader\SpriteShader\SpriteShader.hlsli" />
     <None Include="Src\System\Shader\StandardShader\StandardShader.hlsli" />
+    <None Include="Src\System\Shader\StandardShader\StandardShaderVSShadow.hlsl.vsspell" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Src\System\Shader\SpriteShader\SpriteShaderPS.hlsl">
@@ -148,6 +149,36 @@
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RelativeDir)\%(Filename).inc</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)\%(Filename).inc</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)\%(Filename).inc</HeaderFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Src\System\Shader\StandardShader\StandardShaderShadowPS.hlsl">
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">compiledBuffer</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RelativeDir)\%(Filename).inc</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">compiledBuffer</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RelativeDir)\%(Filename).inc</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compiledBuffer</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)\%(Filename).inc</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compiledBuffer</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)\%(Filename).inc</HeaderFileOutput>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ExcludedFromBuild>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Src\System\Shader\StandardShader\StandardShaderVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
@@ -162,24 +193,36 @@
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RelativeDir)\%(Filename).inc</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)\%(Filename).inc</HeaderFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)\%(Filename).inc</HeaderFileOutput>
-    </FxCompile>
-    <FxCompile Include="Src\System\Shader\StandardShader\StandardShaderVSSkin.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">compiledBuffer</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">compiledBuffer</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compiledBuffer</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compiledBuffer</VariableName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Src\System\Shader\StandardShader\StandardShaderShadowVS.hlsl">
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">compiledBuffer</VariableName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RelativeDir)\%(Filename).inc</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">compiledBuffer</VariableName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RelativeDir)\%(Filename).inc</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compiledBuffer</VariableName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)\%(Filename).inc</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compiledBuffer</VariableName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)\%(Filename).inc</HeaderFileOutput>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ExcludedFromBuild>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -8,6 +8,17 @@
 #include "Application/Game/Scene/Scene.h"
 
 class DynamicObject;
+enum class KeyType {
+    MoveForward,
+    MoveBackward,
+    StrafeLeft,
+    StrageRight,
+    Sprint,
+    Shoot,
+    Aim,
+    Interact,
+    //MelleAttack,
+};
 
 class GameSystem
 {
@@ -31,6 +42,9 @@ public:
     const std::unique_ptr<InputManager>& GetInputManager() const noexcept {
         return m_upInputMgr;
     }
+    const std::unique_ptr<KeyConfigManager<KeyType>>& GetKeyConfigManager() const noexcept {
+        return m_upKeyConfigMgr;
+    }
     const std::unique_ptr<PhysXManager>& GetPhysXManager() const noexcept {
         return m_upPhysxMgr;
     }
@@ -38,10 +52,10 @@ public:
         return m_upAssetMgr;
     }
     
-    std::shared_ptr<Scene>& GetScene() noexcept {
+    std::shared_ptr<Scene> GetScene() noexcept {
         return m_spScene;
     }
-    const std::shared_ptr<Scene>& GetScene() const noexcept {
+    std::shared_ptr<const Scene> GetScene() const noexcept {
         return m_spScene;
     }
     
@@ -55,6 +69,7 @@ public:
     auto& im = Application::Instance().GetGameSystem()->GetInputManager();
     auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
     auto& cm = Application::Instance().GetGameSystem()->GetInputManager()->GetCursorManager();
+    auto& kcm = Application::Instance().GetGameSystem()->GetKeyConfigManager();
     auto& pm = Application::Instance().GetGameSystem()->GetPhysXManager();
     auto& am = Application::Instance().GetGameSystem()->GetAssetManager();
     auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
@@ -68,12 +83,13 @@ private:
         imgui_helper::Release();
     }
 
-    std::unique_ptr<AudioManager>     m_upAudioMgr;
-    std::unique_ptr<EffekseerManager> m_upEffekseerMgr;
-    std::unique_ptr<InputManager>     m_upInputMgr;
-    std::unique_ptr<PhysXManager>     m_upPhysxMgr;
-    std::unique_ptr<AssetManager>     m_upAssetMgr;
-    std::shared_ptr<Scene>            m_spScene;
+    std::unique_ptr<AudioManager>              m_upAudioMgr;
+    std::unique_ptr<EffekseerManager>          m_upEffekseerMgr;
+    std::unique_ptr<InputManager>              m_upInputMgr;
+    std::unique_ptr<KeyConfigManager<KeyType>> m_upKeyConfigMgr;
+    std::unique_ptr<PhysXManager>              m_upPhysxMgr;
+    std::unique_ptr<AssetManager>              m_upAssetMgr;
+    std::shared_ptr<Scene>                     m_spScene;
 
     double m_fps            = 0;
     bool   m_isUnlimitedFps = false;

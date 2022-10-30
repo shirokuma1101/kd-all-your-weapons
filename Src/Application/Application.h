@@ -22,14 +22,29 @@ public:
     std::shared_ptr<GameSystem> GetGameSystem() noexcept {
         return m_spGameSystem;
     }
-    std::shared_ptr<GameSystem> GetGameSystem() const noexcept {
+    std::shared_ptr<const GameSystem> GetGameSystem() const noexcept {
         return m_spGameSystem;
     }
     double GetDeltaTime() const noexcept {
         return m_deltaTime.time;
     }
 
-    void SetWindowSettings(const Window::Size& size, float rendering_resolution_percentage = 100.f, bool is_full_screen = false) {
+    void SetWindowSettings(int resolution, float rendering_resolution_percentage = 100.f, bool is_full_screen = false) {
+        Window::Size size;
+        switch (resolution) {
+        case 0:
+            size = Window::HD;
+            break;
+        case 1:
+            size = Window::FHD;
+            break;
+        case 2:
+            size = Window::QHD;
+            break;
+        case 3:
+            size = Window::UHD;
+            break;
+        }
         m_window.Resize(size);
         DirectX11System::WorkInstance().Resize({
             static_cast<Window::Size::first_type>(size.first * (rendering_resolution_percentage / 100.f)),
@@ -45,11 +60,11 @@ public:
 
 private:
 
+    void Release();
+
     Window                      m_window; // ウィンドウ
     std::shared_ptr<GameSystem> m_spGameSystem;
     DeltaTime                   m_deltaTime;   // FPS制御
-
-    void Release();
 
     MACRO_SINGLETON(Application, WorkInstance, Instance, Destruct);
     

@@ -74,11 +74,20 @@ void GameScene::Init()
 
     /* Shader */
     DirectX11System::WorkInstance().GetShaderManager()->ChangeRasterizerState(DirectX11System::Instance().GetShaderManager()->m_pRSCullNone);
+    auto camera_cb = DirectX11System::WorkInstance().GetShaderManager()->GetCameraCB().Get();
+    camera_cb->distanceFogEnable = true;
+    camera_cb->distanceFogColor  = { 0.75f, 0.64f, 0.6f };
+    camera_cb->distanceFogStart  = -19.3f;
+    camera_cb->distanceFogEnd    = 143.6f;
+    DirectX11System::WorkInstance().GetShaderManager()->GetCameraCB().Write();
     auto light_cb = DirectX11System::WorkInstance().GetShaderManager()->GetLightCB().Get();
     light_cb->ambientLight              = { 0.7f, 0.6f, 0.6f };
     light_cb->directionalLightDirection = { -0.5, -0.8f, 0 };
     light_cb->directionalLightDirection.Normalize();
     light_cb->directionalLightColor     = { 0.7f, 0.7f, 0.7f };
+    light_cb->pointLightCount           = 1;
+    light_cb->pointLight[0].position    = { 0, 0, 0 };
+    light_cb->pointLight[0].color       = { 2.0f, 1.0f, 0.1f };
     DirectX11System::WorkInstance().GetShaderManager()->GetLightCB().Write();
 }
 
@@ -102,6 +111,32 @@ Scene::SceneType GameScene::Update(float delta_time)
 
 void GameScene::ImGuiUpdate()
 {
+    /*
+    static bool is_fog_enable = false;
+    static Math::Vector3 fog_color = { 1.f, 1.f, 1.f };
+    static float fog_start = 0.f;
+    static float fog_end = 100.f;
+    
+    ImGui::SetNextWindowPos(ImVec2(0.f, 250.f));
+    ImGui::SetNextWindowSize(ImVec2(300.f, 250.f));
+    if (ImGui::Begin("GameScene")) {
+        // Fog
+        ImGui::Checkbox("Fog Enable", &is_fog_enable);
+        ImGui::SliderFloat("FogColorR", &fog_color.x, 0.f, 1.f);
+        ImGui::SliderFloat("FogColorG", &fog_color.y, 0.f, 1.f);
+        ImGui::SliderFloat("FogColorB", &fog_color.z, 0.f, 1.f);
+        ImGui::SliderFloat("FogStart", &fog_start, -500.f, 1000.f);
+        ImGui::SliderFloat("FogEnd", &fog_end, 0.f, 1000.f);
+    }
+    ImGui::End();
+    auto camera_cb = DirectX11System::WorkInstance().GetShaderManager()->GetCameraCB().Get();
+    camera_cb->distanceFogEnable = is_fog_enable;
+    camera_cb->distanceFogColor = fog_color;
+    camera_cb->distanceFogStart = fog_start;
+    camera_cb->distanceFogEnd = fog_end;
+    DirectX11System::WorkInstance().GetShaderManager()->GetCameraCB().Write();
+    */
+
     Scene::ImGuiUpdate();
 }
 

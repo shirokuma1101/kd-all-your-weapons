@@ -9,7 +9,7 @@ void Enemy::Update(float delta_time)
         static const float sighting_range  = 10.f; // MN: 視界
         static const float attack_range    = 1.f;  // MN: 攻撃範囲
         static const float walk_speed      = 1.f;  // MN: 歩く速度
-        static const float attack_interval = 1.f; // MN: 攻撃間隔
+        static const float attack_interval = 1.f;  // MN: 攻撃間隔
 
         auto sp_obj = m_wpTargetPlayer.lock();
         // 自分からプレイヤーへの方向ベクトルを計算

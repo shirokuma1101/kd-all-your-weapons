@@ -246,9 +246,6 @@
     <ClInclude Include="Src\System\Shader\SpriteShader\SpriteShader.h">
       <Filter>Src\System\Shader\SpriteShader</Filter>
     </ClInclude>
-    <ClInclude Include="Src\System\DirectX11\DirectX11CameraSystem.h">
-      <Filter>Src\System\DirectX11</Filter>
-    </ClInclude>
     <ClInclude Include="Src\System\Asset\Texture\TextureManager.h">
       <Filter>Src\System\Asset\Texture</Filter>
     </ClInclude>
@@ -257,6 +254,9 @@
     </ClInclude>
     <ClInclude Include="Src\Framework\Direct3D\KdTrailPolygon.h">
       <Filter>Src\Framework\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\Math\CameraProperties.h">
+      <Filter>Src\System\Math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -364,12 +364,10 @@
     <None Include="Src\System\Shader\SpriteShader\SpriteShader.hlsli">
       <Filter>Src\System\Shader\SpriteShader</Filter>
     </None>
+    <None Include="Src\System\Shader\StandardShader\StandardShaderVSShadow.hlsl.vsspell" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Src\System\Shader\StandardShader\StandardShaderVS.hlsl">
-      <Filter>Src\System\Shader\StandardShader</Filter>
-    </FxCompile>
-    <FxCompile Include="Src\System\Shader\StandardShader\StandardShaderVSSkin.hlsl">
       <Filter>Src\System\Shader\StandardShader</Filter>
     </FxCompile>
     <FxCompile Include="Src\System\Shader\StandardShader\StandardShaderPS.hlsl">
@@ -380,6 +378,12 @@
     </FxCompile>
     <FxCompile Include="Src\System\Shader\SpriteShader\SpriteShaderVS.hlsl">
       <Filter>Src\System\Shader\SpriteShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Src\System\Shader\StandardShader\StandardShaderShadowPS.hlsl">
+      <Filter>Src\System\Shader\StandardShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Src\System\Shader\StandardShader\StandardShaderShadowVS.hlsl">
+      <Filter>Src\System\Shader\StandardShader</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

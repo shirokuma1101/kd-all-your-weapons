@@ -10,11 +10,16 @@ public:
 
     void Update(float delta_time) override;
 
-    void DrawSprite();
+    void DrawSprite() override;
+
+    void DrawFont() override;
 
 private:
 
     float m_cursorAlpha = 0.f;
     DirectX11TextureSystem m_titleTexture;
+
+    DirectX11RenderTargetSystem m_rt;
+    DirectX11RenderTargetChangerSystem m_rtc;
     
 };

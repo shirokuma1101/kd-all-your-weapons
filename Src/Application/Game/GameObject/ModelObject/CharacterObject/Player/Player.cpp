@@ -77,7 +77,7 @@ void Player::DrawOpaque()
 {
     auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
     auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
-
+    
     // プレイヤー
     if (mm->IsLoaded(m_name) && m_spModel) {
         auto rotation_matrix = Math::Matrix::CreateFromYawPitchRoll(
@@ -90,12 +90,13 @@ void Player::DrawOpaque()
             m_transform.position.y - (*jm)[m_name]["expand"]["status"]["height"].get<float>(),
             m_transform.position.z
         );
-        
+
         DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().DrawModel(
             *m_spModel,
             Math::Matrix::CreateScale(m_transform.scale) * rotation_matrix * translation_matrix
         );
     }
+    
     // Gravity Gun
     if (mm->IsLoaded("gravity_gun")) {
         auto rotation_matrix = Math::Matrix::CreateFromYawPitchRoll(
@@ -109,7 +110,7 @@ void Player::DrawOpaque()
             m_transform.position.z
         );
 
-        static auto spModel = mm->CopyData("gravity_gun");
+        static auto spModel = mm->CopyData("gravity_gun"); // MN: ここだけ
 
         DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().DrawModel(
             *spModel,
@@ -127,7 +128,7 @@ void Player::DrawOpaque()
 void Player::MouseOperator(float delta_time, float narrow_limit, float wide_limit)
 {
     auto& cm = Application::Instance().GetGameSystem()->GetInputManager()->GetCursorManager();
-    auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
+    auto& kcm = Application::Instance().GetGameSystem()->GetKeyConfigManager();
     auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
 
     auto pos = cm->GetPositionFromCenter();
@@ -142,11 +143,15 @@ void Player::MouseOperator(float delta_time, float narrow_limit, float wide_limi
     }
 
     // 移動時はマウスのY軸方向のみ固定
-    if (km->GetState('W') || km->GetState('S') || km->GetState('A') || km->GetState('D')) {
+    if (kcm->GetState(KeyType::MoveForward)
+        || kcm->GetState(KeyType::MoveBackward)
+        || kcm->GetState(KeyType::StrafeLeft)
+        || kcm->GetState(KeyType::StrageRight)) {
         m_transform.rotation.y = m_cameraRotaion.y;
     }
     // スプリント時か構え時はマウスの方向固定
-    if ((km->GetState(VK_SHIFT) && km->GetState('W')) || km->GetState(VK_RBUTTON)) {
+    if ((kcm->GetState(KeyType::Sprint) && kcm->GetState(KeyType::MoveForward))
+        || kcm->GetState(KeyType::Aim)) {
         m_transform.rotation = m_cameraRotaion;
         m_angle              = m_cameraRotaion.y;
         m_moveDirection      = Math::Matrix::CreateRotationY(convert::ToRadians(m_angle)).Backward();
@@ -201,31 +206,32 @@ void Player::MouseOperator(float delta_time, float narrow_limit, float wide_limi
 void Player::KeyOperator(float delta_time)
 {
     auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
-    auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
+    auto& kcm = Application::Instance().GetGameSystem()->GetKeyConfigManager();
     auto local_mat = Math::Matrix::CreateFromYawPitchRoll(convert::ToRadians(m_transform.rotation));
     Math::Vector3 dir;
     bool is_move = false;
     
-    if (km->GetState('W')) {
+    if (kcm->GetState(KeyType::MoveForward)) {
         dir += local_mat.Backward();
         dir.y = 0.f;
         is_move = true;
     }
-    if (km->GetState('S')) {
+    if (kcm->GetState(KeyType::MoveBackward)) {
         dir += local_mat.Forward();
         dir.y = 0.f;
         is_move = true;
     }
-    if (km->GetState('D')) {
+    if (kcm->GetState(KeyType::StrageRight)) {
         dir += local_mat.Right();
         is_move = true;
     }
-    if (km->GetState('A')) {
+    if (kcm->GetState(KeyType::StrafeLeft)) {
         dir += local_mat.Left();
         is_move = true;
     }
     dir.Normalize();
-    if (km->GetState(VK_SHIFT) && km->GetState('W') && !km->GetState(VK_RBUTTON)) {
+    if (kcm->GetState(KeyType::Sprint) && kcm->GetState(KeyType::MoveForward)
+        && !kcm->GetState(KeyType::Aim)) {
         m_transform.position += dir * (*jm)[m_name]["expand"]["status"]["sprint_speed"] * delta_time;
     }
     else {
@@ -282,7 +288,7 @@ void Player::Shot(float delta_time)
 {
     auto& am = Application::Instance().GetGameSystem()->GetAudioManager();
     auto& em = Application::Instance().GetGameSystem()->GetEffekseerManager();
-    auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
+    auto& kcm = Application::Instance().GetGameSystem()->GetKeyConfigManager();
     auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
     auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
 
@@ -309,10 +315,10 @@ void Player::Shot(float delta_time)
     // SceneがGameの場合はGameSceneにキャストする
     if (Application::Instance().GetGameSystem()->GetScene()->GetSceneType() != Scene::SceneType::Game) return;
     // GameSceneと確定しているのでstatic
-    auto game_scene = std::static_pointer_cast<GameScene>(Application::Instance().GetGameSystem()->GetScene());
+    auto game_scene = std::static_pointer_cast<GameScene>(Application::WorkInstance().GetGameSystem()->GetScene());
 
     // 構え
-    if (km->GetState(VK_RBUTTON)) {
+    if (kcm->GetState(KeyType::Aim)) {
         // DynamicObjectを持っていない場合
         if (m_wpEquipObject.expired()) {
             std::list<collision::Result> results;
@@ -341,7 +347,7 @@ void Player::Shot(float delta_time)
                 if (!m_isShotCT && !m_isSucceededChargeCT && !m_isFailedChargeCT && sp_obj->GetWeight() <= m_equipWeightLimit) {
                     sp_obj->SetSelection(DynamicObject::Selection::Equippable);
                     // DynamicObjectを所持する
-                    if (km->GetState('F')) {
+                    if (kcm->GetState(KeyType::Interact)) {
                         m_wpEquipObject = nearest_obj;
                     }
                 }
@@ -351,7 +357,7 @@ void Player::Shot(float delta_time)
                 }
             }
             // 当たらなかった場合、dirtを生成する
-            else if (!m_isShotCT && !m_isSucceededChargeCT && !m_isFailedChargeCT && km->GetState('F')) {
+            else if (!m_isShotCT && !m_isSucceededChargeCT && !m_isFailedChargeCT && kcm->GetState(KeyType::Interact)) {
                 for (const auto& e : Application::Instance().GetGameSystem()->GetScene()->GetGameObjects()) {
                     const auto& collider = e->GetCollider();
                     if (!collider) continue;
@@ -369,7 +375,7 @@ void Player::Shot(float delta_time)
         // DynamicObjectを持っている場合
         if (!m_wpEquipObject.expired()) {
             // 溜め
-            if (km->GetState(VK_LBUTTON, KeyManager::KeyState::Hold)) {
+            if (kcm->GetState(KeyType::Shoot, KeyManager::KeyState::Hold)) {
                 // 溜めを増加
                 m_nowChargePower += charge_increase_speed * delta_time;
                 // 最大値を超えた場合失敗CT有効
@@ -417,7 +423,7 @@ void Player::Shot(float delta_time)
                 sp_obj->Force(m_transform.matrix.Backward(), ((*jm)[m_name]["expand"]["status"]["shot_power"] + m_nowChargePower));
             }
             // 発射
-            if (km->GetState(VK_LBUTTON, KeyManager::KeyState::Release)) {
+            if (kcm->GetState(KeyType::Shoot, KeyManager::KeyState::Release)) {
                 m_wpEquipObject.reset();
                 if (m_nowChargePower < charge_threshold) {
                     m_nowChargePower = 0.f;
@@ -487,8 +493,8 @@ void Player::Shot(float delta_time)
 
 void Player::SetCameraTransform(float delta_time)
 {
-    auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
-    
+    auto& kcm = Application::Instance().GetGameSystem()->GetKeyConfigManager();
+
     // カメラがある場合
     if (!m_wpFollowerCamera.expired()) {
 
@@ -498,7 +504,7 @@ void Player::SetCameraTransform(float delta_time)
         Math::Vector3 camera_pos = normal_camera;
 
         // 構え時にズームする
-        if (km->GetState(VK_RBUTTON)) {
+        if (kcm->GetState(KeyType::Aim)) {
             m_isZoom = true;
         }
         else {
@@ -526,46 +532,46 @@ void Player::SetCameraTransform(float delta_time)
 
 void Player::PlayAnimation(float delta_time)
 {
-    auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
+    auto& kcm = Application::Instance().GetGameSystem()->GetKeyConfigManager();
 
     // 構え時 MN: アニメーション名
-    if (km->GetState(VK_RBUTTON)) {        
-        if (km->GetState('W') && km->GetState('A')) {
+    if (kcm->GetState(KeyType::Aim)) {
+        if (kcm->GetState(KeyType::MoveForward) && kcm->GetState(KeyType::StrafeLeft)) {
             if (m_animator.GetAnimationName() != "rifle_walk_forward_left") {
                 m_animator.SetAnimation(m_spModel->GetAnimation("rifle_walk_forward_left"));
             }
         }
-        else if (km->GetState('W') && km->GetState('D')) {
+        else if (kcm->GetState(KeyType::MoveForward) && kcm->GetState(KeyType::StrageRight)) {
             if (m_animator.GetAnimationName() != "rifle_walk_forward_right") {
                 m_animator.SetAnimation(m_spModel->GetAnimation("rifle_walk_forward_right"));
             }
         }
-        else if (km->GetState('S') && km->GetState('A')) {
+        else if (kcm->GetState(KeyType::MoveBackward) && kcm->GetState(KeyType::StrafeLeft)) {
             if (m_animator.GetAnimationName() != "rifle_walk_backward_left") {
                 m_animator.SetAnimation(m_spModel->GetAnimation("rifle_walk_backward_left"));
             }
         }
-        else if (km->GetState('S') && km->GetState('D')) {
+        else if (kcm->GetState(KeyType::MoveBackward) && kcm->GetState(KeyType::StrageRight)) {
             if (m_animator.GetAnimationName() != "rifle_walk_backward_right") {
                 m_animator.SetAnimation(m_spModel->GetAnimation("rifle_walk_backward_right"));
             }
         }
-        else if (km->GetState('W')) {
+        else if (kcm->GetState(KeyType::MoveForward)) {
             if (m_animator.GetAnimationName() != "rifle_walk_foward") {
                 m_animator.SetAnimation(m_spModel->GetAnimation("rifle_walk_foward"));
             }
         }
-        else if (km->GetState('S')) {
+        else if (kcm->GetState(KeyType::MoveBackward)) {
             if (m_animator.GetAnimationName() != "rifle_walk_backward") {
                 m_animator.SetAnimation(m_spModel->GetAnimation("rifle_walk_backward"));
             }
         }
-        else if (km->GetState('D')) {
+        else if (kcm->GetState(KeyType::StrageRight)) {
             if (m_animator.GetAnimationName() != "rifle_walk_right") {
                 m_animator.SetAnimation(m_spModel->GetAnimation("rifle_walk_right"));
             }
         }
-        else if (km->GetState('A')) {
+        else if (kcm->GetState(KeyType::StrafeLeft)) {
             if (m_animator.GetAnimationName() != "rifle_walk_left") {
                 m_animator.SetAnimation(m_spModel->GetAnimation("rifle_walk_left"));
             }
@@ -577,15 +583,15 @@ void Player::PlayAnimation(float delta_time)
         }
     }
     // 移動時
-    else if (km->GetState('W') || km->GetState('S') || km->GetState('A') || km->GetState('D')) {
+    else if (kcm->GetState(KeyType::MoveForward) || kcm->GetState(KeyType::MoveBackward) || kcm->GetState(KeyType::StrafeLeft) || kcm->GetState(KeyType::StrageRight)) {
         // スプリント時
-        if (km->GetState(VK_SHIFT) && km->GetState('W')) {
-            if (km->GetState('W') && km->GetState('A')) {
+        if (kcm->GetState(KeyType::Sprint) && kcm->GetState(KeyType::MoveForward)) {
+            if (kcm->GetState(KeyType::MoveForward) && kcm->GetState(KeyType::StrafeLeft)) {
                 if (m_animator.GetAnimationName() != "rifle_sprint_forward_left") {
                     m_animator.SetAnimation(m_spModel->GetAnimation("rifle_sprint_forward_left"));
                 }
             }
-            else if (km->GetState('W') && km->GetState('D')) {
+            else if (kcm->GetState(KeyType::MoveForward) && kcm->GetState(KeyType::StrageRight)) {
                 if (m_animator.GetAnimationName() != "rifle_sprint_forward_right") {
                     m_animator.SetAnimation(m_spModel->GetAnimation("rifle_sprint_forward_right"));
                 }

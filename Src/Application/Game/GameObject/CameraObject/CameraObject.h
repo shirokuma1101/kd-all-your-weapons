@@ -6,8 +6,8 @@ class CameraObject : public GameObject
 {
 public:
 
-    CameraObject(const Math::Matrix& camera_matrix, float fov = 60.f, float aspect = 16.f / 9.f , float near_clipping_distance = 0.001f, float far_clipping_distance = 2000.f)
-        : m_spCamera(std::make_shared<CameraSystem>(camera_matrix, fov, aspect, near_clipping_distance, far_clipping_distance))
+    CameraObject(const Math::Matrix& camera_matrix, float fov = 60.f, float aspect = 16.f / 9.f , float near_clipping_distance = 0.001f, float far_clipping_distance = 1000.f)
+        : m_spCamera(std::make_shared<CameraProperties>(camera_matrix, fov, aspect, near_clipping_distance, far_clipping_distance))
     {}
 
     virtual void Init() override {
@@ -23,10 +23,10 @@ public:
         m_spCamera->SetToShader();
     }
 
-    virtual const std::shared_ptr<CameraSystem>& GetCamera() const final {
+    virtual std::shared_ptr<const CameraProperties> GetCamera() const final {
         return m_spCamera;
     }
-    virtual std::shared_ptr<CameraSystem> GetCamera() final {
+    virtual std::shared_ptr<CameraProperties> GetCamera() final {
         return m_spCamera;
     }
 
@@ -66,7 +66,7 @@ protected:
         
         // ローカル行列を合成したカメラの行列を計算する
         Math::Matrix camera_matrix
-            = m_localTransform.Composition()
+            = m_localTransform.matrix
             * player_matrix;
         
         // プレイヤーからカメラへの方向ベクトルを取得
@@ -89,7 +89,7 @@ protected:
         m_transform.matrix = camera_matrix;
     }
 
-    std::shared_ptr<CameraSystem> m_spCamera;
+    std::shared_ptr<CameraProperties> m_spCamera;
     Transform                     m_localTransform;
 
 };
