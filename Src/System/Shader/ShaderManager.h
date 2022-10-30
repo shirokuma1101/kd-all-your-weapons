@@ -67,7 +67,7 @@ public:
     /* サンプラーステート */
     void ChangeSamplerState(int slot, ID3D11SamplerState* ss);
     void UndoSamplerState();
-    
+
 private:
 
     // カメラ定数バッファ
@@ -76,12 +76,15 @@ private:
         Math::Matrix  projection; // 64byte: 射影行列
         Math::Vector3 position;   // 12byte: カメラのワールド座標
 
-        int           distanceFogEnable  = 0;                 //  4byte: 距離フォグ有効
-        Math::Vector3 distanceFogColor   = { 1.f, 1.f, 1.f }; // 12byte: 距離フォグ色
-        float         distanceFogDensity = 0.001f;            //  4byte: 距離フォグ減衰率
-    }; // 160byte
+        int           distanceFogEnable = 0;                 //  4byte: 距離フォグ有効
+        Math::Vector3 distanceFogColor  = { 1.f, 1.f, 1.f }; // 12byte: 距離フォグ色
+        float         distanceFogStart  = 0.f;               //  4byte: 距離フォグ開始距離
+        float         distanceFogEnd    = 0.f;               //  4byte: 距離フォグ終了距離
+        DIRECTX11_HELPER_PADDING_12BYTE(0);                  // 12byte: パディング0
+    }; // 164byte
 
     // ライト定数バッファ
+    static constexpr int POINT_LIGHT_MAX = 8;
     struct LightCB {
         Math::Vector3 ambientLight              = { 0.3f, 0.3f, 0.3f };  // 12byte: 環境光
         DIRECTX11_HELPER_PADDING_4BYTE(0);                               //  4byte: パディング0
@@ -91,8 +94,20 @@ private:
         Math::Vector3 directionalLightColor     = { 1.f, 1.f, 1.f };     // 12byte: 平行光の色
         DIRECTX11_HELPER_PADDING_4BYTE(2);                               //  4byte: パディング2
         Math::Matrix  directionalLightVP;                                // 64byte: 平行光のビュー射影行列
-    }; // 112byte
-    
+
+        int pointLightCount = 0;                                         //  4byte: ポイントライト数
+        DIRECTX11_HELPER_PADDING_12BYTE(3);                              // 12byte: パディング3
+        struct PointLight {
+            Math::Vector3 position;                                      // 12byte: 点光源のワールド座標
+            DIRECTX11_HELPER_PADDING_4BYTE(4);                           //  4byte: パディング4
+            Math::Vector3 color;                                         // 12byte: 点光源の色
+            DIRECTX11_HELPER_PADDING_4BYTE(5);                           //  4byte: パディング5
+            Math::Vector3 attenuation = { 0.f, 1.f, 0.f };               // 12byte: 点光源の減衰率 (一定減衰、線形減衰、2次減衰)
+            DIRECTX11_HELPER_PADDING_4BYTE(6);                           //  4byte: パディング6
+        }; // 48byte
+        std::array<PointLight, POINT_LIGHT_MAX> pointLight;              // 384byte: 点光源
+    }; // 512byte
+
     StandardShader m_standardShader;
     SpriteShader   m_spriteShader;
     SpriteFont     m_spriteFont; // シェーダーではない
@@ -125,5 +140,5 @@ public:
     ID3D11SamplerState*      m_pSSAnisotropicWrap                = nullptr; // 異方性フィルタリング   : テクスチャの端を固定する
     ID3D11SamplerState*      m_pSSAnisotropicClamp               = nullptr; // 異方性フィルタリング   : テクスチャの端を繋げて繰り返す
     ID3D11SamplerState*      m_pSSUndo                           = nullptr; // 元に戻す
-    
+
 };

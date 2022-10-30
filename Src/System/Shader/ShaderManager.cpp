@@ -90,7 +90,10 @@ void ShaderManager::Release()
 
 void ShaderManager::SetToDevice()
 {
-    m_lightCB.Get()->directionalLightDirection.Normalize();
+    auto camera = m_cameraCB.Get();
+    auto light = m_lightCB.Get();
+    light->directionalLightDirection.Normalize();
+    light->directionalLightVP = DirectX::XMMatrixLookAtLH(camera->position - light->directionalLightDirection * 40, camera->position, Math::Vector3::Up) * DirectX::XMMatrixOrthographicLH(50, 50, 0, 100);
     m_lightCB.Write();
     
     DirectX11System::Instance().GetCtx().Get()->VSSetConstantBuffers(0, 1, m_cameraCB.GetBufferAddress());
