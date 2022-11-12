@@ -6,10 +6,10 @@
 struct KdMaterial
 {
     KdMaterial()
-        : BaseColorTex(DirectX11System::Instance().GetWhiteTexture())
-        , MetallicRoughnessTex(DirectX11System::Instance().GetWhiteTexture())
-        , EmissiveTex(DirectX11System::Instance().GetWhiteTexture())
-        , NormalTex(DirectX11System::Instance().GetNormalTexture())
+        : BaseColorTex(DirectX11System::WorkInstance().GetWhiteTexture())
+        , MetallicRoughnessTex(DirectX11System::WorkInstance().GetWhiteTexture())
+        , EmissiveTex(DirectX11System::WorkInstance().GetWhiteTexture())
+        , NormalTex(DirectX11System::WorkInstance().GetNormalTexture())
     {}
     
     void Load(std::string_view filePath);
