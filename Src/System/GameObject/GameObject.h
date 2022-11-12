@@ -3,22 +3,17 @@
 #include "ExternalDependencies/Asset/Json/JsonData.h"
 #include "ExternalDependencies/ImGui/ImGuiHelper.h"
 #include "ExternalDependencies/Math/Collider.h"
-#define TRANSFORM_ROTATION_USE_EULER
-#include "ExternalDependencies/Math/Transform.h"
 
 #include "System/Math/CameraProperties.h"
 #include "System/Math/Collision.h"
 
-enum DefaultCollisionType {
-    None   = 0,
-    Bump   = 1 << 0,
-    Attack = 1 << 1,
-    Road   = 1 << 2,
-};
+#include "GameObjectHelper.h"
 
 class GameObject : public std::enable_shared_from_this<GameObject>
 {
 public:
+
+    using DefaultCollider = Collider<game_object_helper::DefaultCollisionType>;
 
     GameObject()
         : m_isObjectAlive(true)
@@ -37,9 +32,7 @@ public:
     /* 前処理 */
     virtual void PreUpdate() {}
     /* 処理 */
-    virtual void Update(float delta_time) {
-        delta_time; // C4100 'identifier' : unreferenced formal parameter
-    }
+    virtual void Update(float /* delta_time */) {}
 
     /* 透明描画 */
     virtual void DrawTransparent() {}
@@ -71,11 +64,11 @@ public:
         return m_transform;
     }
     /* Matrix取得 */
-    virtual const DirectX::SimpleMath::Matrix& GetMatrix() const noexcept {
+    virtual const DirectX::SimpleMath::Matrix& GetMatrix() const noexcept final {
         return m_transform.matrix;
     }
     /* DefaultCollider取得 */
-    virtual std::unique_ptr<Collider<DefaultCollisionType>>& GetCollider() noexcept final {
+    virtual const std::unique_ptr<DefaultCollider>& GetCollider() const noexcept final {
         return m_upDefaultCollider;
     }
 
@@ -89,96 +82,51 @@ public:
     * 変換
     **************************************************/
     
-    /* jsonからRay情報に変換 */
+    /* jsonからRay情報に変換 !例外処理は無し */
+    virtual collision::Ray ToRay(const JsonData::Json& json) const final {
+        const auto& properties = json.items().begin().value();
+        return collision::Ray(
+            properties.count("position") ? m_transform.position + game_object_helper::ToVector3(properties["position"]) : m_transform.position,
+            game_object_helper::ToVector3(properties["direction"]),
+            properties["range"].get<float>()
+        );
+    }
+    /* jsonからSphere情報に変換 !例外処理は無し */
+    virtual collision::BoundingSphere ToSphere(const JsonData::Json& json) const final {
+        const auto& properties = json.items().begin().value();
+        return collision::BoundingSphere(
+            properties.count("center") ? m_transform.position + game_object_helper::ToVector3(properties["center"]) : m_transform.position,
+            properties["radius"].get<float>()
+        );
+    }
+    
+    /* jsonからRay情報リストに変換 */
     virtual std::list<collision::Ray> ToRays(const JsonData::Json& json) const final {
         std::list<collision::Ray> rays;
-        collision::Ray ray;
         for (const auto& e : json) {
-            const auto& first_key = e.items().begin().key();
-            const auto& first_value = e.items().begin().value();
-            if (first_key != "ray") continue;
-            ray.position  = first_value.count("position") ? m_transform.position + ToVector3(first_value["position"]) : m_transform.position;
-            ray.direction = ToVector3(first_value["direction"]);
-            ray.range     = first_value["range"].get<float>();
-            rays.push_back(ray);
+            const auto& type = e.items().begin().key();
+            if (type != "ray") continue;
+            rays.push_back(ToRay(e));
         }
         return rays;
     }
-    /* jsonからSphere情報に変換 */
+    /* jsonからSphere情報リストに変換 */
     virtual std::list<collision::BoundingSphere> ToSpheres(const JsonData::Json& json) const final {
         std::list<collision::BoundingSphere> spheres;
-        collision::BoundingSphere sphere;
         for (const auto& e : json) {
-            const auto& first_key = e.items().begin().key();
-            const auto& first_value = e.items().begin().value();
-            if (first_key != "sphere") continue;
-            sphere.Center = first_value.count("center") ? m_transform.position + ToVector3(first_value["center"]) : m_transform.position;
-            sphere.Radius = first_value["radius"].get<float>();
-            spheres.push_back(sphere);
+            const auto& type = e.items().begin().key();
+            if (type != "sphere") continue;
+            spheres.push_back(ToSphere(e));
         }
         return spheres;
     }
-    /* jsonとModelからMesh情報に変換 */
-    virtual std::list<std::shared_ptr<KdMesh>> ToMeshes(const JsonData::Json& json, const std::shared_ptr<KdModelWork>& model) const final {
-        std::list<std::shared_ptr<KdMesh>> meshes;
-        for (const auto& e : json) {
-            const auto& first_key = e.items().begin().key();
-            const auto& first_value = e.items().begin().value();
-            if (first_key != "mesh") continue;
-            const auto& node = model->GetData()->FindNode(first_value);
-            if (!node || !node->m_spMesh) continue;
-            if (const auto& mesh = node->m_spMesh; mesh) {
-                meshes.push_back(mesh);
-            }
-        }
-        if (!meshes.size()) {
-            for (const auto& e : model->GetData()->GetOriginalNodes()) {
-                if (const auto& mesh = e.m_spMesh; mesh) {
-                    meshes.push_back(mesh);
-                }
-            }
-        }
-        return meshes;
-    }
-
-    /* jsonからVector3に変換 */
-    static Math::Vector3 ToVector3(const JsonData::Json& json) {
-        size_t size = json.size();
-        if (size == 1) {
-            return Math::Vector3(json.get<float>());
-        }
-        if (size == 3) {
-            return Math::Vector3(json[0].get<float>(), json[1].get<float>(), json[2].get<float>());
-        }
-        return Math::Vector3::Zero;
-    }
-    /* jsonからTransformに変換 */
-    static Transform ToTransform(const JsonData::Json& json) {
-        auto position = json.count("position") ? ToVector3(json["position"]) : Math::Vector3::Zero;
-        auto rotation = json.count("rotation") ? ToVector3(json["rotation"]) : Math::Vector3::Zero;
-        auto scale    = json.count("scale")    ? ToVector3(json["scale"])    : Math::Vector3::One;
-        return Transform(position, rotation, scale);
-    }
-    /* stringからDefaultCollisionTypeに変換 */
-    static DefaultCollisionType ToDefaultCollisionType(std::string_view str) {
-        auto dct = DefaultCollisionType::None;
-        if (str == "bump") {
-            dct = DefaultCollisionType::Bump;
-        }
-        if (str == "attack") {
-            dct = DefaultCollisionType::Attack;
-        }
-        if (str == "road") {
-            dct = DefaultCollisionType::Road;
-        }
-        return dct;
-    }
+    
 
 protected:
 
-    bool                                            m_isObjectAlive     = false;
-    bool                                            m_isAlive           = false;
-    Transform                                       m_transform;
-    std::unique_ptr<Collider<DefaultCollisionType>> m_upDefaultCollider = nullptr;
+    bool                             m_isObjectAlive     = false;   // オブジェクト生死
+    bool                             m_isAlive           = false;   // 生死
+    Transform                        m_transform;                   // Transform
+    std::unique_ptr<DefaultCollider> m_upDefaultCollider = nullptr; // DefaultCollider
     
 };

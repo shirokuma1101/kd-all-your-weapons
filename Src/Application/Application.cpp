@@ -1,15 +1,17 @@
 ﻿#include "Application.h"
 
-//#define ENABLE_BREAKPOINT_ALLOCATE_MEMORY 100;
+#ifdef _DEBUG
+//#define ENABLE_BREAKPOINT_ALLOCATE_MEMORY 1;
 #define ENABLE_DIRECTX11_DEBUG
 //#define ENABLE_DIRECTX11_DETAILED_MEMORY_INFOMATION
 #define ENABLE_IMGUI
+#endif
 
 bool Application::Init()
 {
-    const Window::Size     window_size    = Window::HD;
-    const Window::Position window_pos     = { 0, 0 };
-    const std::string      window_title   = "AllYourWeapons";
+    const Window::Size     window_size  = Window::HD;
+    const Window::Position window_pos   = { 0, 0 };
+    const std::string      window_title = "AllYourWeapons";
 
     /* ロケールを設定 */
     setlocale(LC_ALL, "japanese");
@@ -28,23 +30,23 @@ bool Application::Init()
 
     /* ウィンドウ作成 */
     if (!m_window.Create(window_title, window_pos, window_size)) {
-        assert::RaiseAssert(ASSERT_FILE_LINE, "ウィンドウ作成に失敗");
+        assert::ShowError(ASSERT_FILE_LINE, "ウィンドウ作成に失敗");
         return false;
     }
 
     /* Direct3D初期化 */
 #ifdef ENABLE_DIRECTX11_DEBUG
-    constexpr bool is_enable_debug = true;
+    constexpr bool enable_debug = true;
 #else
-    constexpr bool is_enable_debug = false;
+    constexpr bool enable_debug = false;
 #endif
 #ifdef ENABLE_DIRECTX11_DETAILED_MEMORY_INFOMATION
-    constexpr bool is_enable_detailed_memory_infomation = true;
+    constexpr bool enable_detailed_memory_infomation = true;
 #else
-    constexpr bool is_enable_detailed_memory_infomation = false;
+    constexpr bool enable_detailed_memory_infomation = false;
 #endif
-    if (!DirectX11System::WorkInstance().Init(m_window.GetWindowHandle(), window_size, is_enable_debug, is_enable_detailed_memory_infomation)) {
-        assert::RaiseAssert(ASSERT_FILE_LINE, "Direct3D初期化失敗");
+    if (!DirectX11System::WorkInstance().Init(m_window.GetWindowHandle(), window_size, enable_debug, enable_detailed_memory_infomation)) {
+        assert::ShowError(ASSERT_FILE_LINE, "Direct3D初期化失敗");
         return false;
     }
     
@@ -57,7 +59,7 @@ bool Application::Init()
 void Application::Run()
 {
     while (true) {
-
+        // ウィンドウメッセージ処理
         if (!m_window.ProcessMessage()) break;
 
         // ゲーム更新

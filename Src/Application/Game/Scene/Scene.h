@@ -49,11 +49,12 @@ public:
             //for (const auto& e : m_spGameObjects) {
             //    e->DrawTransparent();
             //}
-            shader.BeginShadow();
-            for (const auto& e : m_spGameObjects) {
-                e->DrawOpaque();
+            if (shader.BeginShadow()) {
+                for (const auto& e : m_spGameObjects) {
+                    e->DrawOpaque();
+                }
+                shader.EndShadow();
             }
-            shader.EndShadow();
             shader.BeginStandard();
             for (const auto& e : m_spGameObjects) {
                 e->DrawOpaque();

@@ -54,7 +54,7 @@ public:
 
         if (m_spRigidActorHolder) {
             m_spRigidActorHolder->Update();
-            auto vec = m_spRigidActorHolder->GetMoveVector();
+            //auto& vec = m_spRigidActorHolder->GetMoveVector();
         }
     }
 
