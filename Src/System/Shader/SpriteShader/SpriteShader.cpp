@@ -2,10 +2,12 @@
 
 bool SpriteShader::Init()
 {
+    auto dev = DirectX11System::Instance().GetDev();
+
     {
         #include "SpriteShaderVS.inc"
-        if (FAILED(DirectX11System::Instance().GetDev()->CreateVertexShader(compiledBuffer, sizeof(compiledBuffer), nullptr, &m_pVS))) {
-            assert::RaiseAssert(ASSERT_FILE_LINE, "頂点シェーダー作成失敗");
+        if (FAILED(dev->CreateVertexShader(compiledBuffer, sizeof(compiledBuffer), nullptr, &m_pVS))) {
+            assert::ShowError(ASSERT_FILE_LINE, "頂点シェーダー作成失敗");
             Release();
             return false;
         }
@@ -17,22 +19,22 @@ bool SpriteShader::Init()
         };
 
         // 頂点インプットレイアウト作成
-        if (FAILED(DirectX11System::Instance().GetDev()->CreateInputLayout(
+        if (FAILED(dev->CreateInputLayout(
             &layout[0],
             static_cast<UINT>(layout.size()),
             compiledBuffer,
             sizeof(compiledBuffer),
             &m_pInputLayout
         ))) {
-            assert::RaiseAssert(ASSERT_FILE_LINE, "頂点インプットレイアウト作成失敗");
+            assert::ShowError(ASSERT_FILE_LINE, "頂点インプットレイアウト作成失敗");
             Release();
             return false;
         }
     }
     {
         #include "SpriteShaderPS.inc"
-        if (FAILED(DirectX11System::Instance().GetDev()->CreatePixelShader(compiledBuffer, sizeof(compiledBuffer), nullptr, &m_pPS))) {
-            assert::RaiseAssert(ASSERT_FILE_LINE, "ピクセルシェーダー作成失敗");
+        if (FAILED(dev->CreatePixelShader(compiledBuffer, sizeof(compiledBuffer), nullptr, &m_pPS))) {
+            assert::ShowError(ASSERT_FILE_LINE, "ピクセルシェーダー作成失敗");
             Release();
             return false;
         }
@@ -57,17 +59,19 @@ void SpriteShader::Release()
 void SpriteShader::SetToDevice()
 {
     auto v = DirectX11System::Instance().GetViewport();
+    auto ctx = DirectX11System::Instance().GetCtx();
+
     m_projectionCB.Get()->projection = DirectX::XMMatrixOrthographicLH(v.Width, v.Height, 0, 1);
     m_projectionCB.Write();
 
-    DirectX11System::Instance().GetCtx()->VSSetShader(m_pVS, 0, 0);
-    DirectX11System::Instance().GetCtx()->PSSetShader(m_pPS, 0, 0);
-    DirectX11System::Instance().GetCtx()->IASetInputLayout(m_pInputLayout);
+    ctx->VSSetShader(m_pVS, 0, 0);
+    ctx->PSSetShader(m_pPS, 0, 0);
+    ctx->IASetInputLayout(m_pInputLayout);
 
-    DirectX11System::Instance().GetCtx()->VSSetConstantBuffers(2, 1, m_spriteCB.GetBufferAddress());
-    DirectX11System::Instance().GetCtx()->PSSetConstantBuffers(2, 1, m_spriteCB.GetBufferAddress());
-    DirectX11System::Instance().GetCtx()->VSSetConstantBuffers(3, 1, m_projectionCB.GetBufferAddress());
-    DirectX11System::Instance().GetCtx()->PSSetConstantBuffers(3, 1, m_projectionCB.GetBufferAddress());
+    ctx->VSSetConstantBuffers(2, 1, m_spriteCB.GetBufferAddress());
+    ctx->PSSetConstantBuffers(2, 1, m_spriteCB.GetBufferAddress());
+    ctx->VSSetConstantBuffers(3, 1, m_projectionCB.GetBufferAddress());
+    ctx->PSSetConstantBuffers(3, 1, m_projectionCB.GetBufferAddress());
 }
 
 void SpriteShader::DrawTex(const DirectX11Texture& tex, const Math::Matrix& world, const Math::Vector2& rect, const Math::Vector2& uv_min, const Math::Vector2& uv_max, const Math::Color& color, const Math::Vector2& pivot)
@@ -254,10 +258,12 @@ void SpriteFont::Draw(std::string_view font_name, std::string_view text, const M
 
 void SpriteFont::Begin()
 {
-    DirectX11System::Instance().GetCtx()->OMGetBlendState(&m_saveState.pBlendState, m_saveState.factor, &m_saveState.mask);
-    DirectX11System::Instance().GetCtx()->CSGetSamplers(0, 1, &m_saveState.pSamplerState);
-    DirectX11System::Instance().GetCtx()->OMGetDepthStencilState(&m_saveState.pDepthStencilState, &m_saveState.stencilRef);
-    DirectX11System::Instance().GetCtx()->RSGetState(&m_saveState.pRasterizerState);
+    auto ctx = DirectX11System::Instance().GetCtx();
+
+    ctx->OMGetBlendState(&m_saveState.pBlendState, m_saveState.factor, &m_saveState.mask);
+    ctx->CSGetSamplers(0, 1, &m_saveState.pSamplerState);
+    ctx->OMGetDepthStencilState(&m_saveState.pDepthStencilState, &m_saveState.stencilRef);
+    ctx->RSGetState(&m_saveState.pRasterizerState);
     m_upSpriteBatch->Begin(DirectX::SpriteSortMode_Deferred, m_saveState.pBlendState, m_saveState.pSamplerState, m_saveState.pDepthStencilState, m_saveState.pRasterizerState);
 }
 

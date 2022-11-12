@@ -20,7 +20,6 @@ void ShaderManager::Init()
 
     /* カメラ */
     m_cameraCB.Create();
-    
     /* ライト */
     m_lightCB.Create();
 
@@ -30,28 +29,44 @@ void ShaderManager::Init()
     **************************************************/
     
     /* 深度ステンシルステート作成 */
-    m_pDssEnableDepthEnableWriteDepth   = directx11_helper::CreateDepthStencilState(dev, true, true);
-    m_pDssEnableDepthDisableWriteDepth  = directx11_helper::CreateDepthStencilState(dev, true, false);
-    m_pDssDisableDepthDisableWriteDepth = directx11_helper::CreateDepthStencilState(dev, false, false);
-    ctx->OMSetDepthStencilState(m_pDssEnableDepthEnableWriteDepth, 0);
+    m_pDss                   = directx11_helper::CreateDepthStencilState(dev, false, false);
+    m_pDssDepth              = directx11_helper::CreateDepthStencilState(dev, true,  false);
+    m_pDssDepthWriteDepth    = directx11_helper::CreateDepthStencilState(dev, true,  true);
+    ctx->OMSetDepthStencilState(m_pDssDepthWriteDepth, 0);
 
     /* ブレンドステート作成 */
-    m_pBSAlpha                          = directx11_helper::CreateBlendState(dev, directx11_helper::BlendMode::Alpha);
-    m_pBSAdd                            = directx11_helper::CreateBlendState(dev, directx11_helper::BlendMode::Add);
-    ctx->OMSetBlendState(m_pBSAlpha, Math::Color(0, 0, 0, 0), 0xFFFFFFFF);
+    m_pBSAlpha               = directx11_helper::CreateBlendState(dev, directx11_helper::BlendMode::ALPHA);
+    m_pBSAdd                 = directx11_helper::CreateBlendState(dev, directx11_helper::BlendMode::ADD);
+    ctx->OMSetBlendState(m_pBSAlpha, directx11_helper::alpha, 0xFFFFFFFF);
 
     /* ラスタライズステート作成 */
-    m_pRSCullNone                       = directx11_helper::CreateRasterizerState(dev, D3D11_FILL_SOLID, D3D11_CULL_NONE, true, false);
-    m_pRSCullBack                       = directx11_helper::CreateRasterizerState(dev, D3D11_FILL_SOLID, D3D11_CULL_BACK, true, false);
-    ctx->RSSetState(m_pRSCullBack);
+    m_pRSSolidNone           = directx11_helper::CreateRasterizerState(dev, directx11_helper::FillMode::SOLID,     directx11_helper::CullMode::NONE, true, false);
+    m_pRSSolidBack           = directx11_helper::CreateRasterizerState(dev, directx11_helper::FillMode::SOLID,     directx11_helper::CullMode::BACK, true, false);
+    m_pRSWireframeNone       = directx11_helper::CreateRasterizerState(dev, directx11_helper::FillMode::WIREFRAME, directx11_helper::CullMode::NONE, true, false);
+    m_pRSWireframeBack       = directx11_helper::CreateRasterizerState(dev, directx11_helper::FillMode::WIREFRAME, directx11_helper::CullMode::BACK, true, false);
+    ctx->RSSetState(m_pRSSolidBack);
 
     /* サンプラーステート作成 */
-    m_pSSPointWrap                      = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::Point, 0, directx11_helper::SamplerAddressMode::Wrap, false);
-    m_pSSLinearClamp                    = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::Linear, 0, directx11_helper::SamplerAddressMode::Clamp, false);
-    m_pSSLinearClampComp                = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::Linear, 0, directx11_helper::SamplerAddressMode::Clamp, true);
-    m_pSSAnisotropicWrap                = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::Anisotropic, 4, directx11_helper::SamplerAddressMode::Wrap, false);
-    m_pSSAnisotropicClamp               = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::Anisotropic, 4, directx11_helper::SamplerAddressMode::Clamp, false);
+    m_pSSPointWrap           = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::POINT,        0, directx11_helper::SamplerAddressMode::WRAP,  false);
+    m_pSSPointClamp          = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::POINT,        0, directx11_helper::SamplerAddressMode::CLAMP, false);
+    m_pSSLinearWrap          = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::LINEAR,       0, directx11_helper::SamplerAddressMode::WRAP,  false);
+    m_pSSLinearClamp         = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::LINEAR,       0, directx11_helper::SamplerAddressMode::CLAMP, false);
+    m_pSSLinearClampComp     = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::LINEAR,       0, directx11_helper::SamplerAddressMode::CLAMP, true);
+    m_pSSAnisotropicWrap     = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::ANISOTROPIC,  1, directx11_helper::SamplerAddressMode::WRAP,  false);
+    m_pSSAnisotropic2xWrap   = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::ANISOTROPIC,  2, directx11_helper::SamplerAddressMode::WRAP,  false);
+    m_pSSAnisotropic4xWrap   = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::ANISOTROPIC,  4, directx11_helper::SamplerAddressMode::WRAP,  false);
+    m_pSSAnisotropic8xWrap   = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::ANISOTROPIC,  8, directx11_helper::SamplerAddressMode::WRAP,  false);
+    m_pSSAnisotropic16xWrap  = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::ANISOTROPIC, 16, directx11_helper::SamplerAddressMode::WRAP,  false);
+    m_pSSAnisotropicClamp    = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::ANISOTROPIC,  1, directx11_helper::SamplerAddressMode::CLAMP, false);
+    m_pSSAnisotropic2xClamp  = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::ANISOTROPIC,  2, directx11_helper::SamplerAddressMode::CLAMP, false);
+    m_pSSAnisotropic4xClamp  = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::ANISOTROPIC,  4, directx11_helper::SamplerAddressMode::CLAMP, false);
+    m_pSSAnisotropic8xClamp  = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::ANISOTROPIC,  8, directx11_helper::SamplerAddressMode::CLAMP, false);
+    m_pSSAnisotropic16xClamp = directx11_helper::CreateSamplerState(dev, directx11_helper::SamplerFilterMode::ANISOTROPIC, 16, directx11_helper::SamplerAddressMode::CLAMP, false);
+
+    ctx->VSSetSamplers(0, 1, &m_pSSAnisotropicWrap);
     ctx->PSSetSamplers(0, 1, &m_pSSAnisotropicWrap);
+    ctx->GSSetSamplers(0, 1, &m_pSSAnisotropicWrap);
+    ctx->CSSetSamplers(0, 1, &m_pSSAnisotropicWrap);
 }
 
 void ShaderManager::Release()
@@ -62,11 +77,12 @@ void ShaderManager::Release()
 
     m_cameraCB.Release();
     m_lightCB.Release();
+    
 
     /* 深度ステンシルステート解放 */
-    memory::SafeRelease(&m_pDssEnableDepthEnableWriteDepth);
-    memory::SafeRelease(&m_pDssEnableDepthDisableWriteDepth);
-    memory::SafeRelease(&m_pDssDisableDepthDisableWriteDepth);
+    memory::SafeRelease(&m_pDss);
+    memory::SafeRelease(&m_pDssDepth);
+    memory::SafeRelease(&m_pDssDepthWriteDepth);
     m_pDssUndo = nullptr;
 
     /* ブレンドステート解放 */
@@ -75,31 +91,46 @@ void ShaderManager::Release()
     m_pBSUndo = nullptr;
 
     /* ラスタライズステート解放 */
-    memory::SafeRelease(&m_pRSCullNone);
-    memory::SafeRelease(&m_pRSCullBack);
+    memory::SafeRelease(&m_pRSSolidNone);
+    memory::SafeRelease(&m_pRSSolidBack);
+    memory::SafeRelease(&m_pRSWireframeNone);
+    memory::SafeRelease(&m_pRSWireframeBack);
     m_pRSUndo = nullptr;
 
     /* サンプラーステート解放 */
     memory::SafeRelease(&m_pSSPointWrap);
+    memory::SafeRelease(&m_pSSPointClamp);
+    memory::SafeRelease(&m_pSSLinearWrap);
     memory::SafeRelease(&m_pSSLinearClamp);
     memory::SafeRelease(&m_pSSLinearClampComp);
     memory::SafeRelease(&m_pSSAnisotropicWrap);
+    memory::SafeRelease(&m_pSSAnisotropic2xWrap);
+    memory::SafeRelease(&m_pSSAnisotropic4xWrap);
+    memory::SafeRelease(&m_pSSAnisotropic8xWrap);
+    memory::SafeRelease(&m_pSSAnisotropic16xWrap);
     memory::SafeRelease(&m_pSSAnisotropicClamp);
+    memory::SafeRelease(&m_pSSAnisotropic2xClamp);
+    memory::SafeRelease(&m_pSSAnisotropic4xClamp);
+    memory::SafeRelease(&m_pSSAnisotropic8xClamp);
+    memory::SafeRelease(&m_pSSAnisotropic16xClamp);
     m_pSSUndo = nullptr;
 }
 
 void ShaderManager::SetToDevice()
 {
-    auto camera = m_cameraCB.Get();
+    const auto camera = m_cameraCB.Get();
     auto light = m_lightCB.Get();
     light->directionalLightDirection.Normalize();
-    light->directionalLightVP = DirectX::XMMatrixLookAtLH(camera->position - light->directionalLightDirection * 40, camera->position, Math::Vector3::Up) * DirectX::XMMatrixOrthographicLH(50, 50, 0, 100);
+    light->directionalLightVP
+        = DirectX::XMMatrixLookAtLH(camera->position - light->directionalLightDirection, camera->position, Math::Vector3::Up)
+        * DirectX::XMMatrixOrthographicLH(50, 50, 0, 100);
     m_lightCB.Write();
-    
-    DirectX11System::Instance().GetCtx().Get()->VSSetConstantBuffers(0, 1, m_cameraCB.GetBufferAddress());
-    DirectX11System::Instance().GetCtx().Get()->PSSetConstantBuffers(0, 1, m_cameraCB.GetBufferAddress());
-    DirectX11System::Instance().GetCtx().Get()->VSSetConstantBuffers(1, 1, m_lightCB.GetBufferAddress());
-    DirectX11System::Instance().GetCtx().Get()->PSSetConstantBuffers(1, 1, m_lightCB.GetBufferAddress());
+
+    auto ctx = DirectX11System::Instance().GetCtx();
+    ctx->VSSetConstantBuffers(0, 1, m_cameraCB.GetBufferAddress());
+    ctx->PSSetConstantBuffers(0, 1, m_cameraCB.GetBufferAddress());
+    ctx->VSSetConstantBuffers(1, 1, m_lightCB.GetBufferAddress());
+    ctx->PSSetConstantBuffers(1, 1, m_lightCB.GetBufferAddress());
 }
 
 bool ShaderManager::SetVertexShader(ID3D11VertexShader* vs)
@@ -250,4 +281,20 @@ void ShaderManager::UndoSamplerState()
     DirectX11System::Instance().GetCtx()->PSSetSamplers(0, 1, &m_pSSUndo);
 
     m_pSSUndo = nullptr;
+}
+
+void ShaderManager::AddPointLight(const Math::Vector3& position, const Math::Vector3& color, const Math::Vector3& attenuation)
+{
+    auto light = m_lightCB.Get();
+    light->pointLight[light->pointLightCount].position = position;
+    light->pointLight[light->pointLightCount].color = color;
+    light->pointLight[light->pointLightCount].attenuation = attenuation;
+    ++light->pointLightCount;
+    m_lightCB.Write();
+}
+
+void ShaderManager::ClearPointLight()
+{
+    m_lightCB.Get()->pointLightCount = 0;
+    m_lightCB.Write();
 }

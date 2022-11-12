@@ -2,10 +2,12 @@
 
 bool StandardShader::Init()
 {
+    auto dev = DirectX11System::Instance().GetDev();
+
     {
         #include "StandardShaderVS.inc"
-        if (FAILED(DirectX11System::Instance().GetDev()->CreateVertexShader(compiledBuffer, sizeof(compiledBuffer), nullptr, &m_pVS))) {
-            assert::RaiseAssert(ASSERT_FILE_LINE, "頂点シェーダー作成失敗");
+        if (FAILED(dev->CreateVertexShader(compiledBuffer, sizeof(compiledBuffer), nullptr, &m_pVS))) {
+            assert::ShowError(ASSERT_FILE_LINE, "頂点シェーダー作成失敗");
             Release();
             return false;
         }
@@ -20,38 +22,38 @@ bool StandardShader::Init()
             { "SKINWEIGHT",	0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 56, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         };
         
-        if (FAILED(DirectX11System::Instance().GetDev()->CreateInputLayout(
+        if (FAILED(dev->CreateInputLayout(
             &layout[0],
             static_cast<UINT>(layout.size()),
             &compiledBuffer[0],
             sizeof(compiledBuffer),
             &m_pInputLayout
         ))) {
-            assert::RaiseAssert(ASSERT_FILE_LINE, "頂点入力レイアウト作成失敗");
+            assert::ShowError(ASSERT_FILE_LINE, "頂点入力レイアウト作成失敗");
             Release();
             return false;
         }
     }
     {
         #include "StandardShaderPS.inc"
-        if (FAILED(DirectX11System::Instance().GetDev()->CreatePixelShader(compiledBuffer, sizeof(compiledBuffer), nullptr, &m_pPS))) {
-            assert::RaiseAssert(ASSERT_FILE_LINE, "ピクセルシェーダー作成失敗");
+        if (FAILED(dev->CreatePixelShader(compiledBuffer, sizeof(compiledBuffer), nullptr, &m_pPS))) {
+            assert::ShowError(ASSERT_FILE_LINE, "ピクセルシェーダー作成失敗");
             Release();
             return false;
         }
     }
     {
         #include "StandardShaderShadowVS.inc"
-        if (FAILED(DirectX11System::Instance().GetDev()->CreateVertexShader(compiledBuffer, sizeof(compiledBuffer), nullptr, &m_pShadowVS))) {
-            assert::RaiseAssert(ASSERT_FILE_LINE, "頂点シェーダー作成失敗");
+        if (FAILED(dev->CreateVertexShader(compiledBuffer, sizeof(compiledBuffer), nullptr, &m_pShadowVS))) {
+            assert::ShowError(ASSERT_FILE_LINE, "頂点シェーダー作成失敗");
             Release();
             return false;
         }
     }
     {
         #include "StandardShaderShadowPS.inc"
-        if (FAILED(DirectX11System::Instance().GetDev()->CreatePixelShader(compiledBuffer, sizeof(compiledBuffer), nullptr, &m_pShadowPS))) {
-            assert::RaiseAssert(ASSERT_FILE_LINE, "ピクセルシェーダー作成失敗");
+        if (FAILED(dev->CreatePixelShader(compiledBuffer, sizeof(compiledBuffer), nullptr, &m_pShadowPS))) {
+            assert::ShowError(ASSERT_FILE_LINE, "ピクセルシェーダー作成失敗");
             Release();
             return false;
         }
@@ -63,46 +65,71 @@ bool StandardShader::Init()
     m_bonesCB.Create();
     m_rimLightCB.Create();
 
-    m_shadowRT.Create({ 2048, 2048 }, true, DXGI_FORMAT_R32_FLOAT); // 1024x1024の影
-
     return true;
 }
 
 void StandardShader::SetToDevice()
 {
-    DirectX11System::Instance().GetCtx()->IASetInputLayout(m_pInputLayout);
-    
-    DirectX11System::Instance().GetCtx()->VSSetConstantBuffers(2, 1, m_objectCB.GetBufferAddress());
-    DirectX11System::Instance().GetCtx()->PSSetConstantBuffers(2, 1, m_objectCB.GetBufferAddress());
+    auto ctx = DirectX11System::Instance().GetCtx();
 
-    DirectX11System::Instance().GetCtx()->VSSetConstantBuffers(3, 1, m_meshCB.GetBufferAddress());
-    DirectX11System::Instance().GetCtx()->PSSetConstantBuffers(4, 1, m_materialCB.GetBufferAddress());
-    DirectX11System::Instance().GetCtx()->VSSetConstantBuffers(5, 1, m_bonesCB.GetBufferAddress());
-    DirectX11System::Instance().GetCtx()->PSSetConstantBuffers(6, 1, m_rimLightCB.GetBufferAddress());
+    ctx->IASetInputLayout(m_pInputLayout);
     
-    DirectX11System::Instance().GetCtx()->PSSetSamplers(1, 1, &DirectX11System::Instance().GetShaderManager()->m_pSSLinearClampComp);
+    ctx->VSSetConstantBuffers(2, 1, m_objectCB.GetBufferAddress());
+    ctx->PSSetConstantBuffers(2, 1, m_objectCB.GetBufferAddress());
+    ctx->VSSetConstantBuffers(3, 1, m_meshCB.GetBufferAddress());
+    ctx->PSSetConstantBuffers(4, 1, m_materialCB.GetBufferAddress());
+    ctx->VSSetConstantBuffers(5, 1, m_bonesCB.GetBufferAddress());
+    ctx->PSSetConstantBuffers(6, 1, m_rimLightCB.GetBufferAddress());
+
+    ctx->PSSetSamplers(1, 1, &DirectX11System::Instance().GetShaderManager()->m_pSSLinearClampComp);
 }
 
-void StandardShader::BeginShadow()
+void StandardShader::CreateShadow(const std::pair<int32_t, int32_t>& size)
 {
-    m_shadowRT.Clear();
-    m_shadowRtc.Change(&m_shadowRT);
+    m_upShadowRT = std::make_unique<DirectX11RenderTargetSystem>();
+    m_upShadowRT->Create(size, true, DXGI_FORMAT_R32_FLOAT);
+}
 
-    DirectX11System::Instance().GetCtx()->VSSetShader(m_pShadowVS, 0, 0);
-    DirectX11System::Instance().GetCtx()->PSSetShader(m_pShadowPS, 0, 0);
+bool StandardShader::BeginShadow()
+{
+    if (!m_upShadowRT) {
+        return false;
+    }
+
+    auto ctx = DirectX11System::Instance().GetCtx();
+
+    m_upShadowRT->Clear();
+    m_shadowRtc.Change(m_upShadowRT.get());
+
+    ctx->VSSetShader(m_pShadowVS, 0, 0);
+    ctx->PSSetShader(m_pShadowPS, 0, 0);
+
+    return true;
 }
 
 void StandardShader::EndShadow()
 {
+    if (!m_upShadowRT) return;
+
     m_shadowRtc.Undo();
+}
+
+void StandardShader::ClearShadow()
+{
+    m_upShadowRT.reset();
+    m_shadowRtc.Undo(true);
 }
 
 void StandardShader::BeginStandard()
 {
-    DirectX11System::Instance().GetCtx()->VSSetShader(m_pVS, 0, 0);
-    DirectX11System::Instance().GetCtx()->PSSetShader(m_pPS, 0, 0);
+    auto ctx = DirectX11System::Instance().GetCtx();
 
-    DirectX11System::Instance().GetCtx()->PSSetShaderResources(10, 1, m_shadowRT.GetBackBuffer()->GetSrvAddress());
+    ctx->VSSetShader(m_pVS, 0, 0);
+    ctx->PSSetShader(m_pPS, 0, 0);
+
+    if (m_upShadowRT) {
+        ctx->PSSetShaderResources(10, 1, m_upShadowRT->GetBackBuffer()->GetSrvAddress());
+    }
 }
 
 void StandardShader::EndStandard()
@@ -180,7 +207,7 @@ void StandardShader::DrawModel(const KdModelWork& model, const Math::Matrix& wor
         // ノード内からボーン情報を取得
         for (const auto& i : data->GetBoneNodeIndices()) {
             if (i >= BONES_MAX) {
-                assert::RaiseAssert(ASSERT_FILE_LINE, "転送できるボーンの上限数を超えました");
+                assert::ShowError(ASSERT_FILE_LINE, "転送できるボーンの上限数を超えました");
                 return;
             }
 
@@ -251,6 +278,6 @@ void StandardShader::Release()
     memory::SafeRelease(&m_pShadowVS);
     memory::SafeRelease(&m_pShadowPS);
 
-    m_shadowRT.Release();
+    m_upShadowRT.reset();
     m_shadowRtc.Release();
 }

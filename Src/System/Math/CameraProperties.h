@@ -5,8 +5,7 @@
 class CameraProperties
 {
 public:
-
-    CameraProperties() = default;
+    
     CameraProperties(const Math::Matrix& camera_matrix, float fov, float aspect, float near_clipping_distance, float far_clipping_distance)
         : m_camera(camera_matrix, fov, aspect, near_clipping_distance, far_clipping_distance)
     {}

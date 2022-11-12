@@ -16,11 +16,11 @@ public:
 
     bool Init(HWND hWnd, const std::pair<int32_t, int32_t>& size, bool is_debug, bool detailed_memory_infomation, bool enable_msaa = false) override;
 
-    auto GetShaderManager() noexcept {
+    std::shared_ptr<ShaderManager> GetShaderManager() noexcept {
         return m_spShaderManager;
     }
-    auto GetShaderManager() const noexcept {
-        return std::const_pointer_cast<const ShaderManager>(m_spShaderManager);
+    std::shared_ptr<const ShaderManager> GetShaderManager() const noexcept {
+        return m_spShaderManager;
     }
 
     void DrawVertices(D3D_PRIMITIVE_TOPOLOGY topology, UINT vertex_size, UINT stride, const void* vertex_stream) const;

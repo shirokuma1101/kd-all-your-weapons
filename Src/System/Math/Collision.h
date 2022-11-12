@@ -38,8 +38,8 @@ namespace model_collision {
 		bool  hit = false;
 		float closest_dist = FLT_MAX;
 
-		const KdMeshFace* const           faces = &mesh.GetFaces()[0];
-		size_t                            face_count = mesh.GetFaces().size();
+		const KdMeshFace* const           faces            = &mesh.GetFaces()[0];
+		size_t                            face_count       = mesh.GetFaces().size();
 		const std::vector<Math::Vector3>& vertex_positions = mesh.GetVertexPositions();
 
 		for (size_t i = 0; i < face_count; ++i) {
@@ -71,9 +71,9 @@ namespace model_collision {
 
 		res->overlap = hit;
 		if (hit) {
-			res->position = target.position + target.direction * closest_dist;
+			res->position  = target.position + target.direction * closest_dist;
 			res->direction = target.direction * -1;
-			res->depth = target.range - closest_dist;
+			res->depth     = target.range - closest_dist;
 		}
 		return hit;
 	}
@@ -100,8 +100,8 @@ namespace model_collision {
 		Math::Vector3 nearest_point;
 		Math::Vector3 final_position = inv_sphere_position;
 
-		const KdMeshFace* const           faces = &mesh.GetFaces()[0];
-		size_t                            face_count = mesh.GetFaces().size();
+		const KdMeshFace* const           faces            = &mesh.GetFaces()[0];
+		size_t                            face_count       = mesh.GetFaces().size();
 		const std::vector<Math::Vector3>& vertex_positions = mesh.GetVertexPositions();
 		Math::Vector3                     scale(mat.Right().Length(), mat.Up().Length(), mat.Backward().Length());
 
@@ -139,9 +139,9 @@ namespace model_collision {
 
 		res->overlap = hit;
 		if (hit) {
-			res->position = DirectX::XMVector3TransformCoord(nearest_point, mat);
+			res->position  = DirectX::XMVector3TransformCoord(nearest_point, mat);
 			res->direction = Math::Vector3(DirectX::XMVector3TransformCoord(final_position, mat)) - target.Center;
-			res->depth = res->direction.Length();
+			res->depth     = res->direction.Length();
 			if (res->depth) {
 				res->direction.Normalize();
 			}
@@ -199,10 +199,7 @@ public:
 		else {
 			const auto data_node = m_model->FindDataNode(m_nodeName);
 			const auto work_node = m_model->FindNode(m_nodeName);
-			if (!data_node || !work_node) {
-				return false;
-			}
-			if (!data_node->m_spMesh) {
+			if (!data_node || !work_node || !data_node->m_spMesh) {
 				return false;
 			}
 
@@ -265,10 +262,7 @@ public:
 		else {
 			const auto data_node = m_model->FindDataNode(m_nodeName);
 			const auto work_node = m_model->FindNode(m_nodeName);
-			if (!data_node || !work_node) {
-				return false;
-			}
-			if (!data_node->m_spMesh) {
+			if (!data_node || !work_node || !data_node->m_spMesh) {
 				return false;
 			}
 

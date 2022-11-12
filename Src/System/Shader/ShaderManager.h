@@ -68,6 +68,9 @@ public:
     void ChangeSamplerState(int slot, ID3D11SamplerState* ss);
     void UndoSamplerState();
 
+    void AddPointLight(const Math::Vector3& position, const Math::Vector3& color, const Math::Vector3& attenuation);
+    void ClearPointLight();
+
 private:
 
     // カメラ定数バッファ
@@ -118,27 +121,40 @@ private:
 public:
 
     /* 深度ステンシルステート */
-    ID3D11DepthStencilState* m_pDssEnableDepthEnableWriteDepth   = nullptr; // 深度バッファの利用ON、 深度に書き込みON
-    ID3D11DepthStencilState* m_pDssEnableDepthDisableWriteDepth  = nullptr; // 深度バッファの利用ON、 深度に書き込みOFF
-    ID3D11DepthStencilState* m_pDssDisableDepthDisableWriteDepth = nullptr; // 深度バッファの利用OFF、深度に書き込みOFF
-    ID3D11DepthStencilState* m_pDssUndo                          = nullptr; // 元に戻す
+    ID3D11DepthStencilState* m_pDss                   = nullptr; // 深度バッファの利用OFF、深度に書き込みOFF
+    ID3D11DepthStencilState* m_pDssDepth              = nullptr; // 深度バッファの利用ON、 深度に書き込みOFF
+    ID3D11DepthStencilState* m_pDssDepthWriteDepth    = nullptr; // 深度バッファの利用ON、 深度に書き込みON
+    ID3D11DepthStencilState* m_pDssUndo               = nullptr; // 元に戻す
 
     /* ブレンドステート */
-    ID3D11BlendState*        m_pBSAlpha                          = nullptr; // 透明度による色合成
-    ID3D11BlendState*        m_pBSAdd                            = nullptr; // 加算による色合成
-    ID3D11BlendState*        m_pBSUndo                           = nullptr; // 元に戻す
-
+    ID3D11BlendState*        m_pBSAlpha               = nullptr; // 透明度による色合成
+    ID3D11BlendState*        m_pBSAdd                 = nullptr; // 加算による色合成
+    ID3D11BlendState*        m_pBSUndo                = nullptr; // 元に戻す
+    
     /* ラスタライズステート */
-    ID3D11RasterizerState*   m_pRSCullNone                       = nullptr; // 描画カリングモード：描画省略なし
-    ID3D11RasterizerState*   m_pRSCullBack                       = nullptr; // 描画カリングモード：裏面の描画省略
-    ID3D11RasterizerState*   m_pRSUndo                           = nullptr; // 元に戻す
-
+    ID3D11RasterizerState*   m_pRSSolidNone           = nullptr; // 描画カリングモード：ソリッド、描画省略なし
+    ID3D11RasterizerState*   m_pRSSolidBack           = nullptr; // 描画カリングモード：ソリッド、裏面の描画省略
+    ID3D11RasterizerState*   m_pRSWireframeNone       = nullptr; // 描画カリングモード：ワイヤーフレーム、描画省略なし
+    ID3D11RasterizerState*   m_pRSWireframeBack       = nullptr; // 描画カリングモード：ワイヤーフレーム、裏面の描画省略
+    ID3D11RasterizerState*   m_pRSUndo                = nullptr; // 元に戻す
+    
     /* サンプラーステート */
-    ID3D11SamplerState*      m_pSSPointWrap                      = nullptr; // ポイントサンプリング   : テクスチャの端を固定する
-    ID3D11SamplerState*      m_pSSLinearClamp                    = nullptr; // バイリニアサンプリング : テクスチャの端を繋げて繰り返す
-    ID3D11SamplerState*      m_pSSLinearClampComp                = nullptr; // バイリニアサンプリング : テクスチャの端を繋げて繰り返す・比較機能ON
-    ID3D11SamplerState*      m_pSSAnisotropicWrap                = nullptr; // 異方性フィルタリング   : テクスチャの端を固定する
-    ID3D11SamplerState*      m_pSSAnisotropicClamp               = nullptr; // 異方性フィルタリング   : テクスチャの端を繋げて繰り返す
-    ID3D11SamplerState*      m_pSSUndo                           = nullptr; // 元に戻す
+    ID3D11SamplerState*      m_pSSPointWrap           = nullptr; // ポイントサンプリング    : テクスチャの端を固定する
+    ID3D11SamplerState*      m_pSSPointClamp          = nullptr; // ポイントサンプリング    : テクスチャの端を繋げて繰り返す
+    ID3D11SamplerState*      m_pSSLinearWrap          = nullptr; // バイリニアサンプリング  : テクスチャの端を固定する
+    ID3D11SamplerState*      m_pSSLinearClamp         = nullptr; // バイリニアサンプリング  : テクスチャの端を繋げて繰り返す
+    ID3D11SamplerState*      m_pSSLinearClampComp     = nullptr; // バイリニアサンプリング  : テクスチャの端を繋げて繰り返す・比較機能ON
+    ID3D11SamplerState*      m_pSSAnisotropicWrap     = nullptr; // 異方性フィルタリングOFF : テクスチャの端を固定する
+    ID3D11SamplerState*      m_pSSAnisotropic2xWrap   = nullptr; // 異方性フィルタリング2x  : テクスチャの端を固定する
+    ID3D11SamplerState*      m_pSSAnisotropic4xWrap   = nullptr; // 異方性フィルタリング4x  : テクスチャの端を固定する
+    ID3D11SamplerState*      m_pSSAnisotropic8xWrap   = nullptr; // 異方性フィルタリング8x  : テクスチャの端を固定する
+    ID3D11SamplerState*      m_pSSAnisotropic16xWrap  = nullptr; // 異方性フィルタリング16x : テクスチャの端を固定する
+    ID3D11SamplerState*      m_pSSAnisotropicClamp    = nullptr; // 異方性フィルタリングOFF : テクスチャの端を繋げて繰り返す
+    ID3D11SamplerState*      m_pSSAnisotropic2xClamp  = nullptr; // 異方性フィルタリング2x  : テクスチャの端を繋げて繰り返す
+    ID3D11SamplerState*      m_pSSAnisotropic4xClamp  = nullptr; // 異方性フィルタリング4x  : テクスチャの端を繋げて繰り返す
+    ID3D11SamplerState*      m_pSSAnisotropic8xClamp  = nullptr; // 異方性フィルタリング8x  : テクスチャの端を繋げて繰り返す
+    ID3D11SamplerState*      m_pSSAnisotropic16xClamp = nullptr; // 異方性フィルタリング16x : テクスチャの端を繋げて繰り返す
+    
+    ID3D11SamplerState*      m_pSSUndo                = nullptr; // 元に戻す
 
 };

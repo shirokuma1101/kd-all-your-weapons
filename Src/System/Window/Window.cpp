@@ -82,6 +82,12 @@ void Window::Resize(const Size& size)
     SetWindowPos(m_hWnd, NULL, 0, 0, new_width, new_height, SWP_NOMOVE | SWP_NOZORDER);
 }
 
+void Window::SetWindowStyle(LONG_PTR new_long)
+{
+    SetWindowLongPtr(m_hWnd, GWL_STYLE, new_long);
+    ShowWindow(m_hWnd, SW_SHOW);
+}
+
 LRESULT CALLBACK Window::StaticWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     // ウィンドウプロパティから、GameWindowクラスのインスタンスを取得
@@ -94,8 +100,8 @@ LRESULT CALLBACK Window::StaticWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
             // SetPropは1回しか行われないのでcase内での初期化を許容するために括弧を付ける
             {
                 // CreateWindow()で渡したパラメータを取得
-                CREATESTRUCT* createStruct = (CREATESTRUCT*)lParam;
-                Window* window = (Window*)createStruct->lpCreateParams;
+                CREATESTRUCT* cs = (CREATESTRUCT*)lParam;
+                Window* window = (Window*)cs->lpCreateParams;
                 // ウィンドウプロパティにこのクラスのインスタンスアドレスを埋め込んでおく
                 // 次回から、this_window->WindowProcの方へ処理が流れていく
                 SetProp(hWnd, L"WindowInstance", window);

@@ -78,8 +78,9 @@ float4 main(PSIn ps_in) : SV_Target0
     /* シャドウ */
     // 最終的な影
     float shadow = 1.0f;
+    if (ShadowTex.Sample(Sampler, ps_in.UV).a)
     {
-        // ピクセルの3D座標から、DepthMapFromLight空間へ変換
+        // ピクセルの3D座標から、DLVP空間へ変換
         float4 light_pos = mul(float4(ps_in.WorldPos, 1), DirectionalLightVP);
         light_pos.xyz /= light_pos.w;
 

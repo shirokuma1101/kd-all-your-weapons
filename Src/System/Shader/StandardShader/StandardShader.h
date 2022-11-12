@@ -46,8 +46,10 @@ public:
 
     void SetToDevice();
     
-    void BeginShadow();
+    void CreateShadow(const std::pair<int32_t, int32_t>& size);
+    bool BeginShadow();
     void EndShadow();
+    void ClearShadow();
 
     void BeginStandard();
     void EndStandard();
@@ -114,7 +116,7 @@ private:
 
     ID3D11VertexShader* m_pShadowVS        = nullptr;
     ID3D11PixelShader*  m_pShadowPS        = nullptr;
-    DirectX11RenderTargetSystem        m_shadowRT;
-    DirectX11RenderTargetChangerSystem m_shadowRtc;
+    std::unique_ptr<DirectX11RenderTargetSystem> m_upShadowRT = nullptr;
+    DirectX11RenderTargetChangerSystem           m_shadowRtc;
     
 };

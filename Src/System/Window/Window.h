@@ -34,6 +34,8 @@ public:
 
     void Resize(const Size& size);
 
+    void SetWindowStyle(LONG_PTR new_long);
+
     static float ToAspectRatio(const Size& size) noexcept {
         return static_cast<float>(size.first) / static_cast<float>(size.second);
     }
