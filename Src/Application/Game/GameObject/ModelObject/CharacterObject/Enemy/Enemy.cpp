@@ -3,14 +3,16 @@
 void Enemy::Update(float delta_time)
 {
     CharacterObject::Update(delta_time);
+
+    m_transform.Composition();
     
     // プレイヤーがいる場合
     if (!m_wpTargetPlayer.expired()) {
-        static const float sighting_range  = 10.f; // MN: 視界
-        static const float attack_range    = 1.f;  // MN: 攻撃範囲
-        static const float walk_speed      = 1.f;  // MN: 歩く速度
-        static const float attack_interval = 1.f;  // MN: 攻撃間隔
-
+        constexpr float sighting_range  = 10.f; // MN: 視界
+        constexpr float attack_range    = 2.f;  // MN: 攻撃範囲
+        constexpr float walk_speed      = 1.f;  // MN: 歩く速度
+        constexpr float attack_interval = 1.f;  // MN: 攻撃間隔
+        
         auto sp_obj = m_wpTargetPlayer.lock();
         // 自分からプレイヤーへの方向ベクトルを計算
         auto dir = sp_obj->GetTransform().position - m_transform.position;
@@ -37,18 +39,18 @@ void Enemy::Update(float delta_time)
             // 攻撃範囲外の場合
             else {
                 // 移動する
-                dir.y = 0.f;
                 m_transform.position += dir * (walk_speed * delta_time);
                 m_attackInterval = 0.f;
             }
         }
     }
-    
-    // if hp = 0 dynamic process
-    m_transform.Composition();
-    m_pRigidActor->setGlobalPose(physx::PxTransform(physx_helper::ToPxMat44(
-        Math::Matrix::CreateRotationZ(convert::ToRadians(90.f)) * m_transform.matrix
-    )));
+    //
+    //// if hp = 0 dynamic process
+    //m_transform.Composition();
+    //m_pRigidActor->setGlobalPose(physx::PxTransform(physx_helper::ToPxMat44(
+    //    Math::Matrix::CreateRotationZ(convert::ToRadians(90.f)) * m_transform.matrix
+    //)));
+
 }
 
 void Enemy::DrawOpaque()
@@ -56,8 +58,19 @@ void Enemy::DrawOpaque()
     auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
 
     if (mm->IsLoaded(m_name) && m_spModel) {
-        DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().DrawModel(
-            *m_spModel, Math::Matrix::CreateScale(100.f) * Math::Matrix::CreateRotationY(convert::ToRadians(180.f)) * m_transform.matrix, {"COL"}
+        auto rotation_matrix = Math::Matrix::CreateRotationY(convert::ToRadians(180.f));
+        auto translation_matrix = Math::Matrix::CreateTranslation(
+            m_transform.position.x,
+            m_transform.position.y - 1.86f,
+            m_transform.position.z
         );
+        DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().DrawModel(
+            *m_spModel,
+            Math::Matrix::CreateScale(100.f)
+            * rotation_matrix
+            * translation_matrix,
+            {"COL"}
+        );
+
     }
 }

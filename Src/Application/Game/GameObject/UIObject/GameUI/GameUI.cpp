@@ -11,7 +11,7 @@ void GameUI::Update(float delta_time)
 {
     auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
 
-    if (km->GetState(VK_F4, KeyManager::KeyState::Hold)) {
+    if (km->GetState(VK_F4, KeyManager::KEYSTATE_HOLD)) {
         m_isObjectAlive = false;
     }
     static float time = 0.f;
@@ -36,7 +36,8 @@ void GameUI::DrawSprite()
         //);
     }
     else {
-        DirectX11System::WorkInstance().GetShaderManager()->GetSpriteShader().DrawTex(m_reticleTexture,
+        DirectX11System::WorkInstance().GetShaderManager()->GetSpriteShader().DrawTex(
+            m_reticleTexture,
             Math::Matrix::CreateScale(0.025f), { 0.f, 0.6f, 0.8f, 1.f }
         );
     }

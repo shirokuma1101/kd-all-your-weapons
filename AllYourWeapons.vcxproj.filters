@@ -112,6 +112,9 @@
     <Filter Include="Src\System\Asset\Texture">
       <UniqueIdentifier>{f8fb4ffe-bab6-4360-8ab0-61aafcc84bbb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\System\Shader\PostProcessShader">
+      <UniqueIdentifier>{8d83bb90-afc3-4a31-ac6d-8fb5adfa188d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Pch.h">
@@ -258,6 +261,12 @@
     <ClInclude Include="Src\System\Math\CameraProperties.h">
       <Filter>Src\System\Math</Filter>
     </ClInclude>
+    <ClInclude Include="Src\System\GameObject\GameObjectHelper.h">
+      <Filter>Src\System\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\System\Shader\PostProcessShader\PostProcessShader.h">
+      <Filter>Src\System\Shader\PostProcessShader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Library\imgui\imgui-1.87\include\imgui.cpp">
@@ -353,6 +362,9 @@
     <ClCompile Include="Src\Framework\Direct3D\KdTrailPolygon.cpp">
       <Filter>Src\Framework\Direct3D</Filter>
     </ClCompile>
+    <ClCompile Include="Src\System\Shader\PostProcessShader\PostProcessShader.cpp">
+      <Filter>Src\System\Shader\PostProcessShader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Src\System\Shader\Common.hlsli">
@@ -364,7 +376,6 @@
     <None Include="Src\System\Shader\SpriteShader\SpriteShader.hlsli">
       <Filter>Src\System\Shader\SpriteShader</Filter>
     </None>
-    <None Include="Src\System\Shader\StandardShader\StandardShaderVSShadow.hlsl.vsspell" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Src\System\Shader\StandardShader\StandardShaderVS.hlsl">

@@ -61,8 +61,10 @@
     <ClInclude Include="Src\System\DirectX11\DirectX11System.h" />
     <ClInclude Include="Src\System\DirectX11\DirectX11TextureSystem.h" />
     <ClInclude Include="Src\System\GameObject\GameObject.h" />
+    <ClInclude Include="Src\System\GameObject\GameObjectHelper.h" />
     <ClInclude Include="Src\System\Math\CameraProperties.h" />
     <ClInclude Include="Src\System\Math\Collision.h" />
+    <ClInclude Include="Src\System\Shader\PostProcessShader\PostProcessShader.h" />
     <ClInclude Include="Src\System\Shader\ShaderManager.h" />
     <ClInclude Include="Src\System\Shader\SpriteShader\SpriteShader.h" />
     <ClInclude Include="Src\System\Shader\StandardShader\StandardShader.h" />
@@ -96,6 +98,7 @@
     <ClCompile Include="Src\Framework\Math\KdAnimation.cpp" />
     <ClCompile Include="Src\main.cpp" />
     <ClCompile Include="Src\System\DirectX11\DirectX11System.cpp" />
+    <ClCompile Include="Src\System\Shader\PostProcessShader\PostProcessShader.cpp" />
     <ClCompile Include="Src\System\Shader\ShaderManager.cpp" />
     <ClCompile Include="Src\System\Shader\SpriteShader\SpriteShader.cpp" />
     <ClCompile Include="Src\System\Shader\StandardShader\StandardShader.cpp" />
@@ -105,7 +108,6 @@
     <None Include="Src\System\Shader\Common.hlsli" />
     <None Include="Src\System\Shader\SpriteShader\SpriteShader.hlsli" />
     <None Include="Src\System\Shader\StandardShader\StandardShader.hlsli" />
-    <None Include="Src\System\Shader\StandardShader\StandardShaderVSShadow.hlsl.vsspell" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Src\System\Shader\SpriteShader\SpriteShaderPS.hlsl">

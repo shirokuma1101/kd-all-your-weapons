@@ -61,8 +61,8 @@ public:
         }
         else {
             // 当たり判定
-            if (!Collision()) {
                 m_transform.position.y += -constant::fG * delta_time;
+            if (!Collision()) {
             }
         }
     }

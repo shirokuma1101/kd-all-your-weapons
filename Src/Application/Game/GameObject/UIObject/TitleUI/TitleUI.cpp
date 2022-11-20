@@ -3,14 +3,13 @@
 void TitleUI::Init()
 {
     m_titleTexture.Load("Asset/Texture/kari/title_1.png");
-    m_rt.Create({ 640, 360 });
 }
 
 void TitleUI::Update(float delta_time)
 {
     auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
     
-    if (km->GetState(VK_RETURN, KeyManager::KeyState::Hold)) {
+    if (km->GetState(VK_RETURN, KeyManager::KEYSTATE_HOLD)) {
         m_isObjectAlive = false;
     }
 
@@ -22,15 +21,12 @@ void TitleUI::Update(float delta_time)
 
 void TitleUI::DrawSprite()
 {
-    m_rtc.Change(&m_rt);
     //DirectX11System::WorkInstance().GetShaderManager()->GetSpriteShader().DrawTex(m_titleTexture, Math::Matrix::CreateScale(GetSizePercentageForHDWidthBased()));
     DirectX11System::WorkInstance().GetShaderManager()->GetSpriteShader().DrawTex(m_titleTexture);
     DirectX11System::WorkInstance().GetShaderManager()->GetSpriteShader().DrawTriangle(
         Math::Matrix::CreateScale(70.f) * Math::Matrix::CreateTranslation(180.f, -30.f, 0.f),
         { 0.f, 0.f }, { -1.f, 0.6f }, { -1.f, -0.6f }, { 0.f, 0.f, 0.f, m_cursorAlpha }
     );
-    m_rtc.Undo();
-    DirectX11System::WorkInstance().GetShaderManager()->GetSpriteShader().DrawTex(*m_rt.GetBackBuffer());
 }
 
 void TitleUI::DrawFont()

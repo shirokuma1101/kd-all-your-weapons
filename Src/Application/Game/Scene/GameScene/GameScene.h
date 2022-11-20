@@ -20,10 +20,18 @@ public:
 
     void ImGuiUpdate() override;
 
-    std::list<std::weak_ptr<Enemy>>& GetEnemyObjects() noexcept;
-    const std::list<std::weak_ptr<Enemy>>& GetEnemyObjects() const noexcept;
-    std::list<std::weak_ptr<DynamicObject>>& GetDynamicObjects() noexcept;
-    const std::list<std::weak_ptr<DynamicObject>>& GetDynamicObjects() const noexcept;
+    std::list<std::weak_ptr<Enemy>>& GetEnemyObjects() noexcept {
+        return m_wpEnemyObjects;
+    }
+    const std::list<std::weak_ptr<Enemy>>& GetEnemyObjects() const noexcept {
+        return m_wpEnemyObjects;
+    }
+    std::list<std::weak_ptr<DynamicObject>>& GetDynamicObjects() noexcept {
+        return m_wpDynamicObjects;
+    }
+    const std::list<std::weak_ptr<DynamicObject>>& GetDynamicObjects() const noexcept {
+        return m_wpDynamicObjects;
+    }
     
     void AddEnemyObject(const std::shared_ptr<Enemy>& game_object, bool init = true);
     void AddDynamicObject(const std::shared_ptr<DynamicObject>& game_object, bool init = true);

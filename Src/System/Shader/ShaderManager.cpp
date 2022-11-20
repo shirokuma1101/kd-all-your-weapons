@@ -122,7 +122,7 @@ void ShaderManager::SetToDevice()
     auto light = m_lightCB.Get();
     light->directionalLightDirection.Normalize();
     light->directionalLightVP
-        = DirectX::XMMatrixLookAtLH(camera->position - light->directionalLightDirection, camera->position, Math::Vector3::Up)
+        = DirectX::XMMatrixLookAtLH(camera->position - light->directionalLightDirection * 50.f, camera->position, Math::Vector3::Up)
         * DirectX::XMMatrixOrthographicLH(50, 50, 0, 100);
     m_lightCB.Write();
 

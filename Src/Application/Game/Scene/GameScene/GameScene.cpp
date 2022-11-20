@@ -10,13 +10,7 @@
 
 void GameScene::Init()
 {
-    auto camera = std::make_shared<CameraObject>(
-        Math::Matrix::Identity,
-        60.f,
-        Window::ToAspectRatio(Application::Instance().GetWindow().GetSize()),
-        0.01f,
-        1000.f
-        );
+    auto camera = std::make_shared<CameraObject>();
     AddGameObject(camera);
     
     auto player = std::make_shared<Player>("player");
@@ -73,7 +67,7 @@ void GameScene::Init()
     m_wpDeletionDecisionObject = game_ui;
 
     /* Shader */
-    DirectX11System::WorkInstance().GetShaderManager()->ChangeRasterizerState(DirectX11System::Instance().GetShaderManager()->m_pRSCullNone);
+    DirectX11System::WorkInstance().GetShaderManager()->ChangeRasterizerState(DirectX11System::Instance().GetShaderManager()->m_pRSSolidNone);
     auto camera_cb = DirectX11System::WorkInstance().GetShaderManager()->GetCameraCB().Get();
     camera_cb->distanceFogEnable = true;
     camera_cb->distanceFogColor  = { 0.75f, 0.64f, 0.6f };
@@ -85,9 +79,7 @@ void GameScene::Init()
     light_cb->directionalLightDirection = { -0.5, -0.8f, 0 };
     light_cb->directionalLightDirection.Normalize();
     light_cb->directionalLightColor     = { 0.7f, 0.7f, 0.7f };
-    light_cb->pointLightCount           = 1;
-    light_cb->pointLight[0].position    = { 0, 0, 0 };
-    light_cb->pointLight[0].color       = { 2.0f, 1.0f, 0.1f };
+    DirectX11System::WorkInstance().GetShaderManager()->AddPointLight({ -6, 0, 0 }, { 2.0f, 1.0f, 0.1f }, { 0.f, 1.f, 0.f });
     DirectX11System::WorkInstance().GetShaderManager()->GetLightCB().Write();
 }
 
@@ -96,7 +88,7 @@ Scene::SceneType GameScene::Update(float delta_time)
     const auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
 
     static bool is_pause = false;
-    if (km->GetState(VK_ESCAPE, KeyManager::KeyState::Press)) {
+    if (km->GetState(VK_ESCAPE, KeyManager::KEYSTATE_PRESS)) {
         if (!is_pause) {
             is_pause = true;
         }
@@ -138,26 +130,6 @@ void GameScene::ImGuiUpdate()
     */
 
     Scene::ImGuiUpdate();
-}
-
-std::list<std::weak_ptr<Enemy>>& GameScene::GetEnemyObjects() noexcept
-{
-    return m_wpEnemyObjects;
-}
-
-const std::list<std::weak_ptr<Enemy>>& GameScene::GetEnemyObjects() const noexcept
-{
-    return m_wpEnemyObjects;
-}
-
-std::list<std::weak_ptr<DynamicObject>>& GameScene::GetDynamicObjects() noexcept
-{
-    return m_wpDynamicObjects;
-}
-
-const std::list<std::weak_ptr<DynamicObject>>& GameScene::GetDynamicObjects() const noexcept
-{
-    return m_wpDynamicObjects;
 }
 
 void GameScene::AddEnemyObject(const std::shared_ptr<Enemy>& game_object, bool init)

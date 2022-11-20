@@ -39,8 +39,6 @@ private:
 
     void KeyOperator(float delta_time);
 
-    bool Collision();
-
     void Shot(float delta_time);
 
     void SetCameraTransform(float delta_time);
@@ -57,7 +55,7 @@ private:
     float m_initialVelocity = 0.f;
     float m_jumpTime        = 0.f;
     Math::Vector3 m_moveDirection;
-    float m_angle = 0.f;
+    float m_angle           = 0.f;
 
     // 攻撃系
     std::weak_ptr<DynamicObject> m_wpEquipObject;

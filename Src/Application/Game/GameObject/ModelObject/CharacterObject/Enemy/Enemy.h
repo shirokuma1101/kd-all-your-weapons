@@ -11,17 +11,21 @@ public:
     {}
 
     void Update(float delta_time) override;
-
     void DrawOpaque() override;
+    void ImGuiUpdate() override {
+        ImGui::Begin("config enemy");
+        ImGui::DragFloat3("pp", &m_transform.position.x);
+        ImGui::End();
+    }
 
     void SetTarget(const std::shared_ptr<Player>& target) {
         m_wpTargetPlayer = target;
     }
-
+    
 private:
 
     float m_attackInterval = 0.f;
-    float m_attackPower = 0.f;
+    float m_attackPower    = 0.f;
 
     std::weak_ptr<Player> m_wpTargetPlayer;
     
