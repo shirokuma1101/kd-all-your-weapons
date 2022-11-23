@@ -1,4 +1,5 @@
 ﻿#include "Window.h"
+#include "resource.h"
 
 LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -10,19 +11,19 @@ bool Window::Create(std::string_view title, const Position& position, const Size
     std::wstring title_name = sjis_to_wide(title.data());
 
     /* ウィンドウを作るための設定 */
-    WNDCLASSEX wc{};                                       // ウィンドウクラスの定義用
-    wc.cbSize        = sizeof(WNDCLASSEX);                 // 構造体のサイズ
-    wc.style         = 0;                                  // スタイル
-    wc.lpfnWndProc   = Window::StaticWindowProc;           // ウィンドウプロシージャ名(アドレス)
-    wc.cbClsExtra    = 0;                                  // ウィンドウクラスの保持するデータサイズ
-    wc.cbWndExtra    = 0;                                  // ウィンドウの保持するデータサイズ
-    wc.hInstance     = hInstance;                          // インスタンスハンドル
-    wc.hIcon         = LoadIcon(nullptr, IDI_APPLICATION); // ラージアイコン
-    wc.hIconSm       = LoadIcon(nullptr, IDI_APPLICATION); // スモールアイコン (win 4.0)
-    wc.hCursor       = LoadCursor(nullptr, IDC_ARROW);     // マウスカーソル
-    wc.hbrBackground = NULL;                               // 背景色
-    wc.lpszMenuName  = nullptr;                            // メインメニュー名
-    wc.lpszClassName = class_name.c_str();                 // ウィンドウクラス名
+    WNDCLASSEX wc{};                                   // ウィンドウクラスの定義用
+    wc.cbSize        = sizeof(WNDCLASSEX);             // 構造体のサイズ
+    wc.style         = 0;                              // スタイル
+    wc.lpfnWndProc   = Window::StaticWindowProc;       // ウィンドウプロシージャ名(アドレス)
+    wc.cbClsExtra    = 0;                              // ウィンドウクラスの保持するデータサイズ
+    wc.cbWndExtra    = 0;                              // ウィンドウの保持するデータサイズ
+    wc.hInstance     = hInstance;                      // インスタンスハンドル
+    wc.hIcon         = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1)); // ラージアイコン
+    wc.hIconSm       = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1)); // スモールアイコン (win 4.0)
+    wc.hCursor       = LoadCursor(nullptr, IDC_ARROW); // マウスカーソル
+    wc.hbrBackground = NULL;                           // 背景色
+    wc.lpszMenuName  = nullptr;                        // メインメニュー名
+    wc.lpszClassName = class_name.c_str();             // ウィンドウクラス名
 
     /* ウィンドウクラスの登録 */
     if (!RegisterClassEx(&wc)) {

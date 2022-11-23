@@ -261,7 +261,7 @@ void SpriteFont::Begin()
     auto ctx = DirectX11System::Instance().GetCtx();
 
     ctx->OMGetBlendState(&m_saveState.pBlendState, m_saveState.factor, &m_saveState.mask);
-    ctx->CSGetSamplers(0, 1, &m_saveState.pSamplerState);
+    ctx->PSGetSamplers(0, 1, &m_saveState.pSamplerState); // pixel shaderのサンプラーステートを保存
     ctx->OMGetDepthStencilState(&m_saveState.pDepthStencilState, &m_saveState.stencilRef);
     ctx->RSGetState(&m_saveState.pRasterizerState);
     m_upSpriteBatch->Begin(DirectX::SpriteSortMode_Deferred, m_saveState.pBlendState, m_saveState.pSamplerState, m_saveState.pDepthStencilState, m_saveState.pRasterizerState);

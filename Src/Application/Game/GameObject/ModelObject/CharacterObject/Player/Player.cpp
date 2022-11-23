@@ -3,14 +3,6 @@
 #include "Application/Game/GameObject/ModelObject/DynamicObject/DynamicObject.h"
 #include "Application/Game/Scene/GameScene/GameScene.h"
 
-void Player::Init()
-{
-    auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
-    mm->Load("props_dirt");
-    //mm->Load("gravity_gun");
-    CharacterObject::Init();
-}
-
 void Player::Update(float delta_time)
 {
     auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
@@ -32,13 +24,11 @@ void Player::Update(float delta_time)
     
     /* 当たり判定 */
 
-    //m_transform.position.y += -constant::fG * delta_time;
+    // 重力計算
     m_transform.position.y += (m_initialVelocity - constant::fG * m_jumpTime) * delta_time;
-    
     bool is_ground = Collision();
     
     /* 操作 (当たり判定後) */
-    ///*
     if (is_ground && km->GetState(VK_SPACE, KeyManager::KEYSTATE_PRESS)) {
         is_ground = false;
         m_initialVelocity = (*jm)[m_name]["expand"]["status"]["jump_power"];
@@ -48,10 +38,8 @@ void Player::Update(float delta_time)
         m_jumpTime        = 0.f;
     }
     else {
-        //m_transform.position.y += (m_initialVelocity - constant::fG * m_jumpTime) * delta_time;
         m_jumpTime += delta_time;
     }
-    //*/
 
     /* 行列計算 */
 
@@ -74,7 +62,6 @@ void Player::DrawOpaque()
     auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
     auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
     
-    // プレイヤー
     if (mm->IsLoaded(m_name) && m_spModel) {
         auto rotation_matrix = Math::Matrix::CreateFromYawPitchRoll(
             convert::ToRadians(m_angle + 180.f),
@@ -92,33 +79,6 @@ void Player::DrawOpaque()
             Math::Matrix::CreateScale(m_transform.scale) * rotation_matrix * translation_matrix
         );
     }
-    
-    // Gravity Gun
-    //if (mm->IsLoaded("gravity_gun")) {
-    //    auto rotation_matrix = Math::Matrix::CreateFromYawPitchRoll(
-    //        convert::ToRadians(m_angle + 180.f),
-    //        convert::ToRadians(0.f),
-    //        convert::ToRadians(m_transform.rotation.z)
-    //    );
-    //    auto translation_matrix = Math::Matrix::CreateTranslation(
-    //        m_transform.position.x,
-    //        m_transform.position.y - (*jm)[m_name]["expand"]["status"]["height"].get<float>(),
-    //        m_transform.position.z
-    //    );
-
-    //    static auto spModel = mm->CopyData("gravity_gun"); // MN: ここだけ
-
-    //    DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().DrawModel(
-    //        *spModel,
-    //        Math::Matrix::CreateScale(2.0f)
-    //        * Math::Matrix::CreateRotationY(convert::ToRadians(90.f))
-    //        * Math::Matrix::CreateRotationX(convert::ToRadians(-30.f))
-    //        * Math::Matrix::CreateTranslation(0.f, -0.05f, -0.1f)
-    //        * m_gravityGunMatrix
-    //        * rotation_matrix
-    //        * translation_matrix
-    //    );
-    //}
 }
 
 void Player::MouseOperator(float delta_time, float narrow_limit, float wide_limit)
@@ -478,8 +438,8 @@ void Player::SetCameraTransform(float delta_time)
     if (!m_wpFollowerCamera.expired()) {
 
         constexpr float zoom_sec = 0.25f; // MN: ズーム秒
-        static const Math::Vector3 normal_camera = { 0.6f, -0.1f, -1.1f }; // MN: 通常時のカメラの座標
-        static const Math::Vector3 zoom_camera   = { 0.4f, -0.1f, -0.6f }; // MN: ズーム時のカメラの座標
+        constexpr Math::Vector3 normal_camera = { 0.6f, -0.1f, -1.1f }; // MN: 通常時のカメラの座標
+        constexpr Math::Vector3 zoom_camera   = { 0.4f, -0.1f, -0.6f }; // MN: ズーム時のカメラの座標
         Math::Vector3 camera_pos = normal_camera;
 
         // 構え時にズームする
@@ -565,20 +525,8 @@ void Player::PlayAnimation(float delta_time)
     else if (kcm->GetState(KeyType::MoveForward) || kcm->GetState(KeyType::MoveBackward) || kcm->GetState(KeyType::StrafeLeft) || kcm->GetState(KeyType::StrafeRight)) {
         // スプリント時
         if (kcm->GetState(KeyType::Sprint) && kcm->GetState(KeyType::MoveForward)) {
-            if (kcm->GetState(KeyType::MoveForward) && kcm->GetState(KeyType::StrafeLeft)) {
-                if (m_animator.GetAnimationName() != "rifle_sprint_forward_left") {
-                    m_animator.SetAnimation(m_spModel->GetAnimation("rifle_sprint_forward_left"));
-                }
-            }
-            else if (kcm->GetState(KeyType::MoveForward) && kcm->GetState(KeyType::StrafeRight)) {
-                if (m_animator.GetAnimationName() != "rifle_sprint_forward_right") {
-                    m_animator.SetAnimation(m_spModel->GetAnimation("rifle_sprint_forward_right"));
-                }
-            }
-            else {
-                if (m_animator.GetAnimationName() != "rifle_sprint_foward") {
-                    m_animator.SetAnimation(m_spModel->GetAnimation("rifle_sprint_foward"));
-                }
+            if (m_animator.GetAnimationName() != "rifle_sprint_foward") {
+                m_animator.SetAnimation(m_spModel->GetAnimation("rifle_sprint_foward"));
             }
         }
         else {
@@ -596,20 +544,19 @@ void Player::PlayAnimation(float delta_time)
     // アニメーションを再生(行列を計算)
     m_animator.AdvanceTime(m_spModel->WorkNodes(), 60.f * delta_time);
     // 腰の角度を計算
+    const float waist_angle = 45.f; // MN: 構え時の腰の角度
     auto spine2 = m_spModel->FindWorkNode("mixamorig:Spine2"); // MN: 上
     auto spine1 = m_spModel->FindWorkNode("mixamorig:Spine1"); // MN: 中
-    auto spine = m_spModel->FindWorkNode("mixamorig:Spine");   // MN: 下
+    auto spine  = m_spModel->FindWorkNode("mixamorig:Spine");  // MN: 下
     if (spine2 && spine1 && spine) {
+        // m_transform.rotation.xが0の時は0
+        float weist = convert::Normalize(m_transform.rotation.x, -90.f, 90.f, -waist_angle, waist_angle);
         float one_third = convert::ToRadians(-m_transform.rotation.x / 3.f);
-        spine2->m_localTransform *= Math::Matrix::CreateRotationX(one_third);
-        spine1->m_localTransform *= Math::Matrix::CreateRotationX(one_third);
-        spine->m_localTransform *= Math::Matrix::CreateRotationX(one_third);
+        float one_third1 = convert::ToRadians(-weist / 3.f);
+        spine2->m_localTransform *= Math::Matrix::CreateRotationX(one_third) * Math::Matrix::CreateRotationZ(one_third1);
+        spine1->m_localTransform *= Math::Matrix::CreateRotationX(one_third) * Math::Matrix::CreateRotationZ(one_third1);
+        spine->m_localTransform  *= Math::Matrix::CreateRotationX(one_third) * Math::Matrix::CreateRotationZ(one_third1);
     }
     // 行列を更新
     m_spModel->CalcNodeMatrices();
-
-    auto right_hand = m_spModel->FindWorkNode("mixamorig:RightHandMiddle1");
-    if (right_hand) {
-        m_gravityGunMatrix = Math::Matrix::CreateScale(100.f) * right_hand->m_worldTransform;
-    }
 }

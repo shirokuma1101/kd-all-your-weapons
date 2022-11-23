@@ -43,37 +43,31 @@ public:
     }
     virtual void Draw() {
         DirectX11System::WorkInstance().GetShaderManager()->SetToDevice();
-        {
-            auto& shader = DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader();
-            shader.SetToDevice();
-            //for (const auto& e : m_spGameObjects) {
-            //    e->DrawTransparent();
-            //}
-            if (shader.BeginShadow()) {
-                for (const auto& e : m_spGameObjects) {
-                    e->DrawOpaque();
-                }
-                shader.EndShadow();
-            }
-            shader.BeginStandard();
+        
+        auto& shader = DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader();
+        shader.SetToDevice();
+        if (shader.BeginShadow()) {
             for (const auto& e : m_spGameObjects) {
                 e->DrawOpaque();
             }
-            shader.EndStandard();
+            shader.EndShadow();
         }
-        {
-            DirectX11System::WorkInstance().GetShaderManager()->GetSpriteShader().SetToDevice();
-            for (const auto& e : m_spGameObjects) {
-                e->DrawSprite();
-            }
+        shader.BeginStandard();
+        for (const auto& e : m_spGameObjects) {
+            e->DrawOpaque();
         }
-        {
-            DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().Begin();
-            for (const auto& e : m_spGameObjects) {
-                e->DrawFont();
-            }
-            DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().End();
+        shader.EndStandard();
+        
+        DirectX11System::WorkInstance().GetShaderManager()->GetSpriteShader().SetToDevice();
+        for (const auto& e : m_spGameObjects) {
+            e->DrawSprite();
         }
+        
+        DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().Begin();
+        for (const auto& e : m_spGameObjects) {
+            e->DrawFont();
+        }
+        DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().End();
     }
     virtual void ImGuiUpdate() {
         for (const auto& e : m_spGameObjects) {
@@ -84,7 +78,6 @@ public:
     virtual SceneType GetSceneType() const noexcept final {
         return m_sceneType;
     }
-
     virtual std::list<std::shared_ptr<GameObject>> GetGameObjects() noexcept final {
         return m_spGameObjects;
     }

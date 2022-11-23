@@ -1,5 +1,15 @@
 ﻿#include "Enemy.h"
 
+void Enemy::Init()
+{
+    CharacterObject::Init();
+
+    m_attackInterval = 1.f;
+    m_attackPower    = 1.f;
+
+    m_health = 100.f;
+}
+
 void Enemy::Update(float delta_time)
 {
     CharacterObject::Update(delta_time);
@@ -44,33 +54,39 @@ void Enemy::Update(float delta_time)
             }
         }
     }
-    //
-    //// if hp = 0 dynamic process
-    //m_transform.Composition();
-    //m_pRigidActor->setGlobalPose(physx::PxTransform(physx_helper::ToPxMat44(
-    //    Math::Matrix::CreateRotationZ(convert::ToRadians(90.f)) * m_transform.matrix
-    //)));
-
+    if (m_health) {
+        m_pRigidActor->setGlobalPose(physx::PxTransform(physx_helper::ToPxMat44(m_transform.matrix)));
+        m_transform.Composition();
+    }
+    else {
+        m_transform.matrix = physx_helper::ToMatrix(m_pRigidActor->getGlobalPose());
+    }
 }
 
 void Enemy::DrawOpaque()
 {
     auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
+    auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
 
     if (mm->IsLoaded(m_name) && m_spModel) {
-        auto rotation_matrix = Math::Matrix::CreateRotationY(convert::ToRadians(180.f));
-        auto translation_matrix = Math::Matrix::CreateTranslation(
-            m_transform.position.x,
-            m_transform.position.y - 1.86f,
-            m_transform.position.z
-        );
+        float height = (*jm)[m_name]["expand"]["status"]["height"].get<float>();
+        Math::Matrix mat;
+        if (m_health) {
+            mat
+                = Math::Matrix::CreateRotationY(convert::ToRadians(180.f))
+                * Math::Matrix::CreateTranslation(0.f, -height, 0.f)
+                * m_transform.matrix;
+        }
+        else {
+            mat
+                = Math::Matrix::CreateTranslation(0.f, -convert::ToHalf(height), 0.f)
+                * m_transform.matrix;
+        }
+
         DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().DrawModel(
             *m_spModel,
-            Math::Matrix::CreateScale(100.f)
-            * rotation_matrix
-            * translation_matrix,
-            {"COL"}
+            Math::Matrix::CreateScale(100.f) * mat,
+            { "COL" }
         );
-
     }
 }

@@ -32,12 +32,14 @@
     <ClInclude Include="Src\Application\Game\GameObject\CameraObject\CameraObject.h" />
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\CharacterObject.h" />
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy\Enemy.h" />
+    <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Player\GravityGun.h" />
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Player\Player.h" />
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\DynamicObject\DynamicObject.h" />
     <ClInclude Include="Src\Application\Game\GameObject\ModelObject\ModelObject.h" />
     <ClInclude Include="Src\Application\Game\GameObject\UIObject\GameUI\GameUI.h" />
     <ClInclude Include="Src\Application\Game\GameObject\UIObject\TitleUI\TitleUI.h" />
     <ClInclude Include="Src\Application\Game\GameObject\UIObject\UIObject.h" />
+    <ClInclude Include="Src\Application\Game\GameSettings.h" />
     <ClInclude Include="Src\Application\Game\GameSystem.h" />
     <ClInclude Include="Src\Application\Game\Scene\GameScene\GameScene.h" />
     <ClInclude Include="Src\Application\Game\Scene\ResultScene\ResultScene.h" />
@@ -62,12 +64,14 @@
     <ClInclude Include="Src\System\DirectX11\DirectX11TextureSystem.h" />
     <ClInclude Include="Src\System\GameObject\GameObject.h" />
     <ClInclude Include="Src\System\GameObject\GameObjectHelper.h" />
+    <ClInclude Include="Src\System\JsonValueHolder.h" />
     <ClInclude Include="Src\System\Math\CameraProperties.h" />
     <ClInclude Include="Src\System\Math\Collision.h" />
     <ClInclude Include="Src\System\Shader\PostProcessShader\PostProcessShader.h" />
     <ClInclude Include="Src\System\Shader\ShaderManager.h" />
     <ClInclude Include="Src\System\Shader\SpriteShader\SpriteShader.h" />
     <ClInclude Include="Src\System\Shader\StandardShader\StandardShader.h" />
+    <ClInclude Include="Src\System\Window\resource.h" />
     <ClInclude Include="Src\System\Window\Window.h" />
   </ItemGroup>
   <ItemGroup>
@@ -82,8 +86,11 @@
     <ClCompile Include="Src\Application\Application.cpp" />
     <ClCompile Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Enemy\Enemy.cpp" />
     <ClCompile Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Player\Player.cpp" />
+    <ClCompile Include="Src\Application\Game\GameObject\ModelObject\DynamicObject\DynamicObject.cpp" />
+    <ClCompile Include="Src\Application\Game\GameObject\ModelObject\ModelObject.cpp" />
     <ClCompile Include="Src\Application\Game\GameObject\UIObject\GameUI\GameUI.cpp" />
     <ClCompile Include="Src\Application\Game\GameObject\UIObject\TitleUI\TitleUI.cpp" />
+    <ClCompile Include="Src\Application\Game\GameSettings.cpp" />
     <ClCompile Include="Src\Application\Game\GameSystem.cpp" />
     <ClCompile Include="Src\Application\Game\Scene\GameScene\GameScene.cpp" />
     <ClCompile Include="Src\Application\Game\Scene\ResultScene\ResultScene.cpp" />
@@ -226,6 +233,12 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Src\System\Window\Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Src\System\Window\game-logo.ico" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

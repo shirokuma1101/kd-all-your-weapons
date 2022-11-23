@@ -10,13 +10,9 @@ public:
         : CharacterObject(name)
     {}
 
+    void Init() override;
     void Update(float delta_time) override;
     void DrawOpaque() override;
-    void ImGuiUpdate() override {
-        ImGui::Begin("config enemy");
-        ImGui::DragFloat3("pp", &m_transform.position.x);
-        ImGui::End();
-    }
 
     void SetTarget(const std::shared_ptr<Player>& target) {
         m_wpTargetPlayer = target;

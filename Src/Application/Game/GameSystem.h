@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "GameSettings.h"
 #include "ExternalDependencies/Audio/AudioManager.h"
 #include "ExternalDependencies/Effekseer/EffekseerManager.h"
 #include "ExternalDependencies/Input/InputManager.h"
@@ -7,7 +8,6 @@
 #include "System/Asset/AssetManager/AssetManager.h"
 #include "Application/Game/Scene/Scene.h"
 
-class DynamicObject;
 enum class KeyType {
     MoveForward,
     MoveBackward,
@@ -17,53 +17,14 @@ enum class KeyType {
     Shoot,
     Aim,
     Interact,
-    //MelleAttack,
+    MelleAttack,
 };
 
+class DynamicObject;
 class GameSystem
 {
 public:
-
-    /* Graphics */
-    enum class DisplayMode {
-        WINDOWED,
-        BORDERLESS,
-        FULLSCREEN,
-    };
-    enum class ResolutionType {
-        HD,    // { 1280,  720 }
-        FHD,   // { 1920, 1080 }
-        QHD,   // { 2560, 1440 }
-        UHD,   // { 3840, 2160 }
-        UWQHD, // { 3440, 1440 }
-        UWQHDP,// { 3840, 1600 }
-    };
-    enum class FrameRateLimit {
-        NO   = 0,
-        _30  = 30,
-        _60  = 60,
-        _90  = 90,
-        _120 = 120,
-        _144 = 144,
-        _240 = 240,
-        _360 = 360,
-    };
-    enum class AnisotropicFiltering {
-        ANISOTROPICx1,
-        ANISOTROPICx2,
-        ANISOTROPICx4,
-        ANISOTROPICx8,
-        ANISOTROPICx16,
-    };
-    enum class ShadowMaps {
-        NO,
-        x512,
-        x1024,
-        x2048,
-        x4096,
-        x8192,
-    };
-
+    
     ~GameSystem() {
         Release();
     }
@@ -103,14 +64,7 @@ public:
 
     void CalcFps();
 
-    void ApplyGraphicsSettings(
-        DisplayMode          display_mode,
-        ResolutionType       resolution_type,
-        FrameRateLimit       frame_rate_limit,
-        float                render_scaling,
-        AnisotropicFiltering anisotropic_filtering,
-        ShadowMaps           shadow_maps
-    );
+    void ApplyGraphicsSettings();
 
     /*
     auto& am = Application::Instance().GetGameSystem()->GetAudioManager();
@@ -132,24 +86,16 @@ private:
         imgui_helper::Release();
     }
 
-    std::unique_ptr<AudioManager>              m_upAudioMgr;
-    std::unique_ptr<EffekseerManager>          m_upEffekseerMgr;
-    std::unique_ptr<InputManager>              m_upInputMgr;
-    std::unique_ptr<KeyConfigManager<KeyType>> m_upKeyConfigMgr;
-    std::unique_ptr<PhysXManager>              m_upPhysxMgr;
-    std::unique_ptr<AssetManager>              m_upAssetMgr;
-    std::shared_ptr<Scene>                     m_spScene;
+    std::unique_ptr<GameSettings>     m_upGameSettings;
 
-    double m_fps = 0;
-    
-    /* Graphics */
-    DisplayMode    m_displayMode    = DisplayMode::WINDOWED;
-    ResolutionType m_resolutionType = ResolutionType::HD;
-    FrameRateLimit m_frameRateLimit = FrameRateLimit::_60;
-    float          m_renderScaling  = 100.f;
-    AnisotropicFiltering m_anisotropicFiltering = AnisotropicFiltering::ANISOTROPICx1;
-    ShadowMaps     m_shadowMaps     = ShadowMaps::x512;
-    /* Sound */
-    float          m_masterVolume   = 0.f;
+    std::unique_ptr<AudioManager>     m_upAudioMgr;
+    std::unique_ptr<EffekseerManager> m_upEffekseerMgr;
+    std::unique_ptr<InputManager>     m_upInputMgr;
+    std::unique_ptr<KeyConfigManager<KeyType>> m_upKeyConfigMgr;
+    std::unique_ptr<PhysXManager>     m_upPhysxMgr;
+    std::unique_ptr<AssetManager>     m_upAssetMgr;
+    std::shared_ptr<Scene>            m_spScene;
+
+    double                            m_fps = 0;
     
 };

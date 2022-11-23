@@ -3,8 +3,8 @@
 void GameUI::Init()
 {
     m_backgroundTexture.Load("Asset/Texture/kari/title.png");
-    m_loadTexture.Load("Asset/Texture/kari/load-icon-png-7952.png");
-    m_reticleTexture.Load("Asset/Texture/kari/reticle.png");
+    m_loadTexture.Load("Asset/Texture/ui/load-icon.png");
+    m_reticleTexture.Load("Asset/Texture/ui/reticle.png");
 }
 
 void GameUI::Update(float delta_time)

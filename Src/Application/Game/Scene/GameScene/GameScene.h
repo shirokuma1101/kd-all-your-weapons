@@ -18,8 +18,6 @@ public:
 
     Scene::SceneType Update(float delta_time) override;
 
-    void ImGuiUpdate() override;
-
     std::list<std::weak_ptr<Enemy>>& GetEnemyObjects() noexcept {
         return m_wpEnemyObjects;
     }

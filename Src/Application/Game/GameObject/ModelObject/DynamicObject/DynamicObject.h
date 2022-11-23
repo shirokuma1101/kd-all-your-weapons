@@ -15,81 +15,20 @@ public:
         : ModelObject(name)
     {}
 
-    void PreUpdate() override {
-        m_isEquipping = false;
-        m_selection = Selection::NoSelected;
-    }
+    /* GameObject */
+    void PreUpdate() override;
+    void Update(float delta_time) override;
+    void DrawOpaque() override;
 
-    void Update(float delta_time) override {
-        auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
-        auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
-        
-        m_weight = (*jm)[m_name]["expand"]["weight"];
-        
-        ModelObject::Update(delta_time);
-        if (!mm->IsLoaded(m_name)) return;
-
-        // Modelロード時のみ実行
-        if (!m_isLoaded) {
-            m_isLoaded = true;
-            physx_helper::PutToSleep(m_pRigidActor);
-        }
-        
-        if (m_isEquipping) {
-            m_pRigidActor->setGlobalPose(physx::PxTransform(physx_helper::ToPxMat44(m_transform.matrix)));
-            physx_helper::PutToSleep(m_pRigidActor);
-            m_isFirstImpulse = true;
-        }
-        else {
-            if (physx_helper::IsSleeping(m_pRigidActor)) {
-                if (m_isFirstImpulse) {
-                    physx_helper::AddForce(m_pRigidActor, m_force, physx::PxForceMode::eIMPULSE);
-                    m_isFirstImpulse = false;
-                }
-            }
-            if (m_pRigidActor && m_pRigidActor->is<physx::PxRigidDynamic>()) {
-                SetMatrix(physx_helper::ToMatrix(m_pRigidActor->getGlobalPose()));
-            }
-        }
-
-        if (m_spRigidActorHolder) {
-            m_spRigidActorHolder->Update();
-            //auto& vec = m_spRigidActorHolder->GetMoveVector();
-        }
-    }
-
-    void DrawOpaque() override {
-        auto rim_light = DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().GetRimLightCB().Get();
-        
-        switch (m_selection) {
-        case DynamicObject::Selection::NoSelected:
-            rim_light->rimPower = 0.f;
-            break;
-        case DynamicObject::Selection::Equippable:
-            rim_light->rimColor = { 0.f, 1.f, 0.f };
-            rim_light->rimPower = 1.f;
-            break;
-        case DynamicObject::Selection::NotEquippable:
-            rim_light->rimColor = { 1.f, 0.f, 0.f };
-            rim_light->rimPower = 1.f;
-            break;
-        default:
-            break;
-        }
-        
-        DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().GetRimLightCB().Write();
-        ModelObject::DrawOpaque();
-        rim_light->rimPower = 0.f;
-        DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().GetRimLightCB().Write(true);
-    }
+    /* DynamicObject */
 
     float GetWeight() const noexcept {
         return m_weight;
     }
-    void SetEquipping(bool equipping) {
+    void SetEquipping(bool equipping) noexcept {
         m_isEquipping = equipping;
     }
-    void SetSelection(Selection selection) {
+    void SetSelection(Selection selection) noexcept {
         m_selection = selection;
     }
 

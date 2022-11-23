@@ -8,6 +8,15 @@
 void GameSystem::Init()
 {
     /**************************************************
+    * Settings
+    **************************************************/
+    
+    m_upGameSettings = std::make_unique<GameSettings>("settings.ini");
+    m_upGameSettings->Load();
+    ApplyGraphicsSettings();
+    
+    
+    /**************************************************
     * Manager
     **************************************************/
 
@@ -17,10 +26,9 @@ void GameSystem::Init()
     /* Audio */
     m_upAudioMgr = std::make_unique<AudioManager>();
     m_upAudioMgr->Init();
-    m_upAudioMgr->SetMasterVolume(m_masterVolume);
+    m_upAudioMgr->SetMasterVolume(m_upGameSettings->masterVolume);
     m_upAudioMgr->SetAudio("aki_bgm", "Asset/Sound/aki_bgm.wav");
     m_upAudioMgr->SetAudio("charge_se", "Asset/Sound/charge_se.wav");
-    m_upAudioMgr->Play("aki_bgm", AudioManager::PLAYFLAGS_LOOP);
 
     /* Effekseer */
     m_upEffekseerMgr = std::make_unique<EffekseerManager>();
@@ -45,24 +53,7 @@ void GameSystem::Init()
 
     /* Font */
     DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().AddFont("genkai", "Asset/Font/GenkaiMincho.dat");
-
-
-    /**************************************************
-    * settings (ref:"https://www.flightsimulator.blog/2022/10/21/best-graphics-settings-guide/")
-    **************************************************/
-
-    //! 初回Borderless時にウィンドウサイズになるので、最初はBorderlessで初期化
-    ApplyGraphicsSettings(DisplayMode::BORDERLESS, m_resolutionType, m_frameRateLimit, m_renderScaling, m_anisotropicFiltering, m_shadowMaps);
-
-    /* Graphics */
-    m_displayMode          = DisplayMode::WINDOWED;
-    m_resolutionType       = ResolutionType::HD;
-    m_frameRateLimit       = FrameRateLimit::_60;
-    m_renderScaling        = 100.f;
-    m_anisotropicFiltering = AnisotropicFiltering::ANISOTROPICx1;
-    m_shadowMaps           = ShadowMaps::x512;
-    /* Sound */
-    m_masterVolume         = 0.f;
+    
     /* Controls */
     m_upKeyConfigMgr->AddKeyConfig(KeyType::MoveForward,  'W');
     m_upKeyConfigMgr->AddKeyConfig(KeyType::MoveBackward, 'S');
@@ -72,11 +63,9 @@ void GameSystem::Init()
     m_upKeyConfigMgr->AddKeyConfig(KeyType::Shoot,        VK_LBUTTON);
     m_upKeyConfigMgr->AddKeyConfig(KeyType::Aim,          VK_RBUTTON);
     m_upKeyConfigMgr->AddKeyConfig(KeyType::Interact,     'F');
+    m_upKeyConfigMgr->AddKeyConfig(KeyType::MelleAttack,  'E');
 
-    m_upAudioMgr->SetMasterVolume(m_masterVolume);
-    ApplyGraphicsSettings(m_displayMode, m_resolutionType, m_frameRateLimit, m_renderScaling, m_anisotropicFiltering, m_shadowMaps);
-
-
+    
     /**************************************************
     * Scene
     **************************************************/
@@ -92,26 +81,7 @@ void GameSystem::Update()
     constexpr double delta_time_threshold = 1.0;
     const double     delta_time           = Application::Instance().GetDeltaTime();
     if (delta_time > delta_time_threshold || delta_time <= 0.0) return;
-
-    /* Shader */
-    switch (m_anisotropicFiltering) {
-    case AnisotropicFiltering::ANISOTROPICx1:
-        DirectX11System::WorkInstance().GetCtx()->PSSetSamplers(0, 1, &DirectX11System::Instance().GetShaderManager()->m_pSSAnisotropicWrap);
-        break;
-    case AnisotropicFiltering::ANISOTROPICx2:
-        DirectX11System::WorkInstance().GetCtx()->PSSetSamplers(0, 1, &DirectX11System::Instance().GetShaderManager()->m_pSSAnisotropic2xWrap);
-        break;
-    case AnisotropicFiltering::ANISOTROPICx4:
-        DirectX11System::WorkInstance().GetCtx()->PSSetSamplers(0, 1, &DirectX11System::Instance().GetShaderManager()->m_pSSAnisotropic4xWrap);
-        break;
-    case AnisotropicFiltering::ANISOTROPICx8:
-        DirectX11System::WorkInstance().GetCtx()->PSSetSamplers(0, 1, &DirectX11System::Instance().GetShaderManager()->m_pSSAnisotropic8xWrap);
-        break;
-    case AnisotropicFiltering::ANISOTROPICx16:
-        DirectX11System::WorkInstance().GetCtx()->PSSetSamplers(0, 1, &DirectX11System::Instance().GetShaderManager()->m_pSSAnisotropic16xWrap);
-        break;
-    }
-
+    
     /* Manager */
     m_upEffekseerMgr->Update(delta_time);
     m_upInputMgr->Update();
@@ -125,13 +95,8 @@ void GameSystem::Update()
     auto camera = DirectX11System::Instance().GetShaderManager()->GetCameraCB().Get();
     auto normalized_dir = camera->view.Backward();
     normalized_dir.Normalize();
-
     m_upAudioMgr->Update(camera->position, normalized_dir);
-    // Set camera to Effekseer
-    m_upEffekseerMgr->SetCamera(
-        DirectX11System::Instance().GetShaderManager()->GetCameraCB().Get()->projection,
-        DirectX11System::Instance().GetShaderManager()->GetCameraCB().Get()->view
-    );
+    m_upEffekseerMgr->SetCamera(camera->projection, camera->view);
 
     /* Debug */
     if (m_upInputMgr->GetKeyManager()->GetState(VK_F2, KeyManager::KEYSTATE_PRESS)) {
@@ -153,22 +118,16 @@ void GameSystem::Draw()
 
 void GameSystem::ImGuiUpdate()
 {
-    using UtDisplayMode          = std::underlying_type_t<DisplayMode>;
-    using UtResolutionType       = std::underlying_type_t<ResolutionType>;
-    using UtFrameRateLimit       = std::underlying_type_t<FrameRateLimit>;
-    using UtAnisotropicFiltering = std::underlying_type_t<AnisotropicFiltering>;
-    using UtShadowMaps           = std::underlying_type_t<ShadowMaps>;
-
-    static bool             is_show          = false;
+    static bool is_show = false;
     /* Graphics */
-    static UtDisplayMode    display_mode     = static_cast<UtDisplayMode>(m_displayMode);
-    static UtResolutionType resolution_type  = static_cast<UtResolutionType>(m_resolutionType);
-    static UtFrameRateLimit frame_rate_limit = static_cast<UtFrameRateLimit>(m_frameRateLimit);
-    static float            render_scaling   = m_renderScaling;
-    static UtAnisotropicFiltering anisotropic_filtering = static_cast<UtAnisotropicFiltering>(m_anisotropicFiltering);
-    static UtShadowMaps     shadow_maps      = static_cast<UtShadowMaps>(m_shadowMaps);
+    static GameSettings::UtDisplayMode    display_mode     = static_cast<GameSettings::UtDisplayMode>(m_upGameSettings->displayMode);
+    static GameSettings::UtResolutionType resolution_type  = static_cast<GameSettings::UtResolutionType>(m_upGameSettings->resolutionType);
+    static GameSettings::UtFrameRateLimit frame_rate_limit = static_cast<GameSettings::UtFrameRateLimit>(m_upGameSettings->frameRateLimit);
+    static float                          render_scaling   = m_upGameSettings->renderScaling;
+    static GameSettings::UtAnisotropicFiltering anisotropic_filtering = static_cast<GameSettings::UtAnisotropicFiltering>(m_upGameSettings->anisotropicFiltering);
+    static GameSettings::UtShadowMaps     shadow_maps      = static_cast<GameSettings::UtShadowMaps>(m_upGameSettings->shadowMaps);
     /* Sound */
-    static float          master_volume = 0.f;
+    static float master_volume = 0.f;
 
     imgui_helper::Begin();
 
@@ -189,36 +148,39 @@ void GameSystem::ImGuiUpdate()
             ImGui::Text("FPS: %lf", m_fps);
             /* Graphics */
             // Window type
-            ImGui::RadioButton("Windowed", &display_mode, static_cast<UtDisplayMode>(DisplayMode::WINDOWED));
+            ImGui::RadioButton("Windowed", &display_mode, static_cast<GameSettings::UtDisplayMode>(GameSettings::DisplayMode::WINDOWED));
             ImGui::SameLine();
-            ImGui::RadioButton("Borderless", &display_mode, static_cast<UtDisplayMode>(DisplayMode::BORDERLESS));
+            ImGui::RadioButton("Borderless", &display_mode, static_cast<GameSettings::UtDisplayMode>(GameSettings::DisplayMode::BORDERLESS));
             ImGui::SameLine();
-            ImGui::RadioButton("Fullscreen", &display_mode, static_cast<UtDisplayMode>(DisplayMode::FULLSCREEN));
+            ImGui::RadioButton("Fullscreen", &display_mode, static_cast<GameSettings::UtDisplayMode>(GameSettings::DisplayMode::FULLSCREEN));
             // Resolution
-            ImGui::RadioButton("HD", &resolution_type, static_cast<UtResolutionType>(ResolutionType::HD));
+            ImGui::RadioButton("HD", &resolution_type, static_cast<GameSettings::UtResolutionType>(GameSettings::ResolutionType::HD));
+            ImGui::SameLine();    
+            ImGui::RadioButton("FHD", &resolution_type, static_cast<GameSettings::UtResolutionType>(GameSettings::ResolutionType::FHD));
             ImGui::SameLine();
-            ImGui::RadioButton("FHD", &resolution_type, static_cast<UtResolutionType>(ResolutionType::FHD));
+            ImGui::RadioButton("QHD", &resolution_type, static_cast<GameSettings::UtResolutionType>(GameSettings::ResolutionType::QHD));
             ImGui::SameLine();
-            ImGui::RadioButton("QHD", &resolution_type, static_cast<UtResolutionType>(ResolutionType::QHD));
-            ImGui::SameLine();
-            ImGui::RadioButton("UHD", &resolution_type, static_cast<UtResolutionType>(ResolutionType::UHD));
+            ImGui::RadioButton("UHD", &resolution_type, static_cast<GameSettings::UtResolutionType>(GameSettings::ResolutionType::UHD));
             // FPS
-            ImGui::RadioButton("Unlimit", &frame_rate_limit, static_cast<UtFrameRateLimit>(FrameRateLimit::NO));
+            ImGui::RadioButton("Unlimit", &frame_rate_limit, static_cast<GameSettings::UtFrameRateLimit>(GameSettings::FrameRateLimit::NO));
             ImGui::SameLine();
-            ImGui::RadioButton("30", &frame_rate_limit, static_cast<UtFrameRateLimit>(FrameRateLimit::_30));
+            ImGui::RadioButton("30", &frame_rate_limit, static_cast<GameSettings::UtFrameRateLimit>(GameSettings::FrameRateLimit::_30));
             ImGui::SameLine();
-            ImGui::RadioButton("60", &frame_rate_limit, static_cast<UtFrameRateLimit>(FrameRateLimit::_60));
+            ImGui::RadioButton("60", &frame_rate_limit, static_cast<GameSettings::UtFrameRateLimit>(GameSettings::FrameRateLimit::_60));
             ImGui::SameLine();
-            ImGui::RadioButton("90", &frame_rate_limit, static_cast<UtFrameRateLimit>(FrameRateLimit::_90));
+            ImGui::RadioButton("90", &frame_rate_limit, static_cast<GameSettings::UtFrameRateLimit>(GameSettings::FrameRateLimit::_90));
             ImGui::SameLine();
-            ImGui::RadioButton("120", &frame_rate_limit, static_cast<UtFrameRateLimit>(FrameRateLimit::_120));
+            ImGui::RadioButton("120", &frame_rate_limit, static_cast<GameSettings::UtFrameRateLimit>(GameSettings::FrameRateLimit::_120));
+
+            ImGui::RadioButton("144", &frame_rate_limit, static_cast<GameSettings::UtFrameRateLimit>(GameSettings::FrameRateLimit::_144));
             ImGui::SameLine();
-            ImGui::RadioButton("144", &frame_rate_limit, static_cast<UtFrameRateLimit>(FrameRateLimit::_144));
+            ImGui::RadioButton("165", &frame_rate_limit, static_cast<GameSettings::UtFrameRateLimit>(GameSettings::FrameRateLimit::_165));
             ImGui::SameLine();
-            ImGui::RadioButton("240", &frame_rate_limit, static_cast<UtFrameRateLimit>(FrameRateLimit::_240));
+            ImGui::RadioButton("180", &frame_rate_limit, static_cast<GameSettings::UtFrameRateLimit>(GameSettings::FrameRateLimit::_180));
             ImGui::SameLine();
-            ImGui::RadioButton("360", &frame_rate_limit, static_cast<UtFrameRateLimit>(FrameRateLimit::_360));
+            ImGui::RadioButton("240", &frame_rate_limit, static_cast<GameSettings::UtFrameRateLimit>(GameSettings::FrameRateLimit::_240));
             ImGui::SameLine();
+            ImGui::RadioButton("360", &frame_rate_limit, static_cast<GameSettings::UtFrameRateLimit>(GameSettings::FrameRateLimit::_360));
             // RenderScaling
             ImGui::SliderFloat("RenderScaling", &render_scaling, 50.f, 200.f);
             const auto& size = Application::Instance().GetWindow().GetSize();
@@ -228,42 +190,41 @@ void GameSystem::ImGuiUpdate()
                 static_cast<Window::Size::second_type>(size.second * (render_scaling / 100.f))
             );
             // AnisotropicFiltering
-            ImGui::RadioButton("Off", &anisotropic_filtering, static_cast<UtAnisotropicFiltering>(AnisotropicFiltering::ANISOTROPICx1));
+            ImGui::RadioButton("Off", &anisotropic_filtering, static_cast<GameSettings::UtAnisotropicFiltering>(GameSettings::AnisotropicFiltering::ANISOTROPICx1));
             ImGui::SameLine();
-            ImGui::RadioButton("x2", &anisotropic_filtering, static_cast<UtAnisotropicFiltering>(AnisotropicFiltering::ANISOTROPICx2));
+            ImGui::RadioButton("x2", &anisotropic_filtering, static_cast<GameSettings::UtAnisotropicFiltering>(GameSettings::AnisotropicFiltering::ANISOTROPICx2));
             ImGui::SameLine();
-            ImGui::RadioButton("x4", &anisotropic_filtering, static_cast<UtAnisotropicFiltering>(AnisotropicFiltering::ANISOTROPICx4));
+            ImGui::RadioButton("x4", &anisotropic_filtering, static_cast<GameSettings::UtAnisotropicFiltering>(GameSettings::AnisotropicFiltering::ANISOTROPICx4));
             ImGui::SameLine();
-            ImGui::RadioButton("x8", &anisotropic_filtering, static_cast<UtAnisotropicFiltering>(AnisotropicFiltering::ANISOTROPICx8));
+            ImGui::RadioButton("x8", &anisotropic_filtering, static_cast<GameSettings::UtAnisotropicFiltering>(GameSettings::AnisotropicFiltering::ANISOTROPICx8));
             ImGui::SameLine();
-            ImGui::RadioButton("x16", &anisotropic_filtering, static_cast<UtAnisotropicFiltering>(AnisotropicFiltering::ANISOTROPICx16));
+            ImGui::RadioButton("x16", &anisotropic_filtering, static_cast<GameSettings::UtAnisotropicFiltering>(GameSettings::AnisotropicFiltering::ANISOTROPICx16));
             // ShadoMaps
-            ImGui::RadioButton("No", &shadow_maps, static_cast<UtShadowMaps>(ShadowMaps::NO));
+            ImGui::RadioButton("No", &shadow_maps, static_cast<GameSettings::UtShadowMaps>(GameSettings::ShadowMaps::NO));
             ImGui::SameLine();
-            ImGui::RadioButton("512", &shadow_maps, static_cast<UtShadowMaps>(ShadowMaps::x512));
+            ImGui::RadioButton("512", &shadow_maps, static_cast<GameSettings::UtShadowMaps>(GameSettings::ShadowMaps::x512));
             ImGui::SameLine();
-            ImGui::RadioButton("1024", &shadow_maps, static_cast<UtShadowMaps>(ShadowMaps::x1024));
+            ImGui::RadioButton("1024", &shadow_maps, static_cast<GameSettings::UtShadowMaps>(GameSettings::ShadowMaps::x1024));
             ImGui::SameLine();
-            ImGui::RadioButton("2048", &shadow_maps, static_cast<UtShadowMaps>(ShadowMaps::x2048));
+            ImGui::RadioButton("2048", &shadow_maps, static_cast<GameSettings::UtShadowMaps>(GameSettings::ShadowMaps::x2048));
             ImGui::SameLine();
-            ImGui::RadioButton("4096", &shadow_maps, static_cast<UtShadowMaps>(ShadowMaps::x4096));
+            ImGui::RadioButton("4096", &shadow_maps, static_cast<GameSettings::UtShadowMaps>(GameSettings::ShadowMaps::x4096));
             ImGui::SameLine();
-            ImGui::RadioButton("8192", &shadow_maps, static_cast<UtShadowMaps>(ShadowMaps::x8192));
+            ImGui::RadioButton("8192", &shadow_maps, static_cast<GameSettings::UtShadowMaps>(GameSettings::ShadowMaps::x8192));
             /* Sound */
             ImGui::SliderFloat("Master Volume", &master_volume, 0.f, 1.f);
             /* Scene */
             ImGui::Text("ID: %d", static_cast<int>(m_spScene->GetSceneType()));
         }
         if (ImGui::Button("Apply")) {
-            m_upAudioMgr->SetMasterVolume(m_masterVolume = master_volume);
-            ApplyGraphicsSettings(
-                static_cast<DisplayMode>(display_mode),
-                static_cast<ResolutionType>(resolution_type),
-                static_cast<FrameRateLimit>(frame_rate_limit),
-                render_scaling,
-                static_cast<AnisotropicFiltering>(anisotropic_filtering),
-                static_cast<ShadowMaps>(shadow_maps)
-            );
+            m_upGameSettings->displayMode    = static_cast<GameSettings::DisplayMode>(display_mode);
+            m_upGameSettings->resolutionType = static_cast<GameSettings::ResolutionType>(resolution_type);
+            m_upGameSettings->frameRateLimit = static_cast<GameSettings::FrameRateLimit>(frame_rate_limit);
+            m_upGameSettings->renderScaling  = render_scaling;
+            m_upGameSettings->anisotropicFiltering = static_cast<GameSettings::AnisotropicFiltering>(anisotropic_filtering);
+            m_upGameSettings->shadowMaps     = static_cast<GameSettings::ShadowMaps>(shadow_maps);
+            ApplyGraphicsSettings();
+            m_upAudioMgr->SetMasterVolume(m_upGameSettings->masterVolume = master_volume);
         }
         ImGui::End();
 
@@ -312,7 +273,7 @@ void GameSystem::CalcFps()
     }
 
     // FPS制御
-    int frame_rate_limit = static_cast<std::underlying_type_t<FrameRateLimit>>(FrameRateLimit::_360);
+    int frame_rate_limit = static_cast<GameSettings::UtFrameRateLimit>(m_upGameSettings->frameRateLimit);
     if (!frame_rate_limit) return;
     double limit_ms = 1000.0 / frame_rate_limit;
     if (double sleep = limit_ms - convert::SToMS(delta_time); sleep > 0.f) {
@@ -324,64 +285,44 @@ void GameSystem::CalcFps()
             timer.End();
             if (sleep < timer.Duration<Timer::MS>()) break;
         }
-        //Sleep(static_cast<DWORD>(sleep));
     };
 }
 
-void GameSystem::ApplyGraphicsSettings(DisplayMode display_mode, ResolutionType resolution_type, FrameRateLimit frame_rate_limit, float render_scaling, AnisotropicFiltering anisotropic_filtering, ShadowMaps shadow_maps)
+void GameSystem::ApplyGraphicsSettings()
 {
     /* Graphics */
-    switch (m_displayMode = display_mode) {
-    case DisplayMode::WINDOWED:
+    switch (m_upGameSettings->displayMode) {
+    case GameSettings::DisplayMode::WINDOWED:
         Application::WorkInstance().GetWindow().SetWindowStyle(WS_OVERLAPPEDWINDOW - WS_THICKFRAME);
         DirectX11System::Instance().GetSwapChain()->SetFullscreenState(FALSE, 0);
         break;
-    case DisplayMode::BORDERLESS:
+    case GameSettings::DisplayMode::BORDERLESS:
         Application::WorkInstance().GetWindow().SetWindowStyle(WS_POPUP);
         DirectX11System::Instance().GetSwapChain()->SetFullscreenState(FALSE, 0);
         break;
-    case DisplayMode::FULLSCREEN:
+    case GameSettings::DisplayMode::FULLSCREEN:
         Application::WorkInstance().GetWindow().SetWindowStyle(WS_OVERLAPPEDWINDOW - WS_THICKFRAME);
         DirectX11System::Instance().GetSwapChain()->SetFullscreenState(TRUE, 0);
         break;
     }
-    Window::Size resolution;
-    switch (m_resolutionType = resolution_type) {
-    case ResolutionType::HD:
-        resolution = Window::HD;
+    auto resolution        = GameSettings::ToResolution(m_upGameSettings->resolutionType);
+    auto shadow_resolution = GameSettings::ToShadowMaps(m_upGameSettings->shadowMaps);
+    /* Shader */
+    switch (m_upGameSettings->anisotropicFiltering) {
+    case GameSettings::AnisotropicFiltering::ANISOTROPICx1:
+        DirectX11System::WorkInstance().GetCtx()->PSSetSamplers(0, 1, &DirectX11System::Instance().GetShaderManager()->m_pSSAnisotropicWrap);
         break;
-    case ResolutionType::FHD:
-        resolution = Window::FHD;
+    case GameSettings::AnisotropicFiltering::ANISOTROPICx2:
+        DirectX11System::WorkInstance().GetCtx()->PSSetSamplers(0, 1, &DirectX11System::Instance().GetShaderManager()->m_pSSAnisotropic2xWrap);
         break;
-    case ResolutionType::QHD:
-        resolution = Window::QHD;
+    case GameSettings::AnisotropicFiltering::ANISOTROPICx4:
+        DirectX11System::WorkInstance().GetCtx()->PSSetSamplers(0, 1, &DirectX11System::Instance().GetShaderManager()->m_pSSAnisotropic4xWrap);
         break;
-    case ResolutionType::UHD:
-        resolution = Window::UHD;
+    case GameSettings::AnisotropicFiltering::ANISOTROPICx8:
+        DirectX11System::WorkInstance().GetCtx()->PSSetSamplers(0, 1, &DirectX11System::Instance().GetShaderManager()->m_pSSAnisotropic8xWrap);
         break;
-    }
-    m_frameRateLimit = frame_rate_limit;
-    m_renderScaling = render_scaling;
-    m_anisotropicFiltering = anisotropic_filtering;
-    std::pair<int32_t, int32_t> shadow_resolution;
-    switch (m_shadowMaps = shadow_maps) {
-    case ShadowMaps::NO:
-        shadow_resolution = { 0, 0 };
-        break;
-    case ShadowMaps::x512:
-        shadow_resolution = { 512, 512 };
-        break;
-    case ShadowMaps::x1024:
-        shadow_resolution = { 1024, 1024 };
-        break;
-    case ShadowMaps::x2048:
-        shadow_resolution = { 2048, 2048 };
-        break;
-    case ShadowMaps::x4096:
-        shadow_resolution = { 4096, 4096 };
-        break;
-    case ShadowMaps::x8192:
-        shadow_resolution = { 8192, 8192 };
+    case GameSettings::AnisotropicFiltering::ANISOTROPICx16:
+        DirectX11System::WorkInstance().GetCtx()->PSSetSamplers(0, 1, &DirectX11System::Instance().GetShaderManager()->m_pSSAnisotropic16xWrap);
         break;
     }
 
@@ -390,8 +331,8 @@ void GameSystem::ApplyGraphicsSettings(DisplayMode display_mode, ResolutionType 
     // リサイズ
     Application::WorkInstance().GetWindow().Resize(resolution);
     DirectX11System::WorkInstance().Resize({
-        static_cast<Window::Size::first_type>(resolution.first * (m_renderScaling / 100.f)),
-        static_cast<Window::Size::second_type>(resolution.second * (m_renderScaling / 100.f))
+        static_cast<Window::Size::first_type>(resolution.first * (m_upGameSettings->renderScaling / 100.f)),
+        static_cast<Window::Size::second_type>(resolution.second * (m_upGameSettings->renderScaling / 100.f))
         });
     // RenderTargetを再生成する
     if (shadow_resolution != std::pair<int32_t, int32_t>(0, 0)) {
