@@ -22,6 +22,8 @@ public:
 
     /* DynamicObject */
 
+    bool Collision() override;
+
     float GetWeight() const noexcept {
         return m_weight;
     }

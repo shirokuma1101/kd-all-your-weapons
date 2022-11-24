@@ -34,6 +34,10 @@ public:
     void Draw();
     void ImGuiUpdate();
 
+    const std::unique_ptr<GameSettings>& GetGameSettings() const noexcept {
+        return m_upGameSettings;
+    }
+
     const std::unique_ptr<AudioManager>& GetAudioManager() const noexcept {
         return m_upAudioMgr;
     }

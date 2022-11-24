@@ -99,7 +99,7 @@ void GameSystem::Update()
     m_upEffekseerMgr->SetCamera(camera->projection, camera->view);
 
     /* Debug */
-    if (m_upInputMgr->GetKeyManager()->GetState(VK_F2, KeyManager::KEYSTATE_PRESS)) {
+    if (m_upInputMgr->GetKeyManager()->GetState(VK_F3, KeyManager::KEYSTATE_PRESS)) {
         m_upAssetMgr->Load(AssetManager::AssetType::Json);
     }
 }
@@ -131,7 +131,7 @@ void GameSystem::ImGuiUpdate()
 
     imgui_helper::Begin();
 
-    if (m_upInputMgr->GetKeyManager()->GetState(VK_F1, KeyManager::KEYSTATE_PRESS)) {
+    if (m_upInputMgr->GetKeyManager()->GetState(VK_F2, KeyManager::KEYSTATE_PRESS)) {
         if (!is_show) {
             is_show = true;
             input_helper::CursorData::ShowCursor(true);
@@ -143,7 +143,7 @@ void GameSystem::ImGuiUpdate()
     }
     if (is_show) {
         ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
-        ImGui::SetNextWindowSize(ImVec2(350.f, 275.f));
+        ImGui::SetNextWindowSize(ImVec2(350.f, 300.f));
         if (ImGui::Begin("GameSystem Settings")) {
             ImGui::Text("FPS: %lf", m_fps);
             /* Graphics */

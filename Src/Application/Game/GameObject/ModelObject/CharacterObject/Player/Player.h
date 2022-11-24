@@ -10,19 +10,9 @@ public:
         : CharacterObject(name)
     {}
 
+    void Init() override;
     void Update(float delta_time) override;
-    
     void DrawOpaque() override;
-
-    void ImGuiUpdate() override {
-        ImGui::Begin("config 1");
-        ImGui::Text("Power: %.2f", m_nowChargePower);
-        ImGui::Text("CT: %.2f", m_nowCT);
-        ImGui::Text("ppx: %.2f", m_transform.position.x);
-        ImGui::Text("ppy: %.2f", m_transform.position.y);
-        ImGui::Text("ppz: %.2f", m_transform.position.z);
-        ImGui::End();
-    }
 
     void SetFollowerTarget(std::shared_ptr<CameraObject> obj) {
         m_wpFollowerCamera = obj;

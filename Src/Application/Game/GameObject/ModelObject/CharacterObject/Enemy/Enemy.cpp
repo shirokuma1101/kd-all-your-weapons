@@ -61,6 +61,8 @@ void Enemy::Update(float delta_time)
     else {
         m_transform.matrix = physx_helper::ToMatrix(m_pRigidActor->getGlobalPose());
     }
+
+    PlayAnimation(delta_time);
 }
 
 void Enemy::DrawOpaque()
@@ -89,4 +91,24 @@ void Enemy::DrawOpaque()
             { "COL" }
         );
     }
+}
+
+void Enemy::PlayAnimation(float delta_time)
+{
+    if (!m_spModel) return;
+
+    if (m_animator.GetAnimationName() != "zombie_alert_idle") {
+        m_animator.SetAnimation(m_spModel->GetAnimation("zombie_alert_idle"));
+    }
+    //if (m_animator.GetAnimationName() != "zombie_running") {
+    //    m_animator.SetAnimation(m_spModel->GetAnimation("zombie_running"));
+    //}
+    //if (m_animator.GetAnimationName() != "zombie_attack_with_right_hand") {
+    //    m_animator.SetAnimation(m_spModel->GetAnimation("zombie_attack_with_right_hand"));
+    //}
+
+    // アニメーションを再生(行列を計算)
+    m_animator.AdvanceTime(m_spModel->WorkNodes(), 60.f * delta_time);
+    // 行列を更新
+    m_spModel->CalcNodeMatrices();
 }

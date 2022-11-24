@@ -5,11 +5,11 @@ void ModelObject::Init()
     auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
     auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
 
-    // 既にロードされたモデルの場合はフラグをリセットする
+    // 同名のモデル名の場合があるのでフラグをリセットする
     mm->LoadedOnlyOnceReset(m_name);
     if (!mm->AsyncLoad(m_name)) return;
 
-    // 行列
+    // 行列計算
     m_transform = game_object_helper::ToTransform((*jm)[m_name]["transform"]);
     m_transform.Composition();
 
@@ -25,7 +25,7 @@ void ModelObject::Update(float delta_time)
     auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
     auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
 
-    // モデルのロード
+    // モデルのロード時
     if (!m_spModel && mm->IsLoadedOnlyOnce(m_name)) {
         // モデルを取得
         m_spModel = mm->CopyData(m_name);
@@ -33,6 +33,7 @@ void ModelObject::Update(float delta_time)
         // モデルの当たり判定を作成
         CreateModelCollision();
     }
+    // モデルのロード
     if (!mm->IsLoaded(m_name)) return;
 
     // 行列の計算
@@ -80,15 +81,15 @@ void ModelObject::CreatePrimitiveCollision()
         }
         bool has_mesh = false;
         for (const auto& e : (*jm)[m_name]["collision"]["physx"]["shapes"]) {
-            const auto& type = e.items().begin().key();
+            const auto& type       = e.items().begin().key();
             const auto& properties = e.items().begin().value();
             if (type == "sphere") {
-                auto sphere = pm->Sphere(properties["radius"]);
+                auto sphere   = pm->Sphere(properties["radius"]);
                 auto position = properties.count("position") ? game_object_helper::ToVector3(properties["position"]) : Math::Vector3::Zero;
                 physx_helper::AttachShape(&m_pRigidActor, &sphere, physx::PxTransform(physx_helper::ToPxVec3(position)));
             }
             else if (type == "capsule") {
-                auto capsule = pm->Capsule(properties["radius"], properties["half_height"]);
+                auto capsule  = pm->Capsule(properties["radius"], properties["half_height"]);
                 auto position = properties.count("position") ? game_object_helper::ToVector3(properties["position"]) : Math::Vector3::Zero;
                 auto rotation = properties.count("rotation") ? game_object_helper::ToVector3(properties["rotation"]) : Math::Vector3::Zero;
                 physx_helper::AttachShape(&m_pRigidActor, &capsule, physx::PxTransform(physx_helper::ToPxVec3(position), physx_helper::ToPxQuat(Math::Quaternion::CreateFromYawPitchRoll(convert::ToRadians(rotation)))));
@@ -111,7 +112,7 @@ void ModelObject::CreatePrimitiveCollision()
     if ((*jm)[m_name]["collision"].count("passive")) {
         m_upDefaultCollider = std::make_unique<DefaultCollider>();
         for (const auto& e : (*jm)[m_name]["collision"]["passive"]) {
-            const auto& type = e.items().begin().key();
+            const auto& type       = e.items().begin().key();
             const auto& properties = e.items().begin().value();
             if (type == "sphere") {
                 auto dct = properties.count("default_collision_type") ? game_object_helper::ToDefaultCollisionType(properties["default_collision_type"]) : game_object_helper::DefaultCollisionTypeNone;
@@ -135,7 +136,7 @@ void ModelObject::CreateModelCollision()
     // PhysX
     if ((*jm)[m_name]["collision"].count("physx")) {
         for (const auto& e : (*jm)[m_name]["collision"]["physx"]["shapes"]) {
-            const auto& type = e.items().begin().key();
+            const auto& type       = e.items().begin().key();
             const auto& properties = e.items().begin().value();
             if (type == "convex") {
                 if (properties.count("collision_node_name")) {
@@ -181,7 +182,7 @@ void ModelObject::CreateModelCollision()
     // Passive
     if ((*jm)[m_name]["collision"].count("passive")) {
         for (const auto& e : (*jm)[m_name]["collision"]["passive"]) {
-            const auto& type = e.items().begin().key();
+            const auto& type       = e.items().begin().key();
             const auto& properties = e.items().begin().value();
             if (type == "mesh") {
                 auto dct = properties.count("default_collision_type") ? game_object_helper::ToDefaultCollisionType(properties["default_collision_type"]) : game_object_helper::DefaultCollisionTypeNone;
@@ -192,7 +193,6 @@ void ModelObject::CreateModelCollision()
             }
         }
     }
-
 }
 
 bool ModelObject::Collision()
@@ -239,5 +239,4 @@ bool ModelObject::Collision()
     }
 
     return is_ground;
-
 }

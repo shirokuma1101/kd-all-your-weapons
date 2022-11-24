@@ -20,8 +20,13 @@ public:
     
 private:
 
+    void PlayAnimation(float delta_time);
+
     float m_attackInterval = 0.f;
     float m_attackPower    = 0.f;
+
+    // アニメーション
+    KdAnimator m_animator;
 
     std::weak_ptr<Player> m_wpTargetPlayer;
     

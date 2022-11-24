@@ -3,6 +3,14 @@
 #include "Application/Game/GameObject/ModelObject/DynamicObject/DynamicObject.h"
 #include "Application/Game/Scene/GameScene/GameScene.h"
 
+void Player::Init()
+{
+    CharacterObject::Init();
+
+    m_equipWeightLimit = 20.f;
+    m_health = 10;
+}
+
 void Player::Update(float delta_time)
 {
     auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
@@ -52,9 +60,9 @@ void Player::Update(float delta_time)
     PlayAnimation(delta_time);
 
     // デバッグ
-    if (km->GetState(VK_CONTROL, KeyManager::KEYSTATE_PRESS)) {
-        m_equipWeightLimit += 5.f;
-    }
+    //if (km->GetState(VK_CONTROL, KeyManager::KEYSTATE_PRESS)) {
+    //    m_equipWeightLimit += 5.f;
+    //}
 }
 
 void Player::DrawOpaque()
@@ -473,7 +481,16 @@ void Player::PlayAnimation(float delta_time)
 {
     auto& kcm = Application::Instance().GetGameSystem()->GetKeyConfigManager();
 
-    // 構え時 MN: アニメーション名
+    // MN: アニメーション名
+
+    // healthが無い時
+    //if (!m_health) {
+    //    if (m_animator.GetAnimationName() != "rifle_death_from_front_headshot") {
+    //        m_animator.SetAnimation(m_spModel->GetAnimation("rifle_death_from_front_headshot"), false);
+    //    }
+    //    return;
+    //}
+    // 構え時
     if (kcm->GetState(KeyType::Aim)) {
         if (kcm->GetState(KeyType::MoveForward) && kcm->GetState(KeyType::StrafeLeft)) {
             if (m_animator.GetAnimationName() != "rifle_walk_forward_left") {

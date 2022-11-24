@@ -1,6 +1,7 @@
 ﻿#include "DynamicObject.h"
 
 #include "Application/Game/Scene/GameScene/GameScene.h"
+#include "Application/Game/GameObject/ModelObject/CharacterObject/Enemy/Enemy.h"
 
 void DynamicObject::PreUpdate()
 {
@@ -24,8 +25,6 @@ void DynamicObject::Update(float delta_time)
         physx_helper::PutToSleep(m_pRigidActor);
     }
 
-    //TODO: 当たり判定、destruction用のモデルロードと破壊判定時のモデル置き換え、physxに登録処理を追加、sand smokeを追加
-
     if (m_isEquipping) {
         m_pRigidActor->setGlobalPose(physx::PxTransform(physx_helper::ToPxMat44(m_transform.matrix)));
         physx_helper::PutToSleep(m_pRigidActor);
@@ -46,12 +45,8 @@ void DynamicObject::Update(float delta_time)
     if (m_spRigidActorHolder) {
         m_spRigidActorHolder->Update();
     }
-    
-    // SceneがGameの場合はGameSceneにキャストする
-    if (Application::Instance().GetGameSystem()->GetScene()->GetSceneType() != Scene::SceneType::Game) return;
-    // GameSceneと確定しているのでstatic
-    auto game_scene = std::static_pointer_cast<GameScene>(Application::WorkInstance().GetGameSystem()->GetScene());
-    game_scene->GetEnemyObjects();
+
+    Collision();
 }
 
 void DynamicObject::DrawOpaque()
@@ -78,4 +73,31 @@ void DynamicObject::DrawOpaque()
     ModelObject::DrawOpaque();
     rim_light->rimPower = 0.f;
     DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().GetRimLightCB().Write(true);
+}
+
+bool DynamicObject::Collision()
+{
+    // SceneがGameの場合はGameSceneにキャストする
+    if (Application::Instance().GetGameSystem()->GetScene()->GetSceneType() != Scene::SceneType::Game) return false;
+    // GameSceneと確定しているのでstatic
+    auto game_scene = std::static_pointer_cast<GameScene>(Application::WorkInstance().GetGameSystem()->GetScene());
+
+    std::list<collision::Result> results;
+    for (auto& e : game_scene->GetEnemyObjects()) {
+        const auto& collider = e.lock()->GetCollider();
+        if (!collider) continue;
+        //    auto sphere = m_spModel->GetMesh(0)->GetBoundingSphere();
+        //    sphere.Center.x += m_transform.matrix.Translation().x;
+        //    sphere.Center.y += m_transform.matrix.Translation().y;
+        //    sphere.Center.z += m_transform.matrix.Translation().z;
+        //    if (collider->Intersects(game_object_helper::DefaultCollisionTypeBump, e.lock()->GetTransform().matrix, sphere, &results)) {
+        //        if (auto result = collision::GetNearest(results); result) {
+        //            float power = m_spRigidActorHolder->GetMoveVector().Length();
+        //            e.lock()->AddDamage(power);
+        //        }
+        //        results.clear();
+        //    }
+    }
+
+    return false;
 }
