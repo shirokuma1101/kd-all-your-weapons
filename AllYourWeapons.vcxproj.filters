@@ -115,6 +115,9 @@
     <Filter Include="Src\System\Shader\PostProcessShader">
       <UniqueIdentifier>{8d83bb90-afc3-4a31-ac6d-8fb5adfa188d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\Game\GameObject\UIObject\ResultUI">
+      <UniqueIdentifier>{84c42980-3b4f-431b-9fcd-f8317b908e01}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Pch.h">
@@ -279,6 +282,9 @@
     <ClInclude Include="Src\System\Window\resource.h">
       <Filter>Src\System\Window</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\Game\GameObject\UIObject\ResultUI\ResultUI.h">
+      <Filter>Src\Application\Game\GameObject\UIObject\ResultUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Library\imgui\imgui-1.87\include\imgui.cpp">
@@ -385,6 +391,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\Game\GameObject\ModelObject\ModelObject.cpp">
       <Filter>Src\Application\Game\GameObject\ModelObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Game\GameObject\UIObject\ResultUI\ResultUI.cpp">
+      <Filter>Src\Application\Game\GameObject\UIObject\ResultUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

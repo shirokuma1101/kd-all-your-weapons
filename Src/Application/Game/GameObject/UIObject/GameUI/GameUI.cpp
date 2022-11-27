@@ -1,5 +1,7 @@
 ﻿#include "GameUI.h"
 
+#include "Application/Game/Scene/GameScene/GameScene.h"
+
 void GameUI::Init()
 {
     m_backgroundTexture.Load("Asset/Texture/ui/title/title_loading.png");
@@ -9,11 +11,6 @@ void GameUI::Init()
 
 void GameUI::Update(float delta_time)
 {
-    auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
-
-    if (km->GetState(VK_F4, KeyManager::KEYSTATE_HOLD)) {
-        m_isObjectAlive = false;
-    }
     static float time = 0.f;
     if (m_isLoading) {
         time += delta_time;
@@ -22,6 +19,15 @@ void GameUI::Update(float delta_time)
             m_isLoading = false;
             time = 0.f;
         }
+    }
+
+    // SceneがGameの場合はGameSceneにキャストする
+    if (Application::Instance().GetGameSystem()->GetScene()->GetSceneType() != Scene::SceneType::Game) return;
+    // GameSceneと確定しているのでstatic
+    auto game_scene = std::static_pointer_cast<GameScene>(Application::WorkInstance().GetGameSystem()->GetScene());
+
+    if (!game_scene->GetEnemyObjects().size()) {
+        m_isObjectAlive = false;
     }
 }
 

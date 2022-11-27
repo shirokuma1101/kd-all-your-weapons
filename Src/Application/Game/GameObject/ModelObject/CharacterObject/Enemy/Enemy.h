@@ -6,6 +6,13 @@
 class Enemy : public CharacterObject {
 public:
 
+    enum class State {
+        Idle,
+        Chase,
+        Attack,
+        Dead,
+    };
+
     Enemy(std::string_view name)
         : CharacterObject(name)
     {}
@@ -21,6 +28,8 @@ public:
 private:
 
     void PlayAnimation(float delta_time);
+
+    State m_state = State::Idle;
 
     float m_attackInterval = 0.f;
     float m_attackPower    = 0.f;

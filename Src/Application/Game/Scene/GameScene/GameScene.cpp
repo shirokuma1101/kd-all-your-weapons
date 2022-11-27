@@ -38,6 +38,7 @@ void GameScene::Init()
         "abandoned_building_construction",
         "abandoned_camp_fire",
         "abandoned_favela",
+        "abandoned_old_rusty_car",
         "abandoned_post_apocalyptic_building",
         "post-apocalyptic_building_1",
         "post-apocalyptic_building_2",
@@ -55,10 +56,17 @@ void GameScene::Init()
         "rebel-army_citizen_buildings_front_02",
         "rebel-army_citizen_buildings_front_03",
         "rebel-army_citizen_buildings_front_04",
-        "rebel-army_citizen_city_apartment_building",
-        "rebel-army_citizen_city_apartment_building",
+        "rebel-army_citizen_buildings_pack_1_01",
+        "rebel-army_citizen_buildings_pack_1_02",
+        "rebel-army_citizen_buildings_pack_1_03",
+        "rebel-army_citizen_buildings_pack_1_04",
+        "rebel-army_citizen_buildings_pack_1_05",
+        "rebel-army_citizen_buildings_pack_1_06",
+        "rebel-army_citizen_buildings_pack_1_07",
         "rebel-army_pzkpfw_vi_tiger_1",
-        "rebel-army_tent",
+        "rebel-army_tent_01",
+        "rebel-army_tent_02",
+        "rebel-army_tent_03",
 
         "terrain_road_01",
         "terrain_road_02",
@@ -155,8 +163,28 @@ Scene::SceneType GameScene::Update(float delta_time)
         }
     }
     if (is_pause) return m_sceneType;
+
     
-    return Scene::Update(delta_time);
+    SceneType scene = Scene::Update(delta_time);
+    
+    for (auto iter = m_wpEnemyObjects.begin(); iter != m_wpEnemyObjects.end();) {
+        if (iter->expired()) {
+            iter = m_wpEnemyObjects.erase(iter);
+        }
+        else {
+            ++iter;
+        }
+    }
+    for (auto iter = m_wpDynamicObjects.begin(); iter != m_wpDynamicObjects.end();) {
+        if (iter->expired()) {
+            iter = m_wpDynamicObjects.erase(iter);
+        }
+        else {
+            ++iter;
+        }
+    }
+    
+    return scene;
 }
 
 void GameScene::AddEnemyObject(const std::shared_ptr<Enemy>& game_object, bool init)

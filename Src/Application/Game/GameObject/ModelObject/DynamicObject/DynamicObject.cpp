@@ -86,17 +86,16 @@ bool DynamicObject::Collision()
     for (auto& e : game_scene->GetEnemyObjects()) {
         const auto& collider = e.lock()->GetCollider();
         if (!collider) continue;
-        //    auto sphere = m_spModel->GetMesh(0)->GetBoundingSphere();
-        //    sphere.Center.x += m_transform.matrix.Translation().x;
-        //    sphere.Center.y += m_transform.matrix.Translation().y;
-        //    sphere.Center.z += m_transform.matrix.Translation().z;
-        //    if (collider->Intersects(game_object_helper::DefaultCollisionTypeBump, e.lock()->GetTransform().matrix, sphere, &results)) {
-        //        if (auto result = collision::GetNearest(results); result) {
-        //            float power = m_spRigidActorHolder->GetMoveVector().Length();
-        //            e.lock()->AddDamage(power);
-        //        }
-        //        results.clear();
-        //    }
+        auto sphere = m_spModel->GetMesh(0)->GetBoundingSphere();
+        sphere.Center = Math::Vector3(sphere.Center) += m_transform.matrix.Translation();
+        sphere.Radius += 1.f;
+        if (collider->Intersects(game_object_helper::DefaultCollisionTypeBump, e.lock()->GetTransform().matrix, sphere, &results)) {
+            if (auto result = collision::GetNearest(results); result) {
+                float damage = m_spRigidActorHolder->GetMoveVector().Length() * 10.f; // 移動量に応じてダメージを変える
+                e.lock()->AddDamage(damage);
+            }
+            results.clear();
+        }
     }
 
     return false;

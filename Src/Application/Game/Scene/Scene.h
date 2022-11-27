@@ -27,8 +27,11 @@ public:
         for (const auto& obj : m_spGameObjects) {
             obj->PreUpdate();
         }
+        for (const auto& obj : m_spGameObjects) {
+            obj->Update(delta_time);
+        }
+        
         for (auto iter = m_spGameObjects.begin(); iter != m_spGameObjects.end();) {
-            (*iter)->Update(delta_time);
             if ((*iter)->IsObjectAlive()) {
                 ++iter;
             }

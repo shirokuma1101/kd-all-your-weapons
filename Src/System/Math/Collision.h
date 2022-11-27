@@ -244,7 +244,7 @@ public:
 				const auto& work_node = work_nodes[i];
 
 				if (!data_node.m_spMesh) {
-					return false;
+					continue;
 				}
 
 				if (!model_collision::Intersects(*data_node.m_spMesh, target, work_node.m_worldTransform * mat, &result)) continue;

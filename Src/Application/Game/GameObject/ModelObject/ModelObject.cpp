@@ -116,7 +116,7 @@ void ModelObject::CreatePrimitiveCollision()
             const auto& properties = e.items().begin().value();
             if (type == "sphere") {
                 auto dct = properties.count("default_collision_type") ? game_object_helper::ToDefaultCollisionType(properties["default_collision_type"]) : game_object_helper::DefaultCollisionTypeNone;
-                auto center = properties.count("center") ? m_transform.position + game_object_helper::ToVector3(properties["center"]) : m_transform.position;
+                auto center = properties.count("center") ? game_object_helper::ToVector3(properties["center"]) : Math::Vector3::Zero;
                 auto sphere = collision::BoundingSphere(Math::Vector3::Zero, properties["radius"]);
                 m_upDefaultCollider->AddCollisionShape(
                     std::make_shared<CollisionSphere<game_object_helper::DefaultCollisionType>>(dct, sphere)
@@ -210,7 +210,7 @@ bool ModelObject::Collision()
 
     for (const auto& e : Application::Instance().GetGameSystem()->GetScene()->GetGameObjects()) {
         const auto& collider = e->GetCollider();
-        if (!collider) continue;
+        if (!collider || this == e.get()) continue;
         // 地面との判定 (光線)
         for (const auto& ray : rays) {
             if (collider->Intersects(game_object_helper::DefaultCollisionTypeBump, e->GetTransform().matrix, ray, &results)) {
