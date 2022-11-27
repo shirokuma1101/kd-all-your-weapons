@@ -8,22 +8,30 @@ void TitleUI::Init()
 void TitleUI::Update(float delta_time)
 {
     auto& km = Application::Instance().GetGameSystem()->GetInputManager()->GetKeyManager();
+    auto& cm = Application::Instance().GetGameSystem()->GetInputManager()->GetCursorManager();
 
-    if (km->GetState(VK_UP, KeyManager::KEYSTATE_PRESS)) {
+    auto cursor_pos = cm->GetPositionFromCenter();
+    cursor_pos.y *= -1;
+
+    //MN: 座標
+
+    auto start_left_top = GetPositionFromPercentage(70, 50);
+    auto start_right_bottom = GetPositionFromPercentage(90, 60);
+    if (cursor_pos.x > start_left_top.x && cursor_pos.x < start_right_bottom.x &&
+        cursor_pos.y < start_left_top.y && cursor_pos.y > start_right_bottom.y) {
         m_selectMenu = SelectMenu::Start;
-    }
-    else if (km->GetState(VK_DOWN, KeyManager::KEYSTATE_PRESS)) {
-        m_selectMenu = SelectMenu::Exit;
+        if (km->GetState(VK_LBUTTON, KeyManager::KEYSTATE_PRESS)) {
+            m_isObjectAlive = false;
+        }
     }
 
-    if (km->GetState(VK_RETURN, KeyManager::KEYSTATE_HOLD)) {
-        switch (m_selectMenu) {
-        case SelectMenu::Start:
-            m_isObjectAlive = false;
-            break;
-        case SelectMenu::Exit:
+    auto exit_left_top = GetPositionFromPercentage(70, 80);;
+    auto exit_right_bottom = GetPositionFromPercentage(90, 90);
+    if (cursor_pos.x > exit_left_top.x && cursor_pos.x < exit_right_bottom.x &&
+        cursor_pos.y < exit_left_top.y && cursor_pos.y > exit_right_bottom.y) {
+        m_selectMenu = SelectMenu::Exit;
+        if (km->GetState(VK_LBUTTON, KeyManager::KEYSTATE_PRESS)) {
             SendMessage(Application::Instance().GetWindow().GetWindowHandle(), WM_CLOSE, 0, 0);
-            break;
         }
     }
 
@@ -31,7 +39,7 @@ void TitleUI::Update(float delta_time)
     if (m_cursorAlpha > 1.f) {
         m_cursorAlpha = 0.f;
     }
-    
+
     //Application::Instance().GetGameSystem()->GetGameSettings();
 }
 

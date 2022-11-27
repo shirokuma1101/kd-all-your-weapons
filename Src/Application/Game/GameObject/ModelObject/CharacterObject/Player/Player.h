@@ -57,8 +57,6 @@ private:
 
     // Gravity Gunの行列
     Math::Matrix m_gravityGunMatrix;
-    // プレイヤーのアニメーション
-    KdAnimator m_animator;
     // SE
     std::weak_ptr<audio_helper::SoundInstance> m_wpChargeSE;
     // エフェクト

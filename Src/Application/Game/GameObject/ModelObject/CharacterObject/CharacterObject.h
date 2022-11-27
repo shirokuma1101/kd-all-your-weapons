@@ -19,7 +19,10 @@ public:
     }
 
 protected:
-
+    
     int m_health = 0;
+
+    // アニメーション
+    KdAnimator m_animator;
     
 };

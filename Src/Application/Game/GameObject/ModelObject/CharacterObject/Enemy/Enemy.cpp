@@ -12,7 +12,39 @@ void Enemy::Init()
 
 void Enemy::Update(float delta_time)
 {
-    CharacterObject::Update(delta_time);
+    auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
+    auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
+
+    // モデルのロード時
+    if (!m_spModel && mm->IsLoadedOnlyOnce(m_name)) {
+        // モデルを取得
+        m_spModel = mm->CopyData(m_name);
+
+        // モデルの当たり判定を作成
+        CreateModelCollision();
+    }
+    // モデルのロード
+    if (!mm->IsLoaded(m_name)) return;
+
+    // 行列の計算
+    if ((*jm)[m_name]["transform"]["fixed"]) {
+        // 固定
+        m_transform = game_object_helper::ToTransform((*jm)[m_name]["transform"]);
+        m_transform.Composition();
+        if (m_pRigidActor) {
+            m_pRigidActor->setGlobalPose(physx::PxTransform(
+                physx_helper::ToPxVec3(m_transform.position),
+                physx_helper::ToPxQuat(Math::Quaternion::CreateFromYawPitchRoll(convert::ToRadians(m_transform.rotation)))
+            ));
+        }
+    }
+    else {
+        // 当たり判定
+        if (m_targetFound) {
+            m_transform.position.y += -constant::fG * delta_time;
+            Collision();
+        }
+    }
 
     m_transform.Composition();
     
@@ -32,6 +64,7 @@ void Enemy::Update(float delta_time)
         dir.Normalize();
         // プレイヤーとの距離が視認範囲の場合
         if (distance < sighting_range) {
+            m_targetFound = true;
             // プレイヤーの方向を向く
             m_transform.rotation = { 0.f, convert::ToDegrees(std::atan2(dir.x, dir.z)), 0.f };
             // 攻撃範囲内の場合

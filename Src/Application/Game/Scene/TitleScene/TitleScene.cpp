@@ -4,6 +4,8 @@
 
 void TitleScene::Init()
 {
+    input_helper::CursorData::ShowCursor(true);
+
     auto title_ui = std::make_shared<TitleUI>();
     AddGameObject(title_ui);
 

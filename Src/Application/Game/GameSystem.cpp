@@ -39,8 +39,7 @@ void GameSystem::Init()
     /* Input */
     m_upInputMgr = std::make_unique<InputManager>(Application::Instance().GetWindow().GetWindowHandle());
     m_upKeyConfigMgr = std::make_unique<KeyConfigManager<KeyType>>();
-    input_helper::CursorData::ShowCursor(false);
-
+    
     /* PhysX */
     m_upPhysxMgr = std::make_unique<PhysXManager>();
     m_upPhysxMgr->Init();
@@ -290,6 +289,8 @@ void GameSystem::CalcFps()
 
 void GameSystem::ApplyGraphicsSettings()
 {
+    if (!m_upGameSettings) return;
+
     /* Graphics */
     switch (m_upGameSettings->displayMode) {
     case GameSettings::DisplayMode::WINDOWED:

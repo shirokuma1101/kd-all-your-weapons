@@ -25,8 +25,7 @@ private:
     float m_attackInterval = 0.f;
     float m_attackPower    = 0.f;
 
-    // アニメーション
-    KdAnimator m_animator;
+    bool  m_targetFound = false;
 
     std::weak_ptr<Player> m_wpTargetPlayer;
     

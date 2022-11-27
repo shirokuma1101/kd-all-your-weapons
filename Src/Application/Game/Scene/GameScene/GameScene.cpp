@@ -12,6 +12,8 @@
 
 void GameScene::Init()
 {
+    input_helper::CursorData::ShowCursor(false);
+
     auto camera = std::make_shared<CameraObject>();
     AddGameObject(camera);
     
@@ -143,16 +145,16 @@ Scene::SceneType GameScene::Update(float delta_time)
         }
     }
     
-    //static bool is_pause = false;
-    //if (km->GetState(VK_F1, KeyManager::KEYSTATE_PRESS)) {
-    //    if (!is_pause) {
-    //        is_pause = true;
-    //    }
-    //    else {
-    //        is_pause = false;
-    //    }
-    //}
-    //if (is_pause) return m_sceneType;
+    static bool is_pause = false;
+    if (km->GetState(VK_F1, KeyManager::KEYSTATE_PRESS)) {
+        if (!is_pause) {
+            is_pause = true;
+        }
+        else {
+            is_pause = false;
+        }
+    }
+    if (is_pause) return m_sceneType;
     
     return Scene::Update(delta_time);
 }
