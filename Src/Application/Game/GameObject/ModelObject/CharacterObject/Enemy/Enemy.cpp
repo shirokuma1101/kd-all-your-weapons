@@ -2,12 +2,13 @@
 
 void Enemy::Init()
 {
+    auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
+
     CharacterObject::Init();
 
     m_attackInterval = 1.f;
-    m_attackPower    = 1.f;
-
-    m_health = 50.f;
+    m_attackPower = (*jm)[m_name]["expand"]["status"]["attack_power"];
+    m_health = (*jm)[m_name]["expand"]["status"]["health"];
 
     m_state = State::Idle;
 }
@@ -55,7 +56,6 @@ void Enemy::Update(float delta_time)
         if (!m_wpTargetPlayer.expired()) {
             constexpr float sighting_range = 10.f; // MN: 視界
             constexpr float attack_range = 2.f;  // MN: 攻撃範囲
-            constexpr float walk_speed = 1.f;  // MN: 歩く速度
             constexpr float attack_interval = 1.f;  // MN: 攻撃間隔
 
             auto sp_obj = m_wpTargetPlayer.lock();
@@ -87,7 +87,7 @@ void Enemy::Update(float delta_time)
                 // 攻撃範囲外の場合
                 else {
                     // 移動する
-                    m_transform.position += dir * (walk_speed * delta_time);
+                    m_transform.position += dir * ((*jm)[m_name]["expand"]["status"]["run_speed"] * delta_time);
                     m_attackInterval = 0.f;
 
                     m_state = State::Chase;
@@ -111,6 +111,7 @@ void Enemy::Update(float delta_time)
     
     if (m_state == State::Dead && m_animator.IsAnimationEnd()) {
         m_isObjectAlive = false;
+        m_wpTargetPlayer.lock()->AddEquipWeightLimit(5.f);
     }
 }
 

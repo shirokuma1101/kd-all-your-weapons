@@ -7,7 +7,7 @@ void Player::Init()
 {
     CharacterObject::Init();
 
-    m_equipWeightLimit = 20.f;
+    m_equipWeightLimit = 1.f;
     m_health = 10;
 }
 

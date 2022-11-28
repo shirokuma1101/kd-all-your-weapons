@@ -25,6 +25,7 @@ void GameScene::Init()
     for (const auto& name : {
         "enemy_01",
         "enemy_02",
+        "enemy_03",
         }) {
         auto enemy = std::make_shared<Enemy>(name);
         enemy->SetTarget(player);
@@ -130,6 +131,7 @@ void GameScene::Init()
     light_cb->directionalLightColor     = { 0.7f, 0.7f, 0.7f };
     DirectX11System::WorkInstance().GetShaderManager()->GetLightCB().Write();
 
+    DirectX11System::WorkInstance().GetShaderManager()->ClearPointLight();
     DirectX11System::WorkInstance().GetShaderManager()->AddPointLight({ 0, 1, 1 }, { 2.0f, 1.0f, 0.1f }, { 0.f, 1.f, 0.f });
 
     auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();

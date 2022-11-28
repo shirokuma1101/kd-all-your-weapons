@@ -20,6 +20,9 @@ public:
     void SetEquipWeightLimit(float equip_weight_limit) {
         m_equipWeightLimit = equip_weight_limit;
     }
+    void AddEquipWeightLimit(float equip_weight_limit) {
+        m_equipWeightLimit += equip_weight_limit;
+    }
 
 private:
 

@@ -91,7 +91,7 @@ bool DynamicObject::Collision()
         sphere.Radius += 1.f;
         if (collider->Intersects(game_object_helper::DefaultCollisionTypeBump, e.lock()->GetTransform().matrix, sphere, &results)) {
             if (auto result = collision::GetNearest(results); result) {
-                float damage = m_spRigidActorHolder->GetMoveVector().Length() * 10.f; // 移動量に応じてダメージを変える
+                float damage = m_spRigidActorHolder->GetMoveVector().Length() * m_weight; // 移動量に応じてダメージを変える
                 e.lock()->AddDamage(damage);
             }
             results.clear();
