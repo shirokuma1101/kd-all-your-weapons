@@ -1,5 +1,6 @@
-#pragma once
+﻿#pragma once
 
+#define ENABLE_JSON_SCHEMA_VALIDATOR
 #include "ExternalDependencies/Asset/Json/JsonManager.h"
 
 #include "System/Asset/Model/ModelManager.h"

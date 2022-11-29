@@ -5,10 +5,14 @@
 
 void Player::Init()
 {
+    auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
+    
     CharacterObject::Init();
 
     m_equipWeightLimit = 1.f;
     m_health = 10;
+
+    mm->AsyncLoad("gravity_gun");
 }
 
 void Player::Update(float delta_time)
@@ -69,22 +73,41 @@ void Player::DrawOpaque()
 {
     auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
     auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
+    auto& kcm = Application::Instance().GetGameSystem()->GetKeyConfigManager();
+
+    auto rotation_matrix = Math::Matrix::CreateFromYawPitchRoll(
+        convert::ToRadians(m_angle + 180.f),
+        convert::ToRadians(0.f),
+        convert::ToRadians(0.f)
+    );
+    auto translation_matrix = Math::Matrix::CreateTranslation(
+        m_transform.position.x,
+        m_transform.position.y - (*jm)[m_name]["expand"]["status"]["height"].get<float>(),
+        m_transform.position.z
+    );
     
     if (mm->IsLoaded(m_name) && m_spModel) {
-        auto rotation_matrix = Math::Matrix::CreateFromYawPitchRoll(
-            convert::ToRadians(m_angle + 180.f),
-            convert::ToRadians(0.f),
-            convert::ToRadians(0.f)
-        );
-        auto translation_matrix = Math::Matrix::CreateTranslation(
-            m_transform.position.x,
-            m_transform.position.y - (*jm)[m_name]["expand"]["status"]["height"].get<float>(),
-            m_transform.position.z
-        );
-
         DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().DrawModel(
             *m_spModel,
             Math::Matrix::CreateScale(m_transform.scale) * rotation_matrix * translation_matrix
+        );
+    }
+    
+    if (mm->IsLoaded("gravity_gun") && m_spModel) {
+        static auto gravity_gun = mm->CopyData("gravity_gun");
+        float rotation = 25.f;
+        if (kcm->GetState(KeyType::MoveForward) || kcm->GetState(KeyType::MoveBackward) || kcm->GetState(KeyType::StrafeLeft) || kcm->GetState(KeyType::StrafeRight)) {
+            if (kcm->GetState(KeyType::Aim) || kcm->GetState(KeyType::Sprint)) {
+                rotation = 90.f;
+            }
+        }
+        
+        DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().DrawModel(
+            *gravity_gun,
+            Math::Matrix::CreateFromYawPitchRoll(convert::ToRadians(175.f), convert::ToRadians(rotation), convert::ToRadians(90.f))
+            * m_spModel->FindWorkNode("mixamorig:RightHandMiddle1")->m_worldTransform
+            * Math::Matrix::CreateRotationY(convert::ToRadians(m_angle + 180.f))
+            * translation_matrix
         );
     }
 }

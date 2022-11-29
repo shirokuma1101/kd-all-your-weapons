@@ -111,9 +111,9 @@ private:
         std::array<PointLight, POINT_LIGHT_MAX> pointLight;              // 384byte: 点光源
     }; // 512byte
 
-    StandardShader m_standardShader;
-    SpriteShader   m_spriteShader;
-    SpriteFont     m_spriteFont; // シェーダーではない
+    StandardShader   m_standardShader;
+    SpriteShader     m_spriteShader;
+    SpriteFont       m_spriteFont; // シェーダーではない
 
     DirectX11ConstantBufferSystem<CameraCB> m_cameraCB;
     DirectX11ConstantBufferSystem<LightCB>  m_lightCB;

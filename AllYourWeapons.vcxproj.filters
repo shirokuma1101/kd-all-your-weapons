@@ -112,9 +112,6 @@
     <Filter Include="Src\System\Asset\Texture">
       <UniqueIdentifier>{f8fb4ffe-bab6-4360-8ab0-61aafcc84bbb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Src\System\Shader\PostProcessShader">
-      <UniqueIdentifier>{8d83bb90-afc3-4a31-ac6d-8fb5adfa188d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Src\Application\Game\GameObject\UIObject\ResultUI">
       <UniqueIdentifier>{84c42980-3b4f-431b-9fcd-f8317b908e01}</UniqueIdentifier>
     </Filter>
@@ -267,17 +264,11 @@
     <ClInclude Include="Src\System\GameObject\GameObjectHelper.h">
       <Filter>Src\System\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="Src\System\Shader\PostProcessShader\PostProcessShader.h">
-      <Filter>Src\System\Shader\PostProcessShader</Filter>
-    </ClInclude>
     <ClInclude Include="Src\System\JsonValueHolder.h">
       <Filter>Src\System</Filter>
     </ClInclude>
     <ClInclude Include="Src\Application\Game\GameSettings.h">
       <Filter>Src\Application\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Application\Game\GameObject\ModelObject\CharacterObject\Player\GravityGun.h">
-      <Filter>Src\Application\Game\GameObject\ModelObject\CharacterObject\Player</Filter>
     </ClInclude>
     <ClInclude Include="Src\System\Window\resource.h">
       <Filter>Src\System\Window</Filter>
@@ -379,9 +370,6 @@
     </ClCompile>
     <ClCompile Include="Src\Framework\Direct3D\KdTrailPolygon.cpp">
       <Filter>Src\Framework\Direct3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\System\Shader\PostProcessShader\PostProcessShader.cpp">
-      <Filter>Src\System\Shader\PostProcessShader</Filter>
     </ClCompile>
     <ClCompile Include="Src\Application\Game\GameSettings.cpp">
       <Filter>Src\Application\Game</Filter>
