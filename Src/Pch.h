@@ -15,11 +15,11 @@
 // Socket (Must be included before windows.h)
 // disable MIN MAX macro
 #define NOMINMAX
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#include <WinSock2.h>
+#include <WS2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
 // Windows
-#include <windows.h>
+#include <Windows.h>
 // ComPtr
 #include <wrl/client.h>
 
@@ -36,15 +36,24 @@
 //#pragma comment(lib,"dxguid.lib")
 
 // DirectX Tex
-#include <DirectXTex.h>
+#include "DirectXTex.h"
 #pragma comment(lib, "DirectXTex.lib")
 
 // DirectX Tool Kit
-#include <Audio.h>
-#include <SimpleMath.h>
-#include <SpriteFont.h>
+#include "Audio.h"
+#include "SimpleMath.h"
+#include "SpriteFont.h"
 #pragma comment(lib, "DirectXTKAudioWin8.lib")
 #pragma comment(lib, "DirectXTK.lib")
+
+
+
+/**************************************************
+* fmt
+**************************************************/
+
+#define FMT_HEADER_ONLY
+#include "fmt/format.h"
 
 
 

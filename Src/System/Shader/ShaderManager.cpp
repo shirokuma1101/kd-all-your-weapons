@@ -283,7 +283,7 @@ void ShaderManager::UndoSamplerState()
     m_pSSUndo = nullptr;
 }
 
-void ShaderManager::AddPointLight(const Math::Vector3& position, const Math::Vector3& color, const Math::Vector3& attenuation)
+int ShaderManager::AddPointLight(const Math::Vector3& position, const Math::Vector3& color, const Math::Vector3& attenuation)
 {
     auto light = m_lightCB.Get();
     light->pointLight[light->pointLightCount].position = position;
@@ -291,6 +291,7 @@ void ShaderManager::AddPointLight(const Math::Vector3& position, const Math::Vec
     light->pointLight[light->pointLightCount].attenuation = attenuation;
     ++light->pointLightCount;
     m_lightCB.Write();
+    return light->pointLightCount - 1;
 }
 
 void ShaderManager::ClearPointLight()

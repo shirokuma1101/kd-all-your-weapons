@@ -54,9 +54,9 @@ void Enemy::Update(float delta_time)
     if (m_health) {
         // プレイヤーがいる場合
         if (!m_wpTargetPlayer.expired()) {
-            constexpr float sighting_range = 10.f; // MN: 視界
-            constexpr float attack_range = 2.f;  // MN: 攻撃範囲
-            constexpr float attack_interval = 1.f;  // MN: 攻撃間隔
+            constexpr float sighting_range  = 10.f; // MN: 視界
+            constexpr float attack_range    = 2.f;  // MN: 攻撃範囲
+            constexpr float attack_interval = 5.f;  // MN: 攻撃間隔
 
             auto sp_obj = m_wpTargetPlayer.lock();
             // 自分からプレイヤーへの方向ベクトルを計算
@@ -102,16 +102,16 @@ void Enemy::Update(float delta_time)
         m_pRigidActor->setGlobalPose(physx::PxTransform(physx_helper::ToPxMat44(m_transform.matrix)));
     }
     else {
-        physx_helper::WakeUp(m_pRigidActor);
-        m_transform.matrix = physx_helper::ToMatrix(m_pRigidActor->getGlobalPose());
         m_state = State::Dead;
     }
     
     PlayAnimation(delta_time);
     
     if (m_state == State::Dead && m_animator.IsAnimationEnd()) {
-        m_isObjectAlive = false;
+        //physx_helper::WakeUp(m_pRigidActor);
+        //m_transform.matrix = physx_helper::ToMatrix(m_pRigidActor->getGlobalPose());
         m_wpTargetPlayer.lock()->AddEquipWeightLimit(5.f);
+        m_isObjectAlive = false;
     }
 }
 
@@ -131,7 +131,7 @@ void Enemy::DrawOpaque()
         }
         else {
             mat
-                = Math::Matrix::CreateTranslation(0.f, -convert::ToHalf(height), 0.f)
+                = Math::Matrix::CreateTranslation(0.f, -height, 0.f)
                 * m_transform.matrix;
         }
 

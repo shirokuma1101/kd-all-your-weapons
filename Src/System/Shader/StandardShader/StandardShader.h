@@ -56,9 +56,9 @@ public:
 
     void DrawPolygon(const KdPolygon& poly, const Math::Matrix& world);
 
-    void DrawMesh(const KdMesh& mesh, const Math::Matrix& world, const std::vector<KdMaterial>& materials);
+    void DrawMesh(const KdMesh& mesh, const Math::Matrix& world, const std::vector<KdMaterial>& materials, float alpha = 1.f);
 
-    void DrawModel(const KdModelWork& model, const Math::Matrix& world, const std::initializer_list<std::string_view>& invisible_nodes = {});
+    void DrawModel(const KdModelWork& model, const Math::Matrix& world, const std::initializer_list<std::string_view>& invisible_nodes = {}, float alpha = 1.f);
     
 private:
 
@@ -102,7 +102,7 @@ private:
         float         rimPower = 0.f;               //  4byte: リムパワー
     }; // 16byte
 
-    void SetMaterial(const KdMaterial& material = {});
+    void SetMaterial(const KdMaterial& material = {}, float alpha = 1.f);
     
     DirectX11ConstantBufferSystem<ObjectCB>   m_objectCB;
     DirectX11ConstantBufferSystem<MeshCB>     m_meshCB;

@@ -33,9 +33,10 @@ void GameSystem::Init()
     /* Effekseer */
     m_upEffekseerMgr = std::make_unique<EffekseerManager>();
     m_upEffekseerMgr->Init(DirectX11System::Instance().GetDev().Get(), DirectX11System::Instance().GetCtx().Get());
-    m_upEffekseerMgr->SetEffect("exp", "Asset/Effect/exp/exp.efk");
     m_upEffekseerMgr->SetEffect("charge", "Asset/Effect/charge/blue_laser_edited_long.efk");
-
+    m_upEffekseerMgr->SetEffect("electric_dust", "Asset/Effect/electric_dust/electric_dust_edited.efk");
+    m_upEffekseerMgr->SetEffect("shockwave", "Asset/Effect/shockwave/blue_laser_edited_shockwave.efk");
+    
     /* Input */
     m_upInputMgr = std::make_unique<InputManager>(Application::Instance().GetWindow().GetWindowHandle());
     m_upKeyConfigMgr = std::make_unique<KeyConfigManager<KeyType>>();
@@ -51,7 +52,8 @@ void GameSystem::Init()
     m_upAssetMgr->Register(AssetManager::AssetType::Model, m_upAssetMgr->GetJsonMgr()->GetAssets(), { "model" });
 
     /* Font */
-    DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().AddFont("genkai", "Asset/Font/GenkaiMincho.dat");
+    DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().AddFont("cyberspace", "Asset/Font/cyberspace_ascii_64_r.dat");
+    DirectX11System::WorkInstance().GetShaderManager()->GetSpriteFont().AddFont("genkaimincho", "Asset/Font/genkaimincho_ja_40_r.dat");
     
     /* Controls */
     m_upKeyConfigMgr->AddKeyConfig(KeyType::MoveForward,  'W');
@@ -224,6 +226,7 @@ void GameSystem::ImGuiUpdate()
             m_upGameSettings->shadowMaps     = static_cast<GameSettings::ShadowMaps>(shadow_maps);
             ApplyGraphicsSettings();
             m_upAudioMgr->SetMasterVolume(m_upGameSettings->masterVolume = master_volume);
+            m_upGameSettings->Save();
         }
         ImGui::End();
 

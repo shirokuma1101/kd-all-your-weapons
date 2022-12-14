@@ -8,6 +8,7 @@ public:
 
     enum class SelectMenu {
         Start,
+        Settings,
         Exit,
     };
 
@@ -18,8 +19,9 @@ public:
 
 private:
 
-    float m_cursorAlpha = 0.f;
-    SelectMenu m_selectMenu = SelectMenu::Start;
+    float      m_cursorAlpha = 0.f;
+    SelectMenu m_selectMenu  = SelectMenu::Start;
+
     DirectX11TextureSystem m_titleTexture;
     
 };

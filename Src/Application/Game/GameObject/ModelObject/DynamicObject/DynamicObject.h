@@ -42,12 +42,12 @@ public:
 
 private:
 
-    float         m_weight         = 0.f;
     bool          m_isLoaded       = false;
+    float         m_weight         = 0.f;
 
+    bool          m_isEquipping    = false;                 // 装備しているか
     Math::Vector3 m_force;                                  // 力の強さ
     bool          m_isFirstImpulse = false;                 // 一度のみ衝撃を与える
-    bool          m_isEquipping    = false;                 // 装備しているか
     Selection     m_selection      = Selection::NoSelected; // 選択中のオブジェクトの状態
 
 };

@@ -5,12 +5,19 @@
 
 void Player::Init()
 {
+    auto& em = Application::Instance().GetGameSystem()->GetEffekseerManager();
     auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
     
     CharacterObject::Init();
 
     m_equipWeightLimit = 1.f;
-    m_health = 10;
+    m_health = 100;
+    
+    m_pointLightCount = DirectX11System::WorkInstance().GetShaderManager()->AddPointLight(Math::Vector3::Zero, Math::Vector3(0.10f, 0.36f, 0.86f), { 0.f, 1.f, 0.f });
+    effekseer_helper::EffectTransform et;
+    et.maxFrame = 300;
+    et.isLoop = true;
+    m_spGravityGunEffectTrasnform = em->Emit("electric_dust", et);
 
     mm->AsyncLoad("gravity_gun");
 }
@@ -63,10 +70,16 @@ void Player::Update(float delta_time)
 
     PlayAnimation(delta_time);
 
+    if (!m_health) {
+        //m_isObjectAlive = false;
+    }
+
     // デバッグ
-    //if (km->GetState(VK_CONTROL, KeyManager::KEYSTATE_PRESS)) {
-    //    m_equipWeightLimit += 5.f;
-    //}
+#ifdef _DEBUG
+    if (km->GetState(VK_CONTROL, KeyManager::KEYSTATE_PRESS)) {
+        m_equipWeightLimit += 5.f;
+    }
+#endif
 }
 
 void Player::DrawOpaque()
@@ -101,14 +114,34 @@ void Player::DrawOpaque()
                 rotation = 90.f;
             }
         }
+
+        Math::Matrix gravity_gun_matrix
+            = Math::Matrix::CreateFromYawPitchRoll(convert::ToRadians(175.f), convert::ToRadians(rotation), convert::ToRadians(90.f))
+            * m_spModel->FindWorkNode("mixamorig:RightHandMiddle1")->m_worldTransform
+            * Math::Matrix::CreateRotationY(convert::ToRadians(m_angle + 180.f))
+            * translation_matrix;
         
         DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().DrawModel(
             *gravity_gun,
-            Math::Matrix::CreateFromYawPitchRoll(convert::ToRadians(175.f), convert::ToRadians(rotation), convert::ToRadians(90.f))
-            * m_spModel->FindWorkNode("mixamorig:RightHandMiddle1")->m_worldTransform
-            * Math::Matrix::CreateRotationY(convert::ToRadians(m_angle + 180.f))
-            * translation_matrix
+            gravity_gun_matrix
         );
+
+        auto light = DirectX11System::WorkInstance().GetShaderManager()->GetLightCB().Get();
+        light->pointLight[m_pointLightCount].position = (gravity_gun->FindWorkNode("muzzle")->m_worldTransform * gravity_gun_matrix).Translation();
+        DirectX11System::WorkInstance().GetShaderManager()->GetLightCB().Write();
+
+        // エフェクトが未だ再生されていない場合
+        if (!m_wpChargeEffectTransform.expired()) {
+            // エフェクトの行列を設定
+            m_wpChargeEffectTransform.lock()->matrix
+                = Math::Matrix::CreateScale(0.25f)
+                * Math::Matrix::CreateFromYawPitchRoll(convert::ToRadians(m_transform.rotation))
+                * Math::Matrix::CreateTranslation((gravity_gun->FindWorkNode("muzzle")->m_worldTransform * gravity_gun_matrix).Translation());
+        }
+
+        m_spGravityGunEffectTrasnform->matrix
+            = Math::Matrix::CreateScale(0.02f)
+            * Math::Matrix::CreateTranslation((gravity_gun->FindWorkNode("muzzle")->m_worldTransform * gravity_gun_matrix).Translation());
     }
 }
 
@@ -118,7 +151,7 @@ void Player::MouseOperator(float delta_time, float narrow_limit, float wide_limi
     auto& kcm = Application::Instance().GetGameSystem()->GetKeyConfigManager();
     auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
 
-    auto pos = cm->GetPositionFromCenter(input_helper::CursorData::Position(50, 25)); // MN: 移動量リミット
+    auto pos = cm->GetPositionFromCenter(); // MN: 移動量リミット
     cm->LockInCenter();
     
     m_cameraRotaion += Math::Vector3(static_cast<float>(pos.y), static_cast<float>(pos.x), 0) * (*jm)[m_name]["expand"]["status"]["mouse_sensitivity"];
@@ -259,6 +292,8 @@ void Player::Shot(float delta_time)
     // GameSceneと確定しているのでstatic
     auto game_scene = std::static_pointer_cast<GameScene>(Application::WorkInstance().GetGameSystem()->GetScene());
 
+    m_selectedObjectWeight = 0.f;
+
     // 構え
     if (kcm->GetState(KeyType::Aim)) {
         // DynamicObjectを持っていない場合
@@ -285,8 +320,9 @@ void Player::Shot(float delta_time)
             // DynamicObjectが当たった場合
             if (collision::GetNearest(results)) {
                 auto sp_obj = nearest_obj.lock();
+                m_selectedObjectWeight = sp_obj->GetWeight();
                 // 選択可能 (重量制限未満)
-                if (!m_isShotCT && !m_isSucceededChargeCT && !m_isFailedChargeCT && sp_obj->GetWeight() <= m_equipWeightLimit) {
+                if (!m_isShotCT && !m_isSucceededChargeCT && !m_isFailedChargeCT && m_selectedObjectWeight <= m_equipWeightLimit) {
                     sp_obj->SetSelection(DynamicObject::Selection::Equippable);
                     // DynamicObjectを所持する
                     if (kcm->GetState(KeyType::Interact)) {
@@ -307,7 +343,7 @@ void Player::Shot(float delta_time)
                     collider->Intersects(game_object_helper::DefaultCollisionTypeRoad, e->GetTransform().matrix, ray, &results);
                 }
                 if (results.size()) {
-                    auto sp_obj = std::make_shared<DynamicObject>("props_dirt");
+                    auto sp_obj = std::make_shared<DynamicObject>("dirt");
                     game_scene->AddDynamicObject(sp_obj);
                     m_wpEquipObject = sp_obj;
                 }
@@ -329,21 +365,21 @@ void Player::Shot(float delta_time)
                     m_wpChargeSE = am->Play("charge_se");
                 }
                 // エフェクトが未だ再生されていない場合
-                if (m_wpEffectTransform.expired()) {
-                    // 閾値を下回っている場合エフェクトの再生開始
+                if (m_wpChargeEffectTransform.expired()) {
+                    // 閾値を上回っている場合エフェクトの再生開始
                     if (m_nowChargePower >= charge_threshold) {
                         effekseer_helper::EffectTransform effect_transform;
                         effect_transform.maxFrame = 1200;
-                        m_wpEffectTransform = em->Emit("charge", effect_transform, true);
+                        m_wpChargeEffectTransform = em->Emit("charge", effect_transform, true);
                     }
                 }
                 else {
                     // エフェクトの行列を設定
-                    m_wpEffectTransform.lock()->matrix
-                        = Math::Matrix::CreateTranslation(0.5f, -1.f, 2.f)
-                        * Math::Matrix::CreateScale(0.25f)
-                        * Math::Matrix::CreateFromYawPitchRoll(convert::ToRadians(m_transform.rotation))
-                        * Math::Matrix::CreateTranslation(m_transform.position);
+                    //m_wpChargeEffectTransform.lock()->matrix
+                    //    = Math::Matrix::CreateTranslation(0.5f, -1.f, 2.f)
+                    //    * Math::Matrix::CreateScale(0.25f)
+                    //    * Math::Matrix::CreateFromYawPitchRoll(convert::ToRadians(m_transform.rotation))
+                    //    * Math::Matrix::CreateTranslation(m_transform.position);
                 }
             }
             // 失敗CT時
@@ -354,8 +390,8 @@ void Player::Shot(float delta_time)
                 if (!m_wpChargeSE.expired()) {
                     m_wpChargeSE.lock()->Stop();
                 }
-                if (!m_wpEffectTransform.expired()) {
-                    m_wpEffectTransform.lock()->maxFrame = 0;
+                if (!m_wpChargeEffectTransform.expired()) {
+                    m_wpChargeEffectTransform.lock()->maxFrame = 0;
                 }
             }
             else {
@@ -405,14 +441,22 @@ void Player::Shot(float delta_time)
                 }
                 // 溜めがある場合
                 else {
+                    effekseer_helper::EffectTransform effect_transform;
+                    effect_transform.maxFrame = 30;
+                    effect_transform.matrix
+                        = Math::Matrix::CreateTranslation(0.5f, -1.f, 2.f)
+                        * Math::Matrix::CreateScale(0.25f)
+                        * Math::Matrix::CreateFromYawPitchRoll(convert::ToRadians(m_transform.rotation))
+                        * Math::Matrix::CreateTranslation(m_transform.position);;
+                    em->Emit("shockwave", effect_transform, true);
                     // 成功CT有効
                     m_isSucceededChargeCT = true;
                 }
                 if (!m_wpChargeSE.expired()) {
                     m_wpChargeSE.lock()->Stop();
                 }
-                if (!m_wpEffectTransform.expired()) {
-                    m_wpEffectTransform.lock()->maxFrame = 0;
+                if (!m_wpChargeEffectTransform.expired()) {
+                    m_wpChargeEffectTransform.lock()->maxFrame = 0;
                 }
             }
         }
@@ -426,8 +470,8 @@ void Player::Shot(float delta_time)
             if (!m_wpChargeSE.expired()) {
                 m_wpChargeSE.lock()->Stop();
             }
-            if (!m_wpEffectTransform.expired()) {
-                m_wpEffectTransform.lock()->maxFrame = 0;
+            if (!m_wpChargeEffectTransform.expired()) {
+                m_wpChargeEffectTransform.lock()->maxFrame = 0;
             }
         }
     }

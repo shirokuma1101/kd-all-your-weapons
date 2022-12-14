@@ -90,7 +90,7 @@ float4 main(PSIn ps_in) : SV_Target0
             // 射影座標 -> UV座標へ変換
             float2 uv = light_pos.xy * float2(1, -1) * 0.5 + 0.5;
             // ライトカメラからの距離
-            float z = light_pos.z - 0.004; // シャドウアクネ対策
+            float z = light_pos.z - 0.002; // シャドウアクネ対策
         
             // 画像のサイズからテクセルサイズを求める
             float w, h;

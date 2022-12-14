@@ -68,7 +68,7 @@ public:
     void ChangeSamplerState(int slot, ID3D11SamplerState* ss);
     void UndoSamplerState();
 
-    void AddPointLight(const Math::Vector3& position, const Math::Vector3& color, const Math::Vector3& attenuation);
+    int AddPointLight(const Math::Vector3& position, const Math::Vector3& color, const Math::Vector3& attenuation);
     void ClearPointLight();
 
 private:

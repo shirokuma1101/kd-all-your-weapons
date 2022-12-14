@@ -14,11 +14,31 @@ void GameScene::Init()
 {
     input_helper::CursorData::ShowCursor(false);
 
-    auto camera = std::make_shared<CameraObject>();
+    /* Shader */
+
+    auto camera_cb = DirectX11System::WorkInstance().GetShaderManager()->GetCameraCB().Get();
+    camera_cb->distanceFogEnable = true;
+    camera_cb->distanceFogColor = { 0.75f, 0.64f, 0.6f };
+    camera_cb->distanceFogStart = -19.3f;
+    camera_cb->distanceFogEnd = 143.6f;
+    DirectX11System::WorkInstance().GetShaderManager()->GetCameraCB().Write();
+
+    auto light_cb = DirectX11System::WorkInstance().GetShaderManager()->GetLightCB().Get();
+    light_cb->ambientLight = { 0.7f, 0.6f, 0.6f };
+    light_cb->directionalLightDirection = { -0.5, -0.8f, 0.3f };
+    light_cb->directionalLightDirection.Normalize();
+    light_cb->directionalLightColor = { 0.7f, 0.7f, 0.7f };
+    DirectX11System::WorkInstance().GetShaderManager()->GetLightCB().Write();
+
+    DirectX11System::WorkInstance().GetShaderManager()->ClearPointLight();
+    DirectX11System::WorkInstance().GetShaderManager()->AddPointLight({ 0, 1, 1 }, { 2.0f, 1.0f, 0.1f }, { 0.f, 1.f, 0.f });
+    
+    /* GameObject */
+
+    auto camera = std::make_shared<CameraObject>(Math::Matrix::Identity, 60.f, 16.f / 9.f, 0.001f, 500.f);
     AddGameObject(camera);
     
     auto player = std::make_shared<Player>("player");
-    player->SetEquipWeightLimit(2.f);
     player->SetFollowerTarget(camera);
     AddGameObject(player);
 
@@ -26,6 +46,15 @@ void GameScene::Init()
         "enemy_01",
         "enemy_02",
         "enemy_03",
+        "enemy_04",
+        "enemy_05",
+        "enemy_06",
+        "enemy_07",
+        "enemy_08",
+        "enemy_09",
+        "enemy_10",
+        "enemy_11",
+        "enemy_12",
         }) {
         auto enemy = std::make_shared<Enemy>(name);
         enemy->SetTarget(player);
@@ -33,109 +62,104 @@ void GameScene::Init()
     }
     for (const auto& name : {
         "environment_sphere",
+        "camp_fire",
 
-        "abandoned_abandon_hospital2",
-        "abandoned_abandoned_security_hut_low_poly",
-        "abandoned_building_construction",
-        "abandoned_camp_fire",
-        "abandoned_favela",
-        "abandoned_old_rusty_car",
-        "abandoned_post_apocalyptic_building",
-        "post-apocalyptic_building_1",
-        "post-apocalyptic_building_2",
-        "post-apocalyptic_building_3",
-        "post-apocalyptic_building_4",
-        "post-apocalyptic_building_5",
-        "post-apocalyptic_building_6",
-        "abandoned_ruin_building",
+        "broken_building",
+        "broken_buildings_01",
+        "broken_buildings_02",
+        "broken_buildings_03",
+        "broken_buildings_04",
+        "broken_buildings_05",
+        "broken_buildings_06",
+        "building_construction",
+        "favela",
+        "hospital",
+        "old_rusty_car",
+        "ruin_building",
+        "security_hut",
+        "wasteland_stores_01",
+        "wasteland_stores_02",
 
-        "rebel-army_btr_80a",
-        "rebel-army_citizen_bordeaux_flat_1_corner_france",
-        "rebel-army_citizen_bordeaux_flat_2_corner_france_01",
-        "rebel-army_citizen_bordeaux_flat_2_corner_france_02",
-        "rebel-army_citizen_buildings_front_01",
-        "rebel-army_citizen_buildings_front_02",
-        "rebel-army_citizen_buildings_front_03",
-        "rebel-army_citizen_buildings_front_04",
-        "rebel-army_citizen_buildings_pack_1_01",
-        "rebel-army_citizen_buildings_pack_1_02",
-        "rebel-army_citizen_buildings_pack_1_03",
-        "rebel-army_citizen_buildings_pack_1_04",
-        "rebel-army_citizen_buildings_pack_1_05",
-        "rebel-army_citizen_buildings_pack_1_06",
-        "rebel-army_citizen_buildings_pack_1_07",
-        "rebel-army_pzkpfw_vi_tiger_1",
-        "rebel-army_tent_01",
-        "rebel-army_tent_02",
-        "rebel-army_tent_03",
-
-        "terrain_road_01",
-        "terrain_road_02",
-        "terrain_road_03",
-        "terrain_road_04",
-        "terrain_road_05",
-        "terrain_road_06",
-        "terrain_road_07",
-        "terrain_road_08",
-        "terrain_road_09",
-        "terrain_road_10",
-        "terrain_road_11",
-        "terrain_road_12",
-        "terrain_road_13",
-        "terrain_sidewalk_01",
-        "terrain_sidewalk_02",
-        "terrain_sidewalk_03",
-        "terrain_sidewalk_04",
-        "terrain_sidewalk_05",
-        "terrain_sidewalk_06",
-        "terrain_sidewalk_07",
-        "terrain_sidewalk_08",
-        "terrain_sidewalk_09",
-        "terrain_sidewalk_10",
-        "terrain_sidewalk_11",
-        "terrain_sidewalk_12",
+        "btr_80a",
+        "pzkpfw_vi_tiger_1",
+        "tent_01",
+        "tent_02",
+        "apartment_01",
+        "apartment_02",
+        "apartment_03",
+        "apartment_04",
+        "apartment_corner_1",
+        "apartment_corner_2_01",
+        "apartment_corner_2_02",
+        "buildings_front_01",
+        "buildings_front_02",
+        "buildings_front_03",
+        "buildings_front_04",
+        "buildings_pack_01",
+        "buildings_pack_02",
+        "buildings_pack_03",
+        "buildings_pack_04",
+        "buildings_pack_05",
+        "buildings_pack_06",
+        "buildings_pack_07",
+        "tower_building",
+        
+        "sidewalk_01",
+        "sidewalk_02",
+        "sidewalk_03",
+        "sidewalk_04",
+        "sidewalk_05",
+        "sidewalk_06",
+        "sidewalk_07",
+        "sidewalk_08",
+        "sidewalk_09",
+        "sidewalk_10",
+        "sidewalk_11",
+        "sidewalk_12",
+        "road_straight_01",
+        "road_straight_02",
+        "road_straight_03",
+        "road_straight_04",
+        "road_straight_05",
+        "road_straight_06",
+        "road_straight_07",
+        "road_straight_08",
+        "road_straight_09",
+        "road_straight_10",
+        "road_t_01",
+        "road_t_02",
         }) {
         AddGameObject(std::make_shared<ModelObject>(name));
     }
     for (const auto& name : {
-        "props_01",
-        "props_02",
-        "props_03",
-        "props_04",
-        "props_05",
-        "props_06",
-        "props_07",
+        "rebel_army_wooden_barricade_01",
+        "rebel_army_wooden_barricade_02",
+        "rebel_army_wooden_barricade_03",
+        "rebel_army_wooden_barricade_04",
+        "rebel_army_wooden_barricade_05",
+        "rebel_army_wooden_barricade_06",
+
+        "abandoned_oil_drum",
+        "abandoned_urban_garbage_01",
+        "abandoned_urban_garbage_02",
+        "abandoned_urban_garbage_03",
+        "abandoned_urban_garbage_04",
+        "abandoned_urban_garbage_05",
+        "abandoned_urban_garbage_06",
+        "abandoned_urban_garbage_07",
         }) {
         AddDynamicObject(std::make_shared<DynamicObject>(name));
     }
     
     auto game_ui = std::make_shared<GameUI>();
+    game_ui->SetPlayer(player);
     AddGameObject(game_ui);
 
     m_nextSceneType = SceneType::Result;
     m_wpDeletionDecisionObject = game_ui;
 
-    /* Shader */
-    
-    auto camera_cb = DirectX11System::WorkInstance().GetShaderManager()->GetCameraCB().Get();
-    camera_cb->distanceFogEnable = true;
-    camera_cb->distanceFogColor  = { 0.75f, 0.64f, 0.6f };
-    camera_cb->distanceFogStart  = -19.3f;
-    camera_cb->distanceFogEnd    = 143.6f;
-    DirectX11System::WorkInstance().GetShaderManager()->GetCameraCB().Write();
-    
-    auto light_cb = DirectX11System::WorkInstance().GetShaderManager()->GetLightCB().Get();
-    light_cb->ambientLight              = { 0.7f, 0.6f, 0.6f };
-    light_cb->directionalLightDirection = { -0.5, -0.8f, 0.3f };
-    light_cb->directionalLightDirection.Normalize();
-    light_cb->directionalLightColor     = { 0.7f, 0.7f, 0.7f };
-    DirectX11System::WorkInstance().GetShaderManager()->GetLightCB().Write();
-
-    DirectX11System::WorkInstance().GetShaderManager()->ClearPointLight();
-    DirectX11System::WorkInstance().GetShaderManager()->AddPointLight({ 0, 1, 1 }, { 2.0f, 1.0f, 0.1f }, { 0.f, 1.f, 0.f });
-
     auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
-    mm->Load("props_dirt");
+    mm->AsyncLoad("dirt");
 }
 
 Scene::SceneType GameScene::Update(float delta_time)
@@ -145,7 +169,7 @@ Scene::SceneType GameScene::Update(float delta_time)
     DirectX11System::WorkInstance().GetShaderManager()->GetLightCB().Get()->pointLight[0].attenuation = { 0.f, (float)random::RandomDistribution(0.75f, 1.f), 0.f };
     DirectX11System::WorkInstance().GetShaderManager()->GetLightCB().Write();
 
-    if (km->GetState(VK_ESCAPE)) {
+    if (km->GetState(VK_ESCAPE, KeyManager::KEYSTATE_PRESS)) {
         input_helper::CursorData::ShowCursor(true);
         if (MessageBoxA(Application::Instance().GetWindow().GetWindowHandle(), "終了しますか?", "終了確認", MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
             SendMessage(Application::Instance().GetWindow().GetWindowHandle(), WM_CLOSE, 0, 0);

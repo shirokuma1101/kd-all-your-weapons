@@ -169,7 +169,7 @@ void StandardShader::DrawPolygon(const KdPolygon& poly, const Math::Matrix& worl
     DirectX11System::WorkInstance().GetShaderManager()->UndoSamplerState();
 }
 
-void StandardShader::DrawMesh(const KdMesh& mesh, const Math::Matrix& world, const std::vector<KdMaterial>& materials)
+void StandardShader::DrawMesh(const KdMesh& mesh, const Math::Matrix& world, const std::vector<KdMaterial>& materials, float alpha)
 {
     m_meshCB.Get()->world = world;
     m_meshCB.Write();
@@ -184,14 +184,14 @@ void StandardShader::DrawMesh(const KdMesh& mesh, const Math::Matrix& world, con
 
         // マテリアルセット
         const KdMaterial& material = materials[mesh.GetSubsets()[i].MaterialNo];
-        SetMaterial(material);
+        SetMaterial(material, alpha);
         
         // サブセット描画
         mesh.DrawSubset(i);
     }
 }
 
-void StandardShader::DrawModel(const KdModelWork& model, const Math::Matrix& world, const std::initializer_list<std::string_view>& invisible_nodes)
+void StandardShader::DrawModel(const KdModelWork& model, const Math::Matrix& world, const std::initializer_list<std::string_view>& invisible_nodes, float alpha)
 {
     if (!model.IsEnable()) return;
 
@@ -240,18 +240,19 @@ void StandardShader::DrawModel(const KdModelWork& model, const Math::Matrix& wor
         if (is_find) continue;
 
         if (const auto& mesh = model.GetMesh(i); mesh) {
-            DrawMesh(*mesh, work_node.m_worldTransform * world, data->GetMaterials());
+            DrawMesh(*mesh, work_node.m_worldTransform * world, data->GetMaterials(), alpha);
         }
     }
 }
 
-void StandardShader::SetMaterial(const KdMaterial& material)
+void StandardShader::SetMaterial(const KdMaterial& material, float alpha)
 {
     // マテリアルセット
     m_materialCB.Get()->baseColor = material.BaseColor;
     m_materialCB.Get()->emissive  = material.Emissive;
     m_materialCB.Get()->metallic  = material.Metallic;
     m_materialCB.Get()->roughness = material.Roughness;
+    m_materialCB.Get()->baseColor.w = alpha;
     // テクスチャセット
     ID3D11ShaderResourceView* srvs[] = {
         material.BaseColorTex->GetSrv(),

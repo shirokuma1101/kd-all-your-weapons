@@ -6,15 +6,13 @@
 void DynamicObject::PreUpdate()
 {
     m_isEquipping = false;
-    m_selection = Selection::NoSelected;
+    m_selection   = Selection::NoSelected;
 }
 
 void DynamicObject::Update(float delta_time)
 {
     auto& jm = Application::Instance().GetGameSystem()->GetAssetManager()->GetJsonMgr();
     auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
-
-    m_weight = (*jm)[m_name]["expand"]["weight"];
 
     ModelObject::Update(delta_time);
     if (!mm->IsLoaded(m_name)) return;
@@ -24,6 +22,8 @@ void DynamicObject::Update(float delta_time)
         m_isLoaded = true;
         physx_helper::PutToSleep(m_pRigidActor);
     }
+
+    m_weight = (*jm)[m_name]["expand"]["weight"];
 
     if (m_isEquipping) {
         m_pRigidActor->setGlobalPose(physx::PxTransform(physx_helper::ToPxMat44(m_transform.matrix)));
@@ -51,26 +51,37 @@ void DynamicObject::Update(float delta_time)
 
 void DynamicObject::DrawOpaque()
 {
+    auto& mm = Application::Instance().GetGameSystem()->GetAssetManager()->GetModelMgr();
+
+    if (!mm->IsLoaded(m_name) || !m_spModel) return;
+    
     auto rim_light = DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().GetRimLightCB().Get();
 
-    switch (m_selection) {
-    case DynamicObject::Selection::NoSelected:
-        rim_light->rimPower = 0.f;
-        break;
-    case DynamicObject::Selection::Equippable:
-        rim_light->rimColor = { 0.f, 1.f, 0.f };
+    float alpha = 1.f;
+    if (m_isEquipping) {
+        alpha               = 0.25f;
+        rim_light->rimColor = { 0.f, 0.f, 1.f };
         rim_light->rimPower = 1.f;
-        break;
-    case DynamicObject::Selection::NotEquippable:
-        rim_light->rimColor = { 1.f, 0.f, 0.f };
-        rim_light->rimPower = 1.f;
-        break;
-    default:
-        break;
     }
-
+    else {
+        switch (m_selection) {
+        case DynamicObject::Selection::NoSelected:
+            rim_light->rimPower = 0.f;
+            break;
+        case DynamicObject::Selection::Equippable:
+            rim_light->rimColor = { 0.f, 1.f, 0.f };
+            rim_light->rimPower = 1.f;
+            break;
+        case DynamicObject::Selection::NotEquippable:
+            rim_light->rimColor = { 1.f, 0.f, 0.f };
+            rim_light->rimPower = 1.f;
+            break;
+        default:
+            break;
+        }
+    }
     DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().GetRimLightCB().Write();
-    ModelObject::DrawOpaque();
+    DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().DrawModel(*m_spModel, m_transform.matrix, { m_collisionNodeName }, alpha);
     rim_light->rimPower = 0.f;
     DirectX11System::WorkInstance().GetShaderManager()->GetStandardShader().GetRimLightCB().Write(true);
 }
@@ -90,10 +101,9 @@ bool DynamicObject::Collision()
         sphere.Center = Math::Vector3(sphere.Center) += m_transform.matrix.Translation();
         sphere.Radius += 1.f;
         if (collider->Intersects(game_object_helper::DefaultCollisionTypeBump, e.lock()->GetTransform().matrix, sphere, &results)) {
-            if (auto result = collision::GetNearest(results); result) {
-                float damage = m_spRigidActorHolder->GetMoveVector().Length() * m_weight; // 移動量に応じてダメージを変える
-                e.lock()->AddDamage(damage);
-            }
+            // 移動量に応じてダメージを変える
+            float damage = m_spRigidActorHolder->GetMoveVector().Length() * m_weight;
+            e.lock()->AddDamage(damage);
             results.clear();
         }
     }

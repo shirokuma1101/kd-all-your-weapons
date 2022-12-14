@@ -10,14 +10,17 @@ public:
         : ModelObject(name)
     {}
     virtual ~CharacterObject() {}
-    
-    void AddDamage(float damage) {
+
+    float GetHealth() const noexcept {
+        return m_health;
+    }
+    void AddDamage(float damage) noexcept {
         m_health -= damage;
         if (m_health < 0.f) {
             m_health = 0.f;
         }
     }
-    void AddHealth(float health) {
+    void AddHealth(float health) noexcept {
         m_health += health;
     }
 

@@ -13,14 +13,17 @@ public:
     void Init() override;
     void Update(float delta_time) override;
     void DrawOpaque() override;
-
+    
     void SetFollowerTarget(std::shared_ptr<CameraObject> obj) {
         m_wpFollowerCamera = obj;
     }
-    void SetEquipWeightLimit(float equip_weight_limit) {
-        m_equipWeightLimit = equip_weight_limit;
+    float GetEquipWeightLimit() const noexcept {
+        return m_equipWeightLimit;
     }
-    void AddEquipWeightLimit(float equip_weight_limit) {
+    float GetSelectedObjectWeight() const noexcept {
+        return m_selectedObjectWeight;
+    }
+    void AddEquipWeightLimit(float equip_weight_limit) noexcept {
         m_equipWeightLimit += equip_weight_limit;
     }
 
@@ -50,7 +53,8 @@ private:
 
     // 攻撃系
     std::weak_ptr<DynamicObject> m_wpEquipObject;
-    float m_equipWeightLimit    = 0.f;
+    float m_equipWeightLimit     = 0.f;
+    float m_selectedObjectWeight = 0.f;
 
     float m_nowCT               = 0.f;
     bool  m_isShotCT            = false;
@@ -58,11 +62,13 @@ private:
     bool  m_isSucceededChargeCT = false;
     bool  m_isFailedChargeCT    = false;
 
-    // Gravity Gunの行列
+    // Gravity Gun
     Math::Matrix m_gravityGunMatrix;
+    int          m_pointLightCount = 0;
+    std::shared_ptr<effekseer_helper::EffectTransform> m_spGravityGunEffectTrasnform;
     // SE
     std::weak_ptr<audio_helper::SoundInstance> m_wpChargeSE;
     // エフェクト
-    std::weak_ptr<effekseer_helper::EffectTransform> m_wpEffectTransform;
+    std::weak_ptr<effekseer_helper::EffectTransform> m_wpChargeEffectTransform;
 
 };
